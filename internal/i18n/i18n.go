@@ -8,23 +8,20 @@ import (
 
 var bundle *i18n.Bundle
 
-func InitializeI18n() error {
-	bundle = i18n.NewBundle(language.English)
+func init() {
+	bundle = i18n.NewBundle(language.SimplifiedChinese)
 	bundle.RegisterUnmarshalFunc("yaml", yaml.Unmarshal)
 
 	// 使用LoadMessageFile加载YAML文件，并检查错误
-	_, err := bundle.LoadMessageFile("./locales/en-US.yaml")
-	if err != nil {
-		return err
-	}
-	_, err = bundle.LoadMessageFile("./locales/zh-CN.yaml")
-	if err != nil {
-		return err
-	}
-	return nil
+	bundle.LoadMessageFile("./locales/en-US.yaml")
+	bundle.LoadMessageFile("./locales/zh-CN.yaml")
 }
 
 // 获取Localizer实例
 func GetLocalizer(lang string) (*i18n.Localizer, error) {
-	return i18n.NewLocalizer(bundle, lang), nil
+	if bundle != nil {
+		return i18n.NewLocalizer(bundle, lang), nil
+	} else {
+		return nil, nil
+	}
 }

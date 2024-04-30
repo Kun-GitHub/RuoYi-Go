@@ -50,5 +50,7 @@ func InitializeLogger(debug bool) (*zap.Logger, error) {
 
 // Close 关闭zap.Logger实例
 func Close(logger *zap.Logger) {
-	_ = logger.Sync()
+	if logger != nil {
+		_ = logger.Sync()
+	}
 }
