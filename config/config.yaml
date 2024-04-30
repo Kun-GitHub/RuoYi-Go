@@ -6,6 +6,7 @@ server:
   port: 8080 # 服务器监听端口
 
 database:
+  type: "postgres"
   host: "localhost" # 数据库地址
   port: 5432 # 数据库端口
   user: "your_username" # 数据库用户名

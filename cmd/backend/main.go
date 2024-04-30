@@ -37,4 +37,6 @@ func main() {
 	// 使用日志和国际化开始运行应用
 	log.Info("Starting the application...")
 	app.Run(cfg, localizer, log) // 将日志实例传递给app.Run
+
+	logger.Close(log)
 }
