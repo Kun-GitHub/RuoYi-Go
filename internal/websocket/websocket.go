@@ -1,12 +1,13 @@
-package main
+package ws
 
 import (
-	"github.com/kataras/iris/v12"
 	"github.com/kataras/iris/v12/websocket"
+	"github.com/kataras/neffos"
 	"log"
 )
 
-func main() {
+// InitConfig 函数中使用viper读取配置文件并映射到AppConfig结构体
+func InitWebsocket() *neffos.Server {
 	ws := websocket.New(websocket.DefaultGorillaUpgrader, websocket.Events{
 		websocket.OnNativeMessage: func(nsConn *websocket.NSConn, msg websocket.Message) error {
 			log.Printf("Server got: %s from [%s]", msg.Body, nsConn.Conn.ID())
@@ -34,13 +35,5 @@ func main() {
 		log.Printf("Upgrade Error: %v", err)
 	}
 
-	app := iris.New()
-	// 定义路由
-	app.Get("/", func(ctx iris.Context) {
-		ctx.WriteString("Hello, Iris!")
-	})
-
-	app.Get("/msg", websocket.Handler(ws))
-
-	app.Run(iris.Addr(":8080"))
+	return ws
 }
