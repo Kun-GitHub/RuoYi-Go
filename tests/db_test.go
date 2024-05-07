@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"gorm.io/gorm"
 	"testing"
-	"time-machine/internal/db"
+	"time-machine/pkg/db"
 )
 
 // 定义模型（示例为User模型）

@@ -1,7 +1,5 @@
 package config
 
-import "github.com/spf13/viper"
-
 type AppConfig struct {
 	Debug    bool           `mapstructure:"debug"`    // 是否开启调试模式
 	Language string         `mapstructure:"language"` // 应用语言
@@ -21,22 +19,4 @@ type DatabaseConfig struct {
 	User     string `mapstructure:"user"`
 	Password string `mapstructure:"password"`
 	DBName   string `mapstructure:"dbname"`
-}
-
-// InitConfig 函数中使用viper读取配置文件并映射到AppConfig结构体
-func InitConfig() (*AppConfig, error) {
-	v := viper.New()
-	v.SetConfigName("config")
-	v.SetConfigType("yaml")
-	v.AddConfigPath("./config")
-	if err := v.ReadInConfig(); err != nil {
-		return nil, err
-	}
-
-	var cfg AppConfig
-	if err := v.Unmarshal(&cfg); err != nil {
-		return nil, err
-	}
-
-	return &cfg, nil
 }

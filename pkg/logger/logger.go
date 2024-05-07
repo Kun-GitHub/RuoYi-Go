@@ -8,6 +8,8 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
+var Log *zap.Logger
+
 // InitializeLogger 初始化zap日志实例，支持按日期和大小滚动日志文件
 func InitializeLogger(debug bool) (*zap.Logger, error) {
 	// lumberjack配置
@@ -38,19 +40,18 @@ func InitializeLogger(debug bool) (*zap.Logger, error) {
 	)
 
 	// 根据debug标志创建logger实例
-	var logger *zap.Logger
 	if debug {
-		logger = zap.New(core, zap.Development(), zap.AddCaller(), zap.AddStacktrace(zap.ErrorLevel))
+		Log = zap.New(core, zap.Development(), zap.AddCaller(), zap.AddStacktrace(zap.ErrorLevel))
 	} else {
-		logger = zap.New(core, zap.AddCaller())
+		Log = zap.New(core, zap.AddCaller())
 	}
 
-	return logger, nil
+	return Log, nil
 }
 
 // Close 关闭zap.Logger实例
-func Close(logger *zap.Logger) {
-	if logger != nil {
-		_ = logger.Sync()
+func Close() {
+	if Log != nil {
+		_ = Log.Sync()
 	}
 }

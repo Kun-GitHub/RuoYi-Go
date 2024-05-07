@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/go-redis/redis/v8"
 	"testing"
-	"time-machine/internal/cache"
+	"time-machine/pkg/cache"
 )
 
 func TestRedis(t *testing.T) {
