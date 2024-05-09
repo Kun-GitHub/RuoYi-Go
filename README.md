@@ -6,7 +6,7 @@
 ### 2. 前端
 [RuoYi 官方前端Vue3版](https://github.com/yangzongzhuan/RuoYi-Vue3)
 
-### 3. Go后端技术栈
+### 3. Go后端技术栈（持续在对齐项目，在补充）
 <table>
 <thead>
 <tr>
@@ -92,3 +92,22 @@
 </tbody>
 </table>
 
+### 4. 项目目录（持续在对齐项目，在补充）
+time-management-tool/
+|-- build/
+|   |-- build.cmd     // go build 文件
+|-- cmd/
+|   |-- main.go       // 主入口文件
+|-- config/           // 配置文件目录
+|   |-- config.yml    // 示例配置文件
+|-- internal/
+|   |-- handler/      // HTTP请求处理器
+|   |-- service/      // 业务逻辑层
+|   |-- repository/   // 数据访问层
+|-- pkg/
+|   |-- i18n/         // 国际化
+|-- middleware/       // 中间件（如JWT验证）
+|-- model/            // 数据模型
+|-- websocket/        // WebSocket处理逻辑
+|-- go.mod            // Go模块依赖管理
+|-- go.sum            // Go模块依赖哈希
