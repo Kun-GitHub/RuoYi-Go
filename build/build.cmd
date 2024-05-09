@@ -1,6 +1,6 @@
 @echo off
 
-SET SERVER=time-machine
+SET SERVER=RuoYi-Go
 
 cd /d %~dp0
 SET BLDIR=%CD%
@@ -10,7 +10,7 @@ cd ..
 SET ROOT=%CD%
 
 echo Building %SERVER%
-cd %ROOT%\cmd\backend
+cd %ROOT%\cmd
 go build -o %BLDIR%\%SERVER%.exe .
 
 echo Build done

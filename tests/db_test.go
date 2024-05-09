@@ -9,7 +9,7 @@ import (
 	"fmt"
 	"gorm.io/gorm"
 	"testing"
-	"time-machine/pkg/db"
+	"RuoYi-Go/pkg/db"
 )
 
 // 定义模型（示例为User模型）

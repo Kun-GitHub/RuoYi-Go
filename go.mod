@@ -1,4 +1,4 @@
-module time-machine
+module RuoYi-Go
 
 go 1.22.2
 

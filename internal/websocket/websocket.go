@@ -10,7 +10,7 @@ import (
 	"github.com/kataras/iris/v12/websocket"
 	"github.com/kataras/neffos"
 	"go.uber.org/zap"
-	"time-machine/pkg/logger"
+	"RuoYi-Go/pkg/logger"
 )
 
 // InitConfig 函数中使用viper读取配置文件并映射到AppConfig结构体

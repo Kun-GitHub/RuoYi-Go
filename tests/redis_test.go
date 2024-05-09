@@ -9,7 +9,7 @@ import (
 	"fmt"
 	"github.com/go-redis/redis/v8"
 	"testing"
-	"time-machine/pkg/cache"
+	"RuoYi-Go/pkg/cache"
 )
 
 func TestRedis(t *testing.T) {

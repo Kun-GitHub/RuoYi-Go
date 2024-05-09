@@ -6,11 +6,11 @@ import (
 	"github.com/kataras/iris/v12/websocket"
 	"go.uber.org/zap"
 	"time"
-	"time-machine/internal/shutdown"
-	ws "time-machine/internal/websocket"
-	"time-machine/pkg/config"
-	"time-machine/pkg/i18n"
-	"time-machine/pkg/logger"
+	"RuoYi-Go/internal/shutdown"
+	ws "RuoYi-Go/internal/websocket"
+	"RuoYi-Go/pkg/config"
+	"RuoYi-Go/pkg/i18n"
+	"RuoYi-Go/pkg/logger"
 
 	"context"
 )
