@@ -93,6 +93,7 @@
 </table>
 
 ### 4. 项目目录（持续在对齐项目，在补充）
+```项目结构
 time-management-tool/
 |-- build/
 |   |-- build.cmd     // go build 文件
