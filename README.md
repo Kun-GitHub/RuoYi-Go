@@ -1,9 +1,12 @@
-# RuoYi-Go Go版RuoYi(功能正在持续实现)
+# RuoYi-Go
 
-### 1. 前端
+### 1. 介绍
+后端用Go写的RuoYi权限管理系统 (功能正在持续实现)
+
+### 2. 前端
 [RuoYi 官方前端Vue3版](https://github.com/yangzongzhuan/RuoYi-Vue3)
 
-### 2. 技术栈
+### 3. Go后端技术栈
 <table>
 <thead>
 <tr>
