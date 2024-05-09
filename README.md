@@ -7,7 +7,7 @@
 后端用Go写的RuoYi权限管理系统 (功能正在持续实现)
 
 ### 3. 前端
-[RuoYi 官方前端Vue3版](https://github.com/yangzongzhuan/RuoYi-Vue3)
+[RuoYi-Vue3 官方前端Vue3版](https://github.com/Kun-GitHub/RuoYi-Vue3)
 
 ### 4. Go后端技术栈（持续在对齐项目，在补充）
 <table>
@@ -117,5 +117,8 @@ time-management-tool/
 |-- go.sum            // Go模块依赖哈希
 ```
 
-### 6. 编写环境（项目是个人第一个开源项目，所以有些工具喜欢尝新）
+### 6. 编写环境
 [JetBrains Fleet](https://www.jetbrains.com/fleet) （目前还是免费用，类似微软的VS Code，个人刚用这个Fleet，不喜勿喷）
+
+### 7. 最后
+目前项目还是一个人写，边工作边写，主要是下班后写，所以可能会慢一些哈，如果不介意的话，点个 Start 持续跟踪，谢谢啦
