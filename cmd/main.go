@@ -1,16 +1,21 @@
+// Copyright (c) [2024] K. All rights reserved.
+// Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+// Author: K.
+// Email: hot_kun@hotmail.com or BusinessCallKun@gmail.com
+
 package main
 
 import (
-	"fmt"
-	"github.com/kataras/iris/v12"
-	"github.com/kataras/iris/v12/websocket"
-	"go.uber.org/zap"
-	"time"
 	"RuoYi-Go/internal/shutdown"
 	ws "RuoYi-Go/internal/websocket"
 	"RuoYi-Go/pkg/config"
 	"RuoYi-Go/pkg/i18n"
 	"RuoYi-Go/pkg/logger"
+	"fmt"
+	"github.com/kataras/iris/v12"
+	"github.com/kataras/iris/v12/websocket"
+	"go.uber.org/zap"
+	"time"
 
 	"context"
 )
@@ -33,9 +38,6 @@ func main() {
 	if err != nil {
 		log.Error("Failed to get localizer", zap.Error(err))
 	}
-
-	//// 使用日志和国际化开始运行应用
-	//app.Run(conf, localizer, log) // 将日志实例传递给app.Run
 
 	app := iris.New()
 	// 定义路由
