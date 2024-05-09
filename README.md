@@ -1,12 +1,15 @@
 # RuoYi-Go
 
-### 1. 介绍
+### 1. 关于我
+[个人介绍](https://github.com/Kun-GitHub)
+
+### 2. 介绍
 后端用Go写的RuoYi权限管理系统 (功能正在持续实现)
 
-### 2. 前端
+### 3. 前端
 [RuoYi 官方前端Vue3版](https://github.com/yangzongzhuan/RuoYi-Vue3)
 
-### 3. Go后端技术栈（持续在对齐项目，在补充）
+### 4. Go后端技术栈（持续在对齐项目，在补充）
 <table>
 <thead>
 <tr>
@@ -92,7 +95,7 @@
 </tbody>
 </table>
 
-### 4. 项目目录（持续在对齐项目，在补充）
+### 5. 项目目录（持续在对齐项目，在补充）
 ```项目结构
 time-management-tool/
 |-- build/
@@ -112,3 +115,7 @@ time-management-tool/
 |-- websocket/        // WebSocket处理逻辑
 |-- go.mod            // Go模块依赖管理
 |-- go.sum            // Go模块依赖哈希
+```
+
+### 6. 编写环境（项目是个人第一个开源项目，所以有些工具喜欢尝新）
+[JetBrains Fleet](https://www.jetbrains.com/fleet) （目前还是免费用，类似微软的VS Code，个人刚用这个Fleet，不喜勿喷）

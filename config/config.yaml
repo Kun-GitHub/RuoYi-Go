@@ -3,7 +3,7 @@ debug: true # 设置是否开启调试模式
 language: "zh-CN" # 应用默认语言
 
 server:
-  port: 8081 # 服务器监听端口
+  port: 8080 # 服务器监听端口
 
 database:
   type: "postgres"
