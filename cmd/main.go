@@ -6,6 +6,7 @@
 package main
 
 import (
+	"RuoYi-Go/internal/server"
 	"RuoYi-Go/internal/shutdown"
 	ws "RuoYi-Go/internal/websocket"
 	"RuoYi-Go/pkg/config"
@@ -13,7 +14,6 @@ import (
 	"RuoYi-Go/pkg/logger"
 	"fmt"
 	"github.com/kataras/iris/v12"
-	"github.com/kataras/iris/v12/websocket"
 	"go.uber.org/zap"
 	"time"
 
@@ -40,18 +40,11 @@ func main() {
 	}
 
 	app := iris.New()
-	// 定义路由
-	app.Get("/", func(ctx iris.Context) {
-		ctx.WriteString("Hello, Iris!")
-	}) // 定义路由
-	app.Get("/captchaImage", func(ctx iris.Context) {
-		ctx.WriteString("Hello, Iris!")
-	}) // 定义路由
-	app.Post("/login", func(ctx iris.Context) {
-		ctx.WriteString("Hello, Iris!")
-	})
 
-	app.Get("/ws", websocket.Handler(ws.InitWebsocket()))
+	server.InitServer(app)
+	server.StartServer()
+	ws.InitWebSocket(app)
+	ws.StartWebSocket()
 
 	app.Run(iris.Addr(fmt.Sprintf(":%d", conf.Server.Port)))
 

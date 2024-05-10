@@ -6,15 +6,26 @@
 package ws
 
 import (
+	"RuoYi-Go/pkg/logger"
 	"fmt"
+	"github.com/kataras/iris/v12"
 	"github.com/kataras/iris/v12/websocket"
 	"github.com/kataras/neffos"
 	"go.uber.org/zap"
-	"RuoYi-Go/pkg/logger"
 )
 
+var webSocket *iris.Application
+
+func InitWebSocket(w *iris.Application) {
+	webSocket = w
+}
+
+func StartWebSocket() {
+	webSocket.Get("/ws", websocket.Handler(initWebsocket()))
+}
+
 // InitConfig 函数中使用viper读取配置文件并映射到AppConfig结构体
-func InitWebsocket() *neffos.Server {
+func initWebsocket() *neffos.Server {
 	ws := websocket.New(websocket.DefaultGorillaUpgrader, websocket.Events{
 		websocket.OnNativeMessage: func(nsConn *websocket.NSConn, msg websocket.Message) error {
 			logger.Log.Info(fmt.Sprintf("Server got: %s from [%s]", msg.Body, nsConn.Conn.ID()))
