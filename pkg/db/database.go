@@ -6,7 +6,9 @@
 package db
 
 import (
+	"RuoYi-Go/pkg/config"
 	"database/sql"
+	"fmt"
 	"gorm.io/driver/mysql"
 	"gorm.io/driver/postgres"
 	"gorm.io/driver/sqlite"
@@ -16,9 +18,6 @@ import (
 )
 
 type DatabaseStruct struct {
-	Dsn          string
-	DatabaseType string
-
 	db    *gorm.DB
 	sqlDB *sql.DB
 
@@ -29,13 +28,18 @@ func (ds *DatabaseStruct) OpenSqlite() error {
 	var err error = nil
 	var dialector gorm.Dialector = nil
 
-	switch ds.DatabaseType {
-	case "postgres":
-		dialector = postgres.Open(ds.Dsn)
+	dsn := fmt.Sprintf("%s://%s:%s@%s:%d/%s?sslmode=disable&TimeZone=Asia/Shanghai",
+		config.Conf.Database.DBtype, config.Conf.Database.User, config.Conf.Database.Password, config.Conf.Database.Host,
+		config.Conf.Database.Port, config.Conf.Database.DBName)
+
+	switch config.Conf.Database.DBtype {
+	case "postgresql":
+		dialector = postgres.Open(dsn)
 	case "sqlite":
-		dialector = sqlite.Open(ds.Dsn)
+		dsn = "./test.db"
+		dialector = sqlite.Open(dsn)
 	default:
-		dialector = mysql.Open(ds.Dsn)
+		dialector = mysql.Open(dsn)
 	}
 	ds.db, err = gorm.Open(dialector, &gorm.Config{})
 	if err != nil {

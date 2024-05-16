@@ -41,11 +41,7 @@ func main() {
 	}
 
 	// 创建DatabaseStruct实例
-	dsn := fmt.Sprintf("postgresql://%s:%s@%s:%d/%s?sslmode=disable&TimeZone=Asia/Shanghai", conf.Database.User, conf.Database.Password, conf.Database.Host, conf.Database.Port, conf.Database.DBName)
-	sqlService := &db.DatabaseStruct{
-		DatabaseType: conf.Database.DBtype,
-		Dsn:          dsn, // SQLite 数据库文件路径
-	}
+	sqlService := &db.DatabaseStruct{}
 	sqlService.OpenSqlite()
 
 	app := iris.New()
@@ -72,6 +68,7 @@ func main() {
 			logger.Close()
 		},
 
+		// 关闭 sqlService
 		func() {
 			err = sqlService.CloseSqlite()
 			if err != nil {

@@ -6,10 +6,10 @@
 package tests
 
 import (
+	"RuoYi-Go/pkg/db"
 	"fmt"
 	"gorm.io/gorm"
 	"testing"
-	"RuoYi-Go/pkg/db"
 )
 
 // 定义模型（示例为User模型）
@@ -22,10 +22,7 @@ type User struct {
 func TestSqlite(t *testing.T) {
 
 	// 创建sqliteStruct实例
-	sqliteService := &db.DatabaseStruct{
-		DatabaseType: "sqlite",
-		Dsn:          "./test.db", // SQLite 数据库文件路径
-	}
+	sqliteService := &db.DatabaseStruct{}
 
 	// 打开数据库并执行自动迁移（假设User结构体是你的模型）
 	err := sqliteService.OpenSqlite()

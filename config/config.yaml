@@ -1,4 +1,9 @@
-# config.yaml 示例
+# Copyright (c) [2024] K. All rights reserved.
+# Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+# Author: K.
+# Email: hot_kun@hotmail.com or BusinessCallKun@gmail.com
+# File: config.yaml
+
 debug: true # 设置是否开启调试模式
 language: "zh-CN" # 应用默认语言
 
@@ -6,7 +11,7 @@ server:
   port: 8080 # 服务器监听端口
 
 database:
-  dbtype: "postgres"
+  dbtype: "postgresql"
   host: "172.16.10.215" # 数据库地址
   port: 5432 # 数据库端口
   user: "postgres" # 数据库用户名
