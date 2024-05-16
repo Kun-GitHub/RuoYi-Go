@@ -3,7 +3,7 @@
 // Author: K.
 // Email: hot_kun@hotmail.com or BusinessCallKun@gmail.com
 
-package db
+package rydb
 
 import (
 	"RuoYi-Go/pkg/config"

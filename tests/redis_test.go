@@ -14,7 +14,7 @@ import (
 
 func TestRedis(t *testing.T) {
 	// 创建redisStruct实例
-	redisService := &redis.RedisStruct{
+	redisService := &ryredis.RedisStruct{
 		Options: &redis.Options{
 			Addr:     "localhost:6379",
 			Password: "", // no password set

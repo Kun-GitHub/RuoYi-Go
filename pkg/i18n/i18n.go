@@ -3,7 +3,7 @@
 // Author: K.
 // Email: hot_kun@hotmail.com or BusinessCallKun@gmail.com
 
-package i18n
+package ryi18n
 
 import (
 	"github.com/nicksnyder/go-i18n/v2/i18n"

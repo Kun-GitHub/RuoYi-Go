@@ -8,7 +8,7 @@ package main
 import (
 	"RuoYi-Go/internal/server"
 	"RuoYi-Go/internal/shutdown"
-	ws "RuoYi-Go/internal/websocket"
+	"RuoYi-Go/internal/websocket"
 	"RuoYi-Go/pkg/config"
 	"RuoYi-Go/pkg/db"
 	"RuoYi-Go/pkg/i18n"
@@ -36,21 +36,21 @@ func main() {
 	}
 
 	// 初始化国际化
-	_, err = i18n.GetLocalizer(conf.Language) // 假设配置中指定了Language
+	_, err = ryi18n.GetLocalizer(conf.Language) // 假设配置中指定了Language
 	if err != nil {
 		log.Error("Failed to get localizer", zap.Error(err))
 	}
 
 	// 创建DatabaseStruct实例
-	sqlService := &db.DatabaseStruct{}
+	sqlService := &rydb.DatabaseStruct{}
 	sqlService.OpenSqlite()
 
 	app := iris.New()
 
-	server.InitServer(app)
-	server.StartServer()
-	ws.InitWebSocket(app)
-	ws.StartWebSocket()
+	ryserver.InitServer(app)
+	ryserver.StartServer()
+	rywebsocket.InitWebSocket(app)
+	rywebsocket.StartWebSocket()
 
 	app.Run(iris.Addr(fmt.Sprintf(":%d", conf.Server.Port)))
 

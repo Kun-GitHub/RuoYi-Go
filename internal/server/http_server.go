@@ -1,4 +1,4 @@
-package server
+package ryserver
 
 import "github.com/kataras/iris/v12"
 
