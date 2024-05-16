@@ -6,15 +6,15 @@
 package tests
 
 import (
+	"RuoYi-Go/pkg/redis"
 	"fmt"
 	"github.com/go-redis/redis/v8"
 	"testing"
-	"RuoYi-Go/pkg/cache"
 )
 
 func TestRedis(t *testing.T) {
 	// 创建redisStruct实例
-	redisService := &cache.RedisStruct{
+	redisService := &redis.RedisStruct{
 		Options: &redis.Options{
 			Addr:     "localhost:6379",
 			Password: "", // no password set

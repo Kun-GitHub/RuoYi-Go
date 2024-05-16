@@ -9,6 +9,7 @@ import (
 	"RuoYi-Go/pkg/config"
 	"database/sql"
 	"fmt"
+	"github.com/coocood/freecache"
 	"gorm.io/driver/mysql"
 	"gorm.io/driver/postgres"
 	"gorm.io/driver/sqlite"
@@ -20,6 +21,7 @@ import (
 type DatabaseStruct struct {
 	db    *gorm.DB
 	sqlDB *sql.DB
+	cache *freecache.Cache
 
 	mu sync.Mutex
 }
@@ -69,12 +71,20 @@ func (ds *DatabaseStruct) OpenSqlite() error {
 	//	log.Fatalf("Failed to apply migrations: %v", err)
 	//}
 
+	//设置缓存大小
+	cacheSize := 100 * 1024 * 1024 // 100MB缓存大小
+	ds.cache = freecache.NewCache(cacheSize)
+
 	return err
 }
 
 func (ds *DatabaseStruct) CloseSqlite() error {
 	ds.mu.Lock()
 	defer ds.mu.Unlock()
+
+	if ds.cache != nil {
+		ds.cache.Clear()
+	}
 
 	if ds.sqlDB != nil {
 		if err := ds.sqlDB.Close(); err == nil {
@@ -114,6 +124,15 @@ func (ds *DatabaseStruct) Find(tableName string, ids []string, structEntity any)
 
 	if ds.db != nil {
 		if ids != nil && len(ids) != 0 {
+			//// 尝试从缓存中获取
+			//userBytes, err := cache.Get([]byte(fmt.Sprintf("user:%d", id)))
+			//if err == nil {
+			//	// 缓存命中
+			//	var user User
+			//	json.Unmarshal(userBytes, &user)
+			//	return &user, nil
+			//}
+
 			return ds.db.Table(tableName).Where("id IN ?", ids).Find(structEntity).Error
 		} else {
 			return ds.db.Table(tableName).Find(structEntity).Error

@@ -13,12 +13,13 @@ import (
 	"RuoYi-Go/pkg/db"
 	"RuoYi-Go/pkg/i18n"
 	"RuoYi-Go/pkg/logger"
+
+	"context"
 	"fmt"
-	"github.com/kataras/iris/v12"
 	"go.uber.org/zap"
 	"time"
 
-	"context"
+	"github.com/kataras/iris/v12"
 )
 
 func main() {
