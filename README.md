@@ -92,10 +92,75 @@
 <td>Google开源的一个分布式缓存和缓存填充系统<br>
 主要用于大型系统的缓存共享</td>
 </tr>
+<tr>
+<td rowspan="4">日志记录</td>
+<td><a href="https://github.com/rs/zerolog">zerolog</a></td>
+<td></td>
+<td>高性能的结构化日志库，专为JSON输出优化，支持零分配日志记录<br>
+适合微服务和云原生应用</td>
+</tr>
+<tr>
+<td><a href="https://github.com/uber-go/zap">Zap</a></td>
+<td>✅</td>
+<td>高性能、结构化的日志库，特别强调速度和效率</td>
+</tr>
+<tr>
+<td><a href="https://github.com/sirupsen/logrus">Logrus</a></td>
+<td></td>
+<td>以其易用性和灵活性著称</td>
+</tr>
+<tr>
+<td><a href="https://github.com/cihub/seelog">seelog</a></td>
+<td></td>
+<td>支持复杂的过滤规则、多级日志处理管道和多种输出目标</td>
+</tr>
+<tr>
+<td rowspan="2">依赖注入</td>
+<td><a href="https://github.com/google/wire">wire</a></td>
+<td></td>
+<td>由Google开源的依赖注入工具，它通过代码生成的方式，在编译时期完成依赖注入</td>
+</tr>
+<tr>
+<td><a href="https://github.com/uber-go/dig">dig</a></td>
+<td></td>
+<td>提供了高性能和可读性，支持构造函数注入、函数参数注入和结构体字段注入</td>
+</tr>
 </tbody>
 </table>
 
-### 5. 项目目录（持续在对齐项目，在补充）
+### 5. 数据库（后面再考虑要不要支持多几个数据库）
+<table>
+<thead>
+<tr>
+<th>ORM框架</th>
+<th>数据库</th>
+<th>是否采用</th>
+<th>备注</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td rowspan="3">gorm</td>
+<td><a href="https://www.postgresql.org">PostgreSQL</a></td>
+<td>✅</td>
+<td>主要是想用这个</td>
+</tr>
+<tr>
+<td><a href="https://www.mysql.com/">Mysql</a></td>
+<td></td>
+<td>不用说的，很赞</td>
+</tr>
+<tr>
+<td><a href="https://www.sqlite.org/">Sqlite</a></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+
+[RuoYi 数据库脚本](https://github.com/yangzongzhuan/RuoYi/blob/master/sql/ry_20240112.sql)
+
+### 6. 项目目录（持续在对齐项目，在补充）
 ```项目结构
 RuoYi-Go/
 |-- build/
@@ -117,8 +182,12 @@ RuoYi-Go/
 |-- go.sum            // Go模块依赖哈希
 ```
 
-### 6. 编写环境
+### 7. 编写环境
 [JetBrains Fleet](https://www.jetbrains.com/fleet) （目前还是免费用，类似微软的VS Code，个人刚用这个Fleet，不喜勿喷）
+PS:发现暂不支持安装插件
 
-### 7. 最后
+[DBeaver Community](https://dbeaver.io/) （SQL客户端和数据库管理工具）
+
+
+### 8. 最后
 目前项目还是一个人写，边工作边写，主要是下班后写，所以可能会慢一些哈，如果不介意的话，点个 Start 持续跟踪，谢谢啦
