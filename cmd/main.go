@@ -10,6 +10,7 @@ import (
 	"RuoYi-Go/internal/shutdown"
 	ws "RuoYi-Go/internal/websocket"
 	"RuoYi-Go/pkg/config"
+	"RuoYi-Go/pkg/db"
 	"RuoYi-Go/pkg/i18n"
 	"RuoYi-Go/pkg/logger"
 	"fmt"
@@ -39,6 +40,14 @@ func main() {
 		log.Error("Failed to get localizer", zap.Error(err))
 	}
 
+	// 创建DatabaseStruct实例
+	dsn := fmt.Sprintf("postgresql://%s:%s@%s:%d/%s?sslmode=disable&TimeZone=Asia/Shanghai", conf.Database.User, conf.Database.Password, conf.Database.Host, conf.Database.Port, conf.Database.DBName)
+	sqlService := &db.DatabaseStruct{
+		DatabaseType: conf.Database.DBtype,
+		Dsn:          dsn, // SQLite 数据库文件路径
+	}
+	sqlService.OpenSqlite()
+
 	app := iris.New()
 
 	server.InitServer(app)
@@ -61,6 +70,13 @@ func main() {
 		// 关闭 logger
 		func() {
 			logger.Close()
+		},
+
+		func() {
+			err = sqlService.CloseSqlite()
+			if err != nil {
+				log.Error("Failed to close the database connection:", zap.Error(err))
+			}
 		},
 	)
 }

@@ -102,7 +102,8 @@
 <tr>
 <td><a href="https://github.com/uber-go/zap">Zap</a></td>
 <td>✅</td>
-<td>高性能、结构化的日志库，特别强调速度和效率</td>
+<td>高性能、结构化的日志库，特别强调速度和效率<br>
+项目配合用了lumberjack，实现日志文件的自动切割和管理功能</td>
 </tr>
 <tr>
 <td><a href="https://github.com/sirupsen/logrus">Logrus</a></td>
