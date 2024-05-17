@@ -3,15 +3,18 @@
 ### 1. 关于我
 [个人介绍](https://github.com/Kun-GitHub)
 
-#
+<br>
+
 ### 2. 介绍
 后端用Go写的RuoYi权限管理系统 (功能正在持续实现)
 
-#
+<br>
+
 ### 3. 前端
 [RuoYi-Vue3 官方前端Vue3版](https://github.com/Kun-GitHub/RuoYi-Vue3)
 
-#
+<br>
+
 ### 4. Go后端技术栈（持续在对齐项目，在补充）
 <table>
 <thead>
@@ -132,7 +135,8 @@
 </tbody>
 </table>
 
-#
+<br>
+
 ### 5. 数据库（后面再考虑要不要支持多几个数据库）
 <table>
 <thead>
@@ -165,7 +169,8 @@
 
 [RuoYi 数据库脚本](https://github.com/yangzongzhuan/RuoYi/blob/master/sql/ry_20240112.sql)
 
-#
+<br>
+
 ### 6. 项目目录（持续在对齐项目，在补充）
 ```项目结构
 RuoYi-Go/
@@ -187,13 +192,22 @@ RuoYi-Go/
 |-- go.mod            // Go模块依赖管理
 |-- go.sum            // Go模块依赖哈希
 ```
-#
+<br>
+
 ### 7. 环境
 [JetBrains Fleet](https://www.jetbrains.com/fleet) （目前还是免费用，类似微软的VS Code，个人刚用这个Fleet，不喜勿喷）
 PS:发现暂不支持安装插件
 
 [DBeaver Community](https://dbeaver.io/) （SQL客户端和数据库管理工具）
 
-#
-### 8. 最后
-目前项目还是一个人写，边工作边写，主要是下班后写，所以可能会慢一些哈，如果不介意的话，点个 Start 持续跟踪，谢谢啦
+<br>
+
+### 8. 致谢
+致谢[RuoYi](https://github.com/yangzongzhuan/RuoYi)  
+致谢以上项目使用到的开源库，不分先后哈  
+致谢以上开发用到的工具
+
+<br>
+
+### 9. 最后
+目前项目还是一个人写，边工作边写，主要是下班后写，所以可能会慢一些哈，如果不介意的话，点个 Start 持续关注，谢谢啦
