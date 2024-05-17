@@ -132,6 +132,12 @@
 <td></td>
 <td>提供了高性能和可读性，支持构造函数注入、函数参数注入和结构体字段注入</td>
 </tr>
+<tr>
+<td>Redis</td>
+<td><a href="https://github.com/redis/go-redis">go-redis/redis</a></td>
+<td>✅</td>
+<td></td>
+</tr>
 </tbody>
 </table>
 
