@@ -13,12 +13,14 @@ import (
 	"RuoYi-Go/pkg/db"
 	"RuoYi-Go/pkg/i18n"
 	"RuoYi-Go/pkg/logger"
+	"RuoYi-Go/pkg/redis"
 
 	"context"
 	"fmt"
 	"go.uber.org/zap"
 	"time"
 
+	"github.com/go-redis/redis/v8"
 	"github.com/kataras/iris/v12"
 )
 
@@ -45,9 +47,19 @@ func main() {
 	sqlService := &rydb.DatabaseStruct{}
 	sqlService.OpenSqlite()
 
+	// 创建redisStruct实例
+	redisService := &ryredis.RedisStruct{
+		Options: &redis.Options{
+			Addr:     fmt.Sprintf("%s:%d", conf.Redis.Host, conf.Redis.Port),
+			Password: conf.Redis.Password, // no password set
+			DB:       conf.Redis.DB,       // use default DB
+		},
+	}
+	redisService.NewClient()
+
 	app := iris.New()
 
-	ryserver.InitServer(app)
+	ryserver.InitServer(app, redisService)
 	ryserver.StartServer()
 	rywebsocket.InitWebSocket(app)
 	rywebsocket.StartWebSocket()
@@ -74,6 +86,14 @@ func main() {
 			err = sqlService.CloseSqlite()
 			if err != nil {
 				log.Error("Failed to close the database connection:", zap.Error(err))
+			}
+		},
+
+		func() {
+			// 完成操作后，关闭Redis连接
+			closeErr := redisService.Close()
+			if closeErr != nil {
+				log.Error("Failed to close Redis connection:", zap.Error(closeErr))
 			}
 		},
 	)

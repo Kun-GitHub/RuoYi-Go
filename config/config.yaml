@@ -19,3 +19,9 @@ database:
   dbname: "" # 数据库名称
 
 # 根据需要添加更多配置项
+redis:
+  host: "172.16.10.215"
+  port: 6379
+  password: ""
+  db: 0
+  max_idle_conns: 10

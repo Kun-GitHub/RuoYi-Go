@@ -15,7 +15,7 @@ var store = base64Captcha.DefaultMemStore
 func GenerateCaptcha() (string, string, string, error) {
 	//设置验证码的配置
 	driverString := base64Captcha.NewDriverString(80, 240, 2, base64Captcha.OptionShowSlimeLine,
-		6, base64Captcha.TxtNumbers+base64Captcha.TxtAlphabet, nil, nil, nil)
+		4, base64Captcha.TxtNumbers+base64Captcha.TxtAlphabet, nil, nil, nil)
 
 	//生成base64图片
 	c := base64Captcha.NewCaptcha(driverString, store)

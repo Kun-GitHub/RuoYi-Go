@@ -3,11 +3,11 @@
 // Author: K.
 // Email: hot_kun@hotmail.com or BusinessCallKun@gmail.com
 
-package common
+package response
 
 type Response struct {
 	Code    int         `json:"code"`
-	Message string      `json:"message"`
+	Message string      `json:"msg"`
 	Data    interface{} `json:"data,omitempty"` // 使用omitempty确保没有数据时此字段不会出现在JSON中
 }
 

@@ -10,7 +10,7 @@ type AppConfig struct {
 	Language string         `mapstructure:"language"` // 应用语言
 	Server   ServerConfig   `mapstructure:"server"`   // 服务器配置
 	Database DatabaseConfig `mapstructure:"database"` // 数据库配置
-	// 其他配置项...
+	Redis    RedisConfig    `mapstructure:"redis"`    // redis配置
 }
 
 // ServerConfig 和 DatabaseConfig 也是结构体，分别定义服务器和数据库的相关配置
@@ -25,4 +25,11 @@ type DatabaseConfig struct {
 	Password string `mapstructure:"password"`
 	DBName   string `mapstructure:"dbname"`
 	DBtype   string `mapstructure:"dbtype"`
+}
+
+type RedisConfig struct {
+	Host     string `mapstructure:"host"`
+	Port     int    `mapstructure:"port"`
+	DB       int    `mapstructure:"db"`
+	Password string `mapstructure:"password"`
 }
