@@ -20,8 +20,8 @@ import (
 	"go.uber.org/zap"
 	"time"
 
-	"github.com/go-redis/redis/v8"
 	"github.com/kataras/iris/v12"
+	"github.com/redis/go-redis/v9"
 )
 
 func main() {
@@ -45,7 +45,10 @@ func main() {
 
 	// 创建DatabaseStruct实例
 	sqlService := &rydb.DatabaseStruct{}
-	sqlService.OpenSqlite()
+	err = sqlService.OpenSqlite()
+	if err != nil {
+		log.Error("failed to initialize database,", zap.Error(err))
+	}
 
 	// 创建redisStruct实例
 	redisService := &ryredis.RedisStruct{

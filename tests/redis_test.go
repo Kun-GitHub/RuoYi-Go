@@ -8,8 +8,9 @@ package tests
 import (
 	"RuoYi-Go/pkg/redis"
 	"fmt"
-	"github.com/go-redis/redis/v8"
 	"testing"
+
+	"github.com/redis/go-redis/v9"
 )
 
 func TestRedis(t *testing.T) {
