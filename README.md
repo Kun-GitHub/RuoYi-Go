@@ -138,6 +138,12 @@
 <td>✅</td>
 <td></td>
 </tr>
+<tr>
+<td>ORM 代码生成工具</td>
+<td><a href="https://github.com/go-gorm/gen">go-gorm/gen</a></td>
+<td>✅</td>
+<td>Friendly & Safer GORM powered by Code Generation</td>
+</tr>
 </tbody>
 </table>
 
