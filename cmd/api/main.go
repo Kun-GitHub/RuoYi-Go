@@ -81,7 +81,7 @@ func main() {
 	shutdown.NewHook().Close(
 		// 关闭 logger
 		func() {
-			logger.Close()
+			log.Close()
 		},
 
 		// 关闭 sqlService

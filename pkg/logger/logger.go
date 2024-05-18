@@ -6,6 +6,7 @@
 package logger
 
 import (
+	"fmt"
 	"gopkg.in/natefinch/lumberjack.v2"
 	"os"
 
@@ -13,10 +14,14 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
-var Log *zap.Logger
+type Logger struct {
+	log *zap.Logger
+}
+
+var Log *Logger
 
 // InitializeLogger 初始化zap日志实例，支持按日期和大小滚动日志文件
-func InitializeLogger(debug bool) (*zap.Logger, error) {
+func InitializeLogger(debug bool) (*Logger, error) {
 	// lumberjack配置
 	lumberjackLogger := &lumberjack.Logger{
 		Filename:   "./logs/app.log", // 日志文件路径
@@ -45,18 +50,38 @@ func InitializeLogger(debug bool) (*zap.Logger, error) {
 	)
 
 	// 根据debug标志创建logger实例
+	var l *zap.Logger
 	if debug {
-		Log = zap.New(core, zap.Development(), zap.AddCaller(), zap.AddStacktrace(zap.ErrorLevel))
+		l = zap.New(core, zap.Development(), zap.AddCaller(), zap.AddStacktrace(zap.ErrorLevel))
 	} else {
-		Log = zap.New(core, zap.AddCaller())
+		l = zap.New(core, zap.AddCaller())
 	}
 
+	Log = &Logger{
+		log: l,
+	}
 	return Log, nil
 }
 
 // Close 关闭zap.Logger实例
-func Close() {
-	if Log != nil {
-		_ = Log.Sync()
+func (this *Logger) Close() {
+	if this != nil {
+		_ = this.log.Sync()
+	}
+}
+
+// Info logs a message at InfoLevel. The message includes any fields passed
+// at the log site, as well as any fields accumulated on the logger.
+func (this *Logger) Info(format string, a ...any) {
+	if this != nil {
+		this.log.Info(fmt.Sprintf(format, a...))
+	}
+}
+
+// Error logs a message at ErrorLevel. The message includes any fields passed
+// at the log site, as well as any fields accumulated on the logger.
+func (this *Logger) Error(msg string, fields ...zap.Field) {
+	if this != nil {
+		this.log.Error(msg, fields...)
 	}
 }

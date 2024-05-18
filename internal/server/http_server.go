@@ -39,6 +39,7 @@ func StartServer() {
 			return
 		}
 
+		//logger.Log.Info("验证码: %s", a)
 		redisService.Set(fmt.Sprintf("captcha:%d", id), a, time.Minute*5)
 
 		user := response.CaptchaImage{

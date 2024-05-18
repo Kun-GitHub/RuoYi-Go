@@ -41,12 +41,12 @@ func initWebsocket() *neffos.Server {
 	})
 
 	ws.OnConnect = func(c *websocket.Conn) error {
-		logger.Log.Info(fmt.Sprintf("[%s] Connected to server!", c.ID()))
+		logger.Log.Info("[%s] Connected to server!", c.ID())
 		return nil
 	}
 
 	ws.OnDisconnect = func(c *websocket.Conn) {
-		logger.Log.Info(fmt.Sprintf("[%s] Disconnected from server", c.ID()))
+		logger.Log.Info("[%s] Disconnected from server", c.ID())
 	}
 
 	ws.OnUpgradeError = func(err error) {
