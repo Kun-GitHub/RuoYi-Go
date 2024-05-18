@@ -20,6 +20,8 @@ type RedisStruct struct {
 	mu sync.Mutex
 }
 
+var Redis *RedisStruct
+
 func (rs *RedisStruct) NewClient() {
 	rs.rdb = redis.NewClient(rs.Options)
 }

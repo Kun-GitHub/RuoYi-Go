@@ -14,14 +14,8 @@ import (
 	"go.uber.org/zap"
 )
 
-var webSocket *iris.Application
-
-func InitWebSocket(w *iris.Application) {
-	webSocket = w
-}
-
-func StartWebSocket() {
-	webSocket.Get("/ws", websocket.Handler(initWebsocket()))
+func StartWebSocket(ws *iris.Application) {
+	ws.Get("/ws", websocket.Handler(initWebsocket()))
 }
 
 // InitConfig 函数中使用viper读取配置文件并映射到AppConfig结构体

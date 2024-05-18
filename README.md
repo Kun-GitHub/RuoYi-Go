@@ -206,17 +206,21 @@ RuoYi-Go/
 ```
 <br>
 
-### 7. 环境
+### 7. 环境(工具)
 [JetBrains Fleet](https://www.jetbrains.com/fleet) （目前还是免费用，类似微软的VS Code，个人刚用这个Fleet，不喜勿喷）
 PS:发现暂不支持安装插件
 
 [DBeaver Community](https://dbeaver.io/) （SQL客户端和数据库管理工具）
 
+[Another Redis Desktop Manager](https://github.com/qishibo/AnotherRedisDesktopManager) （Redis 客户端）
+
 <br>
 
 ### 8. 致谢
-致谢[RuoYi](https://github.com/yangzongzhuan/RuoYi)  
-致谢以上项目使用到的开源库，不分先后哈  
+致谢 [RuoYi](https://github.com/yangzongzhuan/RuoYi)  
+
+致谢以上项目使用到的开源库，不分先后哈   
+
 致谢以上开发用到的工具
 
 <br>
