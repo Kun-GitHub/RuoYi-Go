@@ -4,6 +4,7 @@ go 1.22.2
 
 require (
 	github.com/coocood/freecache v1.2.4
+	github.com/golang-jwt/jwt/v5 v5.2.1
 	github.com/kataras/iris/v12 v12.2.11
 	github.com/kataras/neffos v0.0.24-0.20240408172741-99c879ba0ede
 	github.com/mojocn/base64Captcha v1.3.6
@@ -19,6 +20,7 @@ require (
 	gorm.io/driver/sqlite v1.5.5
 	gorm.io/gen v0.3.26
 	gorm.io/gorm v1.25.10
+	gorm.io/plugin/dbresolver v1.5.1
 )
 
 require (
@@ -103,5 +105,4 @@ require (
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gorm.io/datatypes v1.2.0 // indirect
 	gorm.io/hints v1.1.2 // indirect
-	gorm.io/plugin/dbresolver v1.5.1 // indirect
 )

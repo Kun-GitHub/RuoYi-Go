@@ -26,6 +26,9 @@ func Login(ctx iris.Context) {
 	}
 
 	if v != "" && captcha.VerifyCaptcha(l.Uuid, l.Code) {
+
+		//query.Use().SysUser.Table()
+
 		ctx.WriteString("Hello, Iris!")
 	} else {
 		ctx.JSON(response.Error(iris.StatusInternalServerError, "验证码错误"))
