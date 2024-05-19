@@ -61,6 +61,7 @@ func main() {
 	ryserver.StartServer(app)
 	rywebsocket.StartWebSocket(app)
 
+	log.Info("start server on:%d", conf.Server.Port)
 	app.Run(iris.Addr(fmt.Sprintf(":%d", conf.Server.Port)))
 
 	iris.RegisterOnInterrupt(func() {
