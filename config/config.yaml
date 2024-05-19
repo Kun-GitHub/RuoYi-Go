@@ -12,7 +12,8 @@ server:
 
 database:
   dbtype: "postgresql"
-  host: "172.16.10.215" # 数据库地址
+#  host: "172.16.10.215" # 数据库地址
+  host: "192.168.3.63" # 数据库地址
   port: 5432 # 数据库端口
   user: "postgres" # 数据库用户名
   password: "postgresql.123456" # 数据库密码

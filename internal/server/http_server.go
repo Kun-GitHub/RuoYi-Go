@@ -6,6 +6,11 @@ import (
 )
 
 func StartServer(s *iris.Application) {
+	// 定义路由
+	s.Get("/", func(ctx iris.Context) {
+		ctx.WriteString("")
+	})
+
 	s.Get("/captchaImage", handler.CaptchaImage)
 	s.Post("/login", handler.Login)
 }

@@ -2,11 +2,14 @@ package handler
 
 import (
 	"RuoYi-Go/internal/common"
+	"RuoYi-Go/internal/model"
 	"RuoYi-Go/internal/response"
-	"RuoYi-Go/pkg/captcha"
+	rydb "RuoYi-Go/pkg/db"
+	ryjwt "RuoYi-Go/pkg/jwt"
 	ryredis "RuoYi-Go/pkg/redis"
 	"fmt"
 	"github.com/kataras/iris/v12"
+	"strings"
 )
 
 func Login(ctx iris.Context) {
@@ -26,11 +29,30 @@ func Login(ctx iris.Context) {
 		return
 	}
 
-	if v != "" && captcha.VerifyCaptcha(l.Uuid, l.Code) {
+	if v != "" && strings.EqualFold(v, l.Code) {
+		sysUser := &model.SysUser{}
 
-		//query.Use().SysUser.Table()
+		if err := rydb.DB.FindColumns(model.TableNameSysUser, sysUser, "user_name = ? and status = '0'", l.Username); err != nil {
+			ctx.JSON(response.Error(iris.StatusInternalServerError, "用户名或密码错误"))
+			return
+		}
+		if sysUser.UserID == 0 || sysUser.Password != l.Password {
+			ctx.JSON(response.Error(iris.StatusInternalServerError, "账号或密码错误"))
+			return
+		}
 
-		ctx.WriteString("Hello, Iris!")
+		token, error := ryjwt.Sign("user_id", fmt.Sprintf("%d", sysUser.UserID), 72)
+		if error != nil {
+			ctx.JSON(response.Error(iris.StatusInternalServerError, "生成token失败"))
+		} else {
+			user := loginSuccess{
+				Code:    200,
+				Token:   token,
+				Message: "操作成功",
+			}
+			// 使用 ctx.JSON 自动将user序列化为JSON并写入响应体
+			ctx.JSON(user)
+		}
 	} else {
 		ctx.JSON(response.Error(iris.StatusInternalServerError, "验证码错误"))
 		return
@@ -42,4 +64,10 @@ type loginStruct struct {
 	Password string `json:"password"`
 	Code     string `json:"code"`
 	Uuid     string `json:"uuid"`
+}
+
+type loginSuccess struct {
+	Code    int    `json:"code"`
+	Message string `json:"msg"`
+	Token   string `json:"token"`
 }

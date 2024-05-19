@@ -26,6 +26,8 @@ type DatabaseStruct struct {
 	mu sync.Mutex
 }
 
+var DB *DatabaseStruct
+
 func (ds *DatabaseStruct) OpenSqlite() error {
 	var err error = nil
 	var dialector gorm.Dialector = nil
@@ -134,6 +136,29 @@ func (ds *DatabaseStruct) Find(tableName string, ids []string, structEntity any)
 			//}
 
 			return ds.db.Table(tableName).Where("id IN ?", ids).Find(structEntity).Error
+		} else {
+			return ds.db.Table(tableName).Find(structEntity).Error
+		}
+	}
+	return nil
+}
+
+func (ds *DatabaseStruct) FindColumns(tableName string, structEntity any, query interface{}, args ...interface{}) error {
+	ds.mu.Lock()
+	defer ds.mu.Unlock()
+
+	if ds.db != nil {
+		if query != nil && len(args) != 0 {
+			//// 尝试从缓存中获取
+			//userBytes, err := cache.Get([]byte(fmt.Sprintf("user:%d", id)))
+			//if err == nil {
+			//	// 缓存命中
+			//	var user User
+			//	json.Unmarshal(userBytes, &user)
+			//	return &user, nil
+			//}
+
+			return ds.db.Table(tableName).Where(query, args...).Find(structEntity).Error
 		} else {
 			return ds.db.Table(tableName).Find(structEntity).Error
 		}

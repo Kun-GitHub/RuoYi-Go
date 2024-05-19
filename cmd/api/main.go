@@ -41,8 +41,8 @@ func main() {
 	ryi18n.GetLocalizer(conf.Language) // 假设配置中指定了Language
 
 	// 创建DatabaseStruct实例
-	sqlService := &rydb.DatabaseStruct{}
-	err = sqlService.OpenSqlite()
+	rydb.DB = &rydb.DatabaseStruct{}
+	err = rydb.DB.OpenSqlite()
 	if err != nil {
 		log.Error("failed to initialize database,", zap.Error(err))
 	}
@@ -81,7 +81,7 @@ func main() {
 
 		// 关闭 sqlService
 		func() {
-			err = sqlService.CloseSqlite()
+			err = rydb.DB.CloseSqlite()
 			if err != nil {
 				log.Error("Failed to close the database connection:", zap.Error(err))
 			}
