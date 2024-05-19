@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"RuoYi-Go/internal/common"
 	"RuoYi-Go/internal/response"
 	"RuoYi-Go/pkg/captcha"
 	ryredis "RuoYi-Go/pkg/redis"
@@ -19,7 +20,7 @@ func Login(ctx iris.Context) {
 		//return
 	}
 
-	v, error := ryredis.Redis.Get(fmt.Sprintf("captcha:%d", l.Uuid))
+	v, error := ryredis.Redis.Get(fmt.Sprintf("%s:%d", common.CAPTCHA, l.Uuid))
 	if error != nil || v == "" {
 		ctx.JSON(response.Error(iris.StatusInternalServerError, "验证码错误或已失效"))
 		return

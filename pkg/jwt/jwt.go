@@ -1,6 +1,7 @@
 package ryjwt
 
 import (
+	ryredis "RuoYi-Go/pkg/redis"
 	"fmt"
 	"github.com/golang-jwt/jwt/v5"
 	"time"
@@ -26,15 +27,18 @@ func Sign(k, v string, exp int64) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
 	// 使用密钥签名令牌
-	return token.SignedString(signingKey)
+	tokenStr, err := token.SignedString(signingKey)
+
+	ryredis.Redis.Set(tokenStr, true, time.Duration(exp)*time.Hour)
+	return tokenStr, err
 }
 
-func Valid(k, tokenString string) (string, error) {
+func Valid(k, tokenStr string) (string, error) {
 	// 定义签名密钥，需要与生成Token时使用的密钥一致
 	signingKey := []byte(key)
 
 	// 解析token
-	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+	token, err := jwt.Parse(tokenStr, func(token *jwt.Token) (interface{}, error) {
 		// 检查签名方法是否正确
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
@@ -46,7 +50,12 @@ func Valid(k, tokenString string) (string, error) {
 	}
 
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+		v, err := ryredis.Redis.Get(tokenStr)
+		if err != nil || v == "" {
+			return "", fmt.Errorf("token失效")
+		}
+
 		return claims[k].(string), nil
 	}
-	return "", nil
+	return "", fmt.Errorf("token失效")
 }
