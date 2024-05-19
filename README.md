@@ -144,6 +144,17 @@
 <td>✅</td>
 <td>Friendly & Safer GORM powered by Code Generation</td>
 </tr>
+<tr>
+<td rowspan="2">JWT</td>
+<td><a href="https://github.com/golang-jwt/jwt">jwt</a></td>
+<td>✅</td>
+<td><a href="https://github.com/dgrijalva/jwt-go">jwt-go</a> 衍生版</td>
+</tr>
+<tr>
+<td><a href="https://github.com/lestrrat-go/jwx">jwx</a></td>
+<td></td>
+<td>实现各种 JWx（JWA/JWE/JWK/JWS/JWT，也称为 JOSE）技术的 Go 模块</td>
+</tr>
 </tbody>
 </table>
 
