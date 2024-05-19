@@ -28,7 +28,7 @@ func CaptchaImage(ctx iris.Context) {
 	ryredis.Redis.Set(fmt.Sprintf("%s:%d", common.CAPTCHA, id), a, time.Minute*5)
 
 	user := captchaImage{
-		Code:    200,
+		Code:    response.SUCCESS,
 		Uuid:    id,
 		Img:     b64s[strings.Index(b64s, ",")+1:],
 		Message: "操作成功",

@@ -5,6 +5,10 @@
 
 package response
 
+import "fmt"
+
+const SUCCESS = 200
+
 type Response struct {
 	Code    int         `json:"code"`
 	Message string      `json:"msg"`
@@ -12,9 +16,13 @@ type Response struct {
 }
 
 func Success(data interface{}) Response {
-	return Response{Code: 0, Message: "success", Data: data}
+	return Response{Code: SUCCESS, Message: "success", Data: data}
 }
 
 func Error(code int, message string) Response {
 	return Response{Code: code, Message: message}
+}
+
+func ErrorFormat(code int, format string, a ...any) Response {
+	return Response{Code: code, Message: fmt.Sprintf(format, a...)}
 }

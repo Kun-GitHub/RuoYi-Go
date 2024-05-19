@@ -16,11 +16,8 @@ func Login(ctx iris.Context) {
 	var l loginStruct
 	// Attempt to read and bind the JSON request body to the 'user' variable
 	if err := ctx.ReadJSON(&l); err != nil {
-		ctx.JSON(response.Error(iris.StatusBadRequest, fmt.Sprintf("Invalid JSON, error:%s", err.Error())))
+		ctx.JSON(response.ErrorFormat(iris.StatusBadRequest, "Invalid JSON, error:%s", err.Error()))
 		return
-
-		//ctx.StopWithError(iris.StatusBadRequest, err)
-		//return
 	}
 
 	v, error := ryredis.Redis.Get(fmt.Sprintf("%s:%d", common.CAPTCHA, l.Uuid))
@@ -46,7 +43,7 @@ func Login(ctx iris.Context) {
 			ctx.JSON(response.Error(iris.StatusInternalServerError, "生成token失败"))
 		} else {
 			user := loginSuccess{
-				Code:    200,
+				Code:    response.SUCCESS,
 				Token:   token,
 				Message: "操作成功",
 			}
