@@ -7,6 +7,8 @@ import (
 	rydb "RuoYi-Go/pkg/db"
 	ryjwt "RuoYi-Go/pkg/jwt"
 	ryredis "RuoYi-Go/pkg/redis"
+	"crypto/md5"
+	"encoding/hex"
 	"fmt"
 	"github.com/kataras/iris/v12"
 	"strings"
@@ -29,11 +31,12 @@ func Login(ctx iris.Context) {
 	if v != "" && strings.EqualFold(v, l.Code) {
 		sysUser := &model.SysUser{}
 
-		if err := rydb.DB.FindColumns(model.TableNameSysUser, sysUser, "user_name = ? and status = '0'", l.Username); err != nil {
+		if err := rydb.DB.FindColumns(model.TableNameSysUser, sysUser, "login_name = ? and status = '0'", l.Username); err != nil {
 			ctx.JSON(response.Error(iris.StatusInternalServerError, "用户名或密码错误"))
 			return
 		}
-		if sysUser.UserID == 0 || sysUser.Password != l.Password {
+
+		if sysUser.UserID == 0 || sysUser.Password != encryptPassword(sysUser.LoginName, l.Password, sysUser.Salt) {
 			ctx.JSON(response.Error(iris.StatusInternalServerError, "账号或密码错误"))
 			return
 		}
@@ -67,4 +70,19 @@ type loginSuccess struct {
 	Code    int    `json:"code"`
 	Message string `json:"msg"`
 	Token   string `json:"token"`
+}
+
+func encryptPassword(loginName, password, salt string) string {
+	// 结合loginName、password和salt
+	data := []byte(loginName + password + salt)
+
+	// 计算MD5哈希
+	hasher := md5.New()
+	hasher.Write(data)
+	md5Bytes := hasher.Sum(nil)
+
+	// 将哈希结果转换为十六进制字符串
+	md5Hex := hex.EncodeToString(md5Bytes)
+
+	return md5Hex
 }
