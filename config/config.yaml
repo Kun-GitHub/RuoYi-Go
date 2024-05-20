@@ -14,18 +14,19 @@ server:
     - "/login"
 
 database:
-  dbtype: "postgresql"
-  host: "172.16.10.215" # 数据库地址
+  dbtype: "mysql"
+  host: "gz-cdb-2y9mokdp.sql.tencentcdb.com" # 数据库地址
 #  host: "192.168.3.63" # 数据库地址
-  port: 5432 # 数据库端口
-  user: "postgres" # 数据库用户名
-  password: "postgresql.123456" # 数据库密码
-  dbname: "" # 数据库名称
+  port: 56614 # 数据库端口
+  user: "root" # 数据库用户名
+  password: "Mysql.123456" # 数据库密码
+  dbname: "ruoyi" # 数据库名称
 
 # 根据需要添加更多配置项
 redis:
-  host: "111.230.61.77"
+#  host: "111.230.61.77"
+  host: "192.168.3.63"
   port: 6379
-  password: ""
+  password: "Redis.123456"
   db: 0
   max_idle_conns: 10

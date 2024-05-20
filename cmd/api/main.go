@@ -55,7 +55,10 @@ func main() {
 			DB:       conf.Redis.DB,       // use default DB
 		},
 	}
-	ryredis.Redis.NewClient()
+	err = ryredis.Redis.NewClient()
+	if err != nil {
+		log.Error("failed to connect redis,", zap.Error(err))
+	}
 
 	app := iris.New()
 	ryserver.StartServer(app)

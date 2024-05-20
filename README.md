@@ -179,7 +179,7 @@
 </tr>
 <tr>
 <td><a href="https://www.mysql.com/">Mysql</a></td>
-<td></td>
+<td>✅</td>
 <td>不用说的，很赞</td>
 </tr>
 <tr>

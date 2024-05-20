@@ -22,8 +22,15 @@ type RedisStruct struct {
 
 var Redis *RedisStruct
 
-func (rs *RedisStruct) NewClient() {
+func (rs *RedisStruct) NewClient() error {
 	rs.rdb = redis.NewClient(rs.Options)
+
+	// 使用PING命令检查连接
+	_, err := rs.rdb.Ping(context.Background()).Result()
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 // Get Redis `GET key` command. It returns redis.Nil error when key does not exist.
