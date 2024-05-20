@@ -9,6 +9,9 @@ language: "zh-CN" # 应用默认语言
 
 server:
   port: 8080 # 服务器监听端口
+  notIntercept:
+    - "/captchaImage"
+    - "/login"
 
 database:
   dbtype: "postgresql"

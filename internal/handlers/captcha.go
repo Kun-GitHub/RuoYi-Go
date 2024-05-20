@@ -1,3 +1,8 @@
+// Copyright (c) [2024] K. All rights reserved.
+// Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+// Author: K.
+// Email: hot_kun@hotmail.com or BusinessCallKun@gmail.com
+
 package handler
 
 import (
@@ -13,7 +18,7 @@ import (
 
 func CaptchaImage(ctx iris.Context) {
 	// 获取当前时间并格式化为HTTP日期格式
-	currentTime := time.Now().UTC().Format(time.RFC1123)
+	currentTime := time.Now().UTC().Format(time.DateTime)
 	ctx.Header("Date", currentTime) // 设置Date头
 	ctx.Header("Cache-Control", "no-store, no-cache, must-revalidate")
 	ctx.Header("Cache-Control", "post-check=0, pre-check=0")

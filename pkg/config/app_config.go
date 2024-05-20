@@ -15,7 +15,8 @@ type AppConfig struct {
 
 // ServerConfig 和 DatabaseConfig 也是结构体，分别定义服务器和数据库的相关配置
 type ServerConfig struct {
-	Port int `mapstructure:"port"`
+	Port         int      `mapstructure:"port"`
+	NotIntercept []string `mapstructure:"notIntercept"`
 }
 
 type DatabaseConfig struct {

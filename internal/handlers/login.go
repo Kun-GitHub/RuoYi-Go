@@ -1,3 +1,8 @@
+// Copyright (c) [2024] K. All rights reserved.
+// Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+// Author: K.
+// Email: hot_kun@hotmail.com or BusinessCallKun@gmail.com
+
 package handler
 
 import (
@@ -41,7 +46,7 @@ func Login(ctx iris.Context) {
 			return
 		}
 
-		token, error := ryjwt.Sign("user_id", fmt.Sprintf("%d", sysUser.UserID), 72)
+		token, error := ryjwt.Sign(common.USER_ID, fmt.Sprintf("%d", sysUser.UserID), 72)
 		if error != nil {
 			ctx.JSON(response.Error(iris.StatusInternalServerError, "生成token失败"))
 		} else {
@@ -85,4 +90,10 @@ func encryptPassword(loginName, password, salt string) string {
 	md5Hex := hex.EncodeToString(md5Bytes)
 
 	return md5Hex
+}
+
+func GetInfo(ctx iris.Context) {
+	v := ctx.Value(common.USER_ID)
+
+	fmt.Println(v)
 }
