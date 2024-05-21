@@ -17,5 +17,6 @@
 
 # Project runtime log
 logs/*.log
+config/config.yaml
 
 .vscode/
