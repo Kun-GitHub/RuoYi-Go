@@ -7,7 +7,7 @@ package handler
 
 import (
 	"RuoYi-Go/internal/common"
-	"RuoYi-Go/internal/response"
+	"RuoYi-Go/internal/responses"
 	"RuoYi-Go/pkg/captcha"
 	"RuoYi-Go/pkg/redis"
 	"fmt"
@@ -27,13 +27,13 @@ func CaptchaImage(ctx iris.Context) {
 
 	id, b64s, a, err := captcha.GenerateCaptcha()
 	if err != nil {
-		ctx.JSON(response.Error(iris.StatusInternalServerError, "生成验证码失败"))
+		ctx.JSON(responses.Error(iris.StatusInternalServerError, "生成验证码失败"))
 		return
 	}
 	ryredis.Redis.Set(fmt.Sprintf("%s:%d", common.CAPTCHA, id), a, time.Minute*5)
 
 	user := captchaImage{
-		Code:    response.SUCCESS,
+		Code:    responses.SUCCESS,
 		Uuid:    id,
 		Img:     b64s[strings.Index(b64s, ",")+1:],
 		Message: "操作成功",

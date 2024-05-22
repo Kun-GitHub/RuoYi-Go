@@ -3,11 +3,11 @@
 // Author: K.
 // Email: hot_kun@hotmail.com or BusinessCallKun@gmail.com
 
-package middleware
+package middlewares
 
 import (
 	"RuoYi-Go/internal/common"
-	"RuoYi-Go/internal/response"
+	"RuoYi-Go/internal/responses"
 	"RuoYi-Go/pkg/config"
 	"RuoYi-Go/pkg/jwt"
 	"github.com/kataras/iris/v12"
@@ -27,12 +27,12 @@ func MiddlewareHandler(ctx iris.Context) {
 
 	authorization := ctx.GetHeader(common.AUTHORIZATION)
 	if authorization == "" {
-		ctx.JSON(response.Error(iris.StatusUnauthorized, "请重新登录"))
+		ctx.JSON(responses.Error(iris.StatusUnauthorized, "请重新登录"))
 		return
 	}
 	v, err := ryjwt.Valid(common.USER_ID, authorization[strings.Index(authorization, " ")+1:])
 	if err != nil || v == "" {
-		ctx.JSON(response.Error(iris.StatusUnauthorized, "请重新登录"))
+		ctx.JSON(responses.Error(iris.StatusUnauthorized, "请重新登录"))
 		return
 	}
 	ctx.Values().Set(common.USER_ID, v)

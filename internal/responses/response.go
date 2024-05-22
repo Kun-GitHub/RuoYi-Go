@@ -3,7 +3,7 @@
 // Author: K.
 // Email: hot_kun@hotmail.com or BusinessCallKun@gmail.com
 
-package response
+package responses
 
 import "fmt"
 

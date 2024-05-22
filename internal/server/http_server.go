@@ -7,12 +7,12 @@ package ryserver
 
 import (
 	"RuoYi-Go/internal/handlers"
-	"RuoYi-Go/internal/middleware"
+	"RuoYi-Go/internal/middlewares"
 	"github.com/kataras/iris/v12"
 )
 
 func StartServer(s *iris.Application) {
-	s.Use(middleware.MiddlewareHandler)
+	s.Use(middlewares.MiddlewareHandler)
 
 	s.Get("/captchaImage", handler.CaptchaImage)
 	s.Get("/getInfo", handler.GetInfo)

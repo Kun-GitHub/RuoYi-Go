@@ -21,7 +21,7 @@ import (
 type DatabaseStruct struct {
 	db    *gorm.DB
 	sqlDB *sql.DB
-	cache *freecache.Cache
+	Cache *freecache.Cache
 
 	mu sync.Mutex
 }
@@ -76,7 +76,7 @@ func (ds *DatabaseStruct) OpenSqlite() error {
 
 	//设置缓存大小
 	cacheSize := 100 * 1024 * 1024 // 100MB缓存大小
-	ds.cache = freecache.NewCache(cacheSize)
+	ds.Cache = freecache.NewCache(cacheSize)
 
 	return err
 }
@@ -85,8 +85,8 @@ func (ds *DatabaseStruct) CloseSqlite() error {
 	ds.mu.Lock()
 	defer ds.mu.Unlock()
 
-	if ds.cache != nil {
-		ds.cache.Clear()
+	if ds.Cache != nil {
+		ds.Cache.Clear()
 	}
 
 	if ds.sqlDB != nil {
