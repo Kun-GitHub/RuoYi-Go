@@ -150,18 +150,9 @@ func (ds *DatabaseStruct) FindColumns(tableName string, structEntity any, query 
 
 	if ds.db != nil {
 		if query != nil && len(args) != 0 {
-			//// 尝试从缓存中获取
-			//userBytes, err := cache.Get([]byte(fmt.Sprintf("user:%d", id)))
-			//if err == nil {
-			//	// 缓存命中
-			//	var user User
-			//	json.Unmarshal(userBytes, &user)
-			//	return &user, nil
-			//}
-
 			return ds.db.Table(tableName).Where(query, args...).Find(structEntity).Error
 		} else {
-			return ds.db.Table(tableName).Find(structEntity).Error
+			return fmt.Errorf("没有传查询参数")
 		}
 	}
 	return nil

@@ -8,3 +8,4 @@ package common
 const CAPTCHA = "captcha.id"
 const AUTHORIZATION = "Authorization"
 const USER_ID = "user_id"
+const TOKEN = "token"

@@ -17,6 +17,7 @@ import (
 	"fmt"
 	"github.com/kataras/iris/v12"
 	"strings"
+	"time"
 )
 
 func Login(ctx iris.Context) {
@@ -32,11 +33,12 @@ func Login(ctx iris.Context) {
 		ctx.JSON(responses.Error(iris.StatusInternalServerError, "验证码错误或已失效"))
 		return
 	}
+	ryredis.Redis.Del(fmt.Sprintf("%s:%d", common.CAPTCHA, l.Uuid))
 
 	if v != "" && strings.EqualFold(v, l.Code) {
 		sysUser := &models.SysUser{}
 
-		if err := services.FindColumns(l.Username, sysUser); err != nil {
+		if err := services.QueryUserByLoginName(l.Username, sysUser); err != nil {
 			ctx.JSON(responses.Error(iris.StatusInternalServerError, "用户名或密码错误"))
 			return
 		}
@@ -50,6 +52,8 @@ func Login(ctx iris.Context) {
 		if error != nil {
 			ctx.JSON(responses.Error(iris.StatusInternalServerError, "生成token失败"))
 		} else {
+			ryredis.Redis.Set(fmt.Sprintf("%s:%s", common.TOKEN, token), token, 72*time.Hour)
+
 			user := loginSuccess{
 				Code:    responses.SUCCESS,
 				Token:   token,

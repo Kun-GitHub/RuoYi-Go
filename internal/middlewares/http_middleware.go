@@ -10,6 +10,7 @@ import (
 	"RuoYi-Go/internal/responses"
 	"RuoYi-Go/pkg/config"
 	"RuoYi-Go/pkg/jwt"
+	ryredis "RuoYi-Go/pkg/redis"
 	"github.com/kataras/iris/v12"
 	"regexp"
 	"strings"
@@ -35,6 +36,12 @@ func MiddlewareHandler(ctx iris.Context) {
 		ctx.JSON(responses.Error(iris.StatusUnauthorized, "请重新登录"))
 		return
 	}
+	v, err = ryredis.Redis.Get(common.TOKEN)
+	if err != nil || v == "" {
+		ctx.JSON(responses.Error(iris.StatusUnauthorized, "请重新登录"))
+		return
+	}
+
 	ctx.Values().Set(common.USER_ID, v)
 	// 继续执行下一个中间件或处理函数
 	ctx.Next()

@@ -48,6 +48,13 @@ func (rs *RedisStruct) Set(key string, value interface{}, expiration time.Durati
 	return rs.rdb.Set(context.Background(), key, value, expiration).Err()
 }
 
+func (rs *RedisStruct) Del(key string) error {
+	rs.mu.Lock()
+	defer rs.mu.Unlock()
+
+	return rs.rdb.Del(context.Background(), key).Err()
+}
+
 func (rs *RedisStruct) Close() error {
 	rs.mu.Lock()
 	defer rs.mu.Unlock()
