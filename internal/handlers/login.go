@@ -20,6 +20,19 @@ import (
 	"time"
 )
 
+type loginStruct struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
+	Code     string `json:"code"`
+	Uuid     string `json:"uuid"`
+}
+
+type loginSuccess struct {
+	Code    int    `json:"code"`
+	Message string `json:"msg"`
+	Token   string `json:"token"`
+}
+
 func Login(ctx iris.Context) {
 	var l loginStruct
 	// Attempt to read and bind the JSON request body to the 'user' variable
@@ -52,7 +65,7 @@ func Login(ctx iris.Context) {
 		if error != nil {
 			ctx.JSON(responses.Error(iris.StatusInternalServerError, "生成token失败"))
 		} else {
-			ryredis.Redis.Set(fmt.Sprintf("%s:%s", common.TOKEN, token), token, 72*time.Hour)
+			ryredis.Redis.Set(fmt.Sprintf("%s:%s", common.TOKEN, token), sysUser.UserID, 72*time.Hour)
 
 			user := loginSuccess{
 				Code:    responses.SUCCESS,
@@ -66,19 +79,6 @@ func Login(ctx iris.Context) {
 		ctx.JSON(responses.Error(iris.StatusInternalServerError, "验证码错误"))
 		return
 	}
-}
-
-type loginStruct struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
-	Code     string `json:"code"`
-	Uuid     string `json:"uuid"`
-}
-
-type loginSuccess struct {
-	Code    int    `json:"code"`
-	Message string `json:"msg"`
-	Token   string `json:"token"`
 }
 
 func encryptPassword(loginName, password, salt string) string {
@@ -96,8 +96,32 @@ func encryptPassword(loginName, password, salt string) string {
 	return md5Hex
 }
 
-func GetInfo(ctx iris.Context) {
-	v := ctx.Value(common.USER_ID)
+type getInfoSuccess struct {
+	Code        int             `json:"code"`
+	Message     string          `json:"msg"`
+	Permissions []string        `json:"permissions"`
+	User        *models.SysUser `json:"user"`
+	Roles       []string        `json:"roles"`
+}
 
-	fmt.Println(v)
+func GetInfo(ctx iris.Context) {
+	//loginUser := middlewares.GetLoginUser()
+	//if loginUser == nil {
+	//	ctx.JSON(responses.Error(iris.StatusUnauthorized, "请重新登录"))
+	//	return
+	//}
+	id := ctx.Value(common.USER_ID)
+	loginUser := &models.SysUser{}
+	if err := services.QueryUserByUserId(fmt.Sprintf("%v", id), loginUser); err != nil {
+		ctx.JSON(responses.Error(iris.StatusUnauthorized, "请重新登录"))
+		return
+	}
+
+	user := getInfoSuccess{
+		Code:    responses.SUCCESS,
+		User:    loginUser,
+		Message: "操作成功",
+	}
+	// 使用 ctx.JSON 自动将user序列化为JSON并写入响应体
+	ctx.JSON(user)
 }

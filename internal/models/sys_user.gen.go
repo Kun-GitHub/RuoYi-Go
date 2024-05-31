@@ -33,6 +33,9 @@ type SysUser struct {
 	UpdateBy      string    `gorm:"column:update_by;comment:更新者" json:"update_by"`                  // 更新者
 	UpdateTime    time.Time `gorm:"column:update_time;comment:更新时间" json:"update_time"`             // 更新时间
 	Remark        string    `gorm:"column:remark;comment:备注" json:"remark"`                         // 备注
+	//Dept          SysDept   `json:"dept"`                         //
+	//Roles         []SysRole `json:"roles"`                         //
+	//Admin         bool      `json:"admin"`                         //
 }
 
 // TableName SysUser's table name

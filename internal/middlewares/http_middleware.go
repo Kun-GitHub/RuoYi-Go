@@ -7,14 +7,19 @@ package middlewares
 
 import (
 	"RuoYi-Go/internal/common"
+	"RuoYi-Go/internal/models"
 	"RuoYi-Go/internal/responses"
+	"RuoYi-Go/internal/services"
 	"RuoYi-Go/pkg/config"
 	"RuoYi-Go/pkg/jwt"
 	ryredis "RuoYi-Go/pkg/redis"
+	"fmt"
 	"github.com/kataras/iris/v12"
 	"regexp"
 	"strings"
 )
+
+var loginUser *models.SysUser
 
 func MiddlewareHandler(ctx iris.Context) {
 	uri := ctx.Request().RequestURI
@@ -31,18 +36,24 @@ func MiddlewareHandler(ctx iris.Context) {
 		ctx.JSON(responses.Error(iris.StatusUnauthorized, "请重新登录"))
 		return
 	}
-	v, err := ryjwt.Valid(common.USER_ID, authorization[strings.Index(authorization, " ")+1:])
-	if err != nil || v == "" {
+	token := authorization[strings.Index(authorization, " ")+1:]
+
+	jwt_id, err := ryjwt.Valid(common.USER_ID, token)
+	if err != nil || jwt_id == "" {
 		ctx.JSON(responses.Error(iris.StatusUnauthorized, "请重新登录"))
 		return
 	}
-	v, err = ryredis.Redis.Get(common.TOKEN)
-	if err != nil || v == "" {
+	redis_id, err := ryredis.Redis.Get(fmt.Sprintf("%s:%s", common.TOKEN, token))
+	if err != nil || redis_id == "" || jwt_id != redis_id {
 		ctx.JSON(responses.Error(iris.StatusUnauthorized, "请重新登录"))
 		return
 	}
 
-	ctx.Values().Set(common.USER_ID, v)
+	ctx.Values().Set(common.USER_ID, jwt_id)
+	if err := services.QueryUserByUserId(jwt_id, loginUser); err != nil {
+		ctx.JSON(responses.Error(iris.StatusUnauthorized, "请重新登录"))
+		return
+	}
 	// 继续执行下一个中间件或处理函数
 	ctx.Next()
 }
@@ -55,4 +66,8 @@ func skipInterceptor(path string, notInterceptList []string) bool {
 		}
 	}
 	return false
+}
+
+func GetLoginUser() *models.SysUser {
+	return loginUser
 }
