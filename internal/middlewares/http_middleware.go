@@ -19,7 +19,7 @@ import (
 	"strings"
 )
 
-var loginUser *models.SysUser
+var sysUser = &models.SysUser{}
 
 func MiddlewareHandler(ctx iris.Context) {
 	uri := ctx.Request().RequestURI
@@ -50,7 +50,7 @@ func MiddlewareHandler(ctx iris.Context) {
 	}
 
 	ctx.Values().Set(common.USER_ID, jwt_id)
-	if err := services.QueryUserByUserId(jwt_id, loginUser); err != nil {
+	if err := services.QueryUserByUserId(jwt_id, sysUser); err != nil {
 		ctx.JSON(responses.Error(iris.StatusUnauthorized, "请重新登录"))
 		return
 	}
@@ -69,5 +69,5 @@ func skipInterceptor(path string, notInterceptList []string) bool {
 }
 
 func GetLoginUser() *models.SysUser {
-	return loginUser
+	return sysUser
 }

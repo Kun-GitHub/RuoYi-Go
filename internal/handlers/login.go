@@ -7,6 +7,7 @@ package handler
 
 import (
 	"RuoYi-Go/internal/common"
+	"RuoYi-Go/internal/middlewares"
 	"RuoYi-Go/internal/models"
 	"RuoYi-Go/internal/responses"
 	"RuoYi-Go/internal/services"
@@ -105,22 +106,24 @@ type getInfoSuccess struct {
 }
 
 func GetInfo(ctx iris.Context) {
-	//loginUser := middlewares.GetLoginUser()
-	//if loginUser == nil {
-	//	ctx.JSON(responses.Error(iris.StatusUnauthorized, "请重新登录"))
-	//	return
-	//}
-	id := ctx.Value(common.USER_ID)
-	loginUser := &models.SysUser{}
-	if err := services.QueryUserByUserId(fmt.Sprintf("%v", id), loginUser); err != nil {
+	loginUser := middlewares.GetLoginUser()
+	if loginUser == nil || loginUser.UserID == 0 {
 		ctx.JSON(responses.Error(iris.StatusUnauthorized, "请重新登录"))
 		return
 	}
 
+	var p []string
+	if loginUser.UserID == 1 {
+		p = append(p, "*:*:*")
+	} else {
+
+	}
+
 	user := getInfoSuccess{
-		Code:    responses.SUCCESS,
-		User:    loginUser,
-		Message: "操作成功",
+		Code:        responses.SUCCESS,
+		User:        loginUser,
+		Permissions: p,
+		Message:     "操作成功",
 	}
 	// 使用 ctx.JSON 自动将user序列化为JSON并写入响应体
 	ctx.JSON(user)
