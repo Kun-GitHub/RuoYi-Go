@@ -190,7 +190,7 @@
 </tbody>
 </table>
 
-[RuoYi 数据库脚本](https://github.com/yangzongzhuan/RuoYi/blob/master/sql/ry_20240112.sql)
+[RuoYi 数据库脚本](https://github.com/yangzongzhuan/RuoYi-Vue/blob/master/sql/ry_20240529.sql)
 
 <br>
 

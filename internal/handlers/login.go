@@ -11,12 +11,11 @@ import (
 	"RuoYi-Go/internal/models"
 	"RuoYi-Go/internal/responses"
 	"RuoYi-Go/internal/services"
-	ryjwt "RuoYi-Go/pkg/jwt"
-	ryredis "RuoYi-Go/pkg/redis"
-	"crypto/md5"
-	"encoding/hex"
+	"RuoYi-Go/pkg/jwt"
+	"RuoYi-Go/pkg/redis"
 	"fmt"
 	"github.com/kataras/iris/v12"
+	"golang.org/x/crypto/bcrypt"
 	"strings"
 	"time"
 )
@@ -52,12 +51,12 @@ func Login(ctx iris.Context) {
 	if v != "" && strings.EqualFold(v, l.Code) {
 		sysUser := &models.SysUser{}
 
-		if err := services.QueryUserByLoginName(l.Username, sysUser); err != nil {
+		if err := services.QueryUserByUserName(l.Username, sysUser); sysUser.UserID == 0 || err != nil {
 			ctx.JSON(responses.Error(iris.StatusInternalServerError, "用户名或密码错误"))
 			return
 		}
 
-		if sysUser.UserID == 0 || sysUser.Password != encryptPassword(sysUser.LoginName, l.Password, sysUser.Salt) {
+		if err := bcrypt.CompareHashAndPassword([]byte(sysUser.Password), []byte(l.Password)); err != nil {
 			ctx.JSON(responses.Error(iris.StatusInternalServerError, "账号或密码错误"))
 			return
 		}
@@ -80,21 +79,6 @@ func Login(ctx iris.Context) {
 		ctx.JSON(responses.Error(iris.StatusInternalServerError, "验证码错误"))
 		return
 	}
-}
-
-func encryptPassword(loginName, password, salt string) string {
-	// 结合loginName、password和salt
-	data := []byte(loginName + password + salt)
-
-	// 计算MD5哈希
-	hasher := md5.New()
-	hasher.Write(data)
-	md5Bytes := hasher.Sum(nil)
-
-	// 将哈希结果转换为十六进制字符串
-	md5Hex := hex.EncodeToString(md5Bytes)
-
-	return md5Hex
 }
 
 type getInfoSuccess struct {

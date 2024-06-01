@@ -16,6 +16,7 @@ func StartServer(s *iris.Application) {
 
 	s.Get("/captchaImage", handler.CaptchaImage)
 	s.Get("/getInfo", handler.GetInfo)
+	s.Get("/getRouters", handler.GetRouters)
 
 	s.Post("/login", handler.Login)
 	s.Post("/logout", handler.Login)
