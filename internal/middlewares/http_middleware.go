@@ -19,7 +19,12 @@ import (
 	"strings"
 )
 
-var sysUser = &models.SysUser{}
+type LoginUserStruct struct {
+	models.SysUser
+	Admin bool `json:"admin"`
+}
+
+var loginUser = &LoginUserStruct{}
 
 func MiddlewareHandler(ctx iris.Context) {
 	uri := ctx.Request().RequestURI
@@ -49,11 +54,18 @@ func MiddlewareHandler(ctx iris.Context) {
 		return
 	}
 
+	sysUser := &models.SysUser{}
 	ctx.Values().Set(common.USER_ID, jwt_id)
 	if err := services.QueryUserByUserId(jwt_id, sysUser); err != nil {
 		ctx.JSON(responses.Error(iris.StatusUnauthorized, "请重新登录"))
 		return
 	}
+
+	loginUser.SysUser = *sysUser
+	if sysUser.UserID == 1 {
+		loginUser.Admin = true
+	}
+
 	// 继续执行下一个中间件或处理函数
 	ctx.Next()
 }
@@ -68,6 +80,6 @@ func skipInterceptor(path string, notInterceptList []string) bool {
 	return false
 }
 
-func GetLoginUser() *models.SysUser {
-	return sysUser
+func GetLoginUser() *LoginUserStruct {
+	return loginUser
 }

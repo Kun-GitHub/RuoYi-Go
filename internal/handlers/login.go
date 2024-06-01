@@ -82,11 +82,11 @@ func Login(ctx iris.Context) {
 }
 
 type getInfoSuccess struct {
-	Code        int             `json:"code"`
-	Message     string          `json:"msg"`
-	Permissions []string        `json:"permissions"`
-	User        *models.SysUser `json:"user"`
-	Roles       []string        `json:"roles"`
+	Code        int                          `json:"code"`
+	Message     string                       `json:"msg"`
+	Permissions []string                     `json:"permissions"`
+	User        *middlewares.LoginUserStruct `json:"user"`
+	Roles       []string                     `json:"roles"`
 }
 
 func GetInfo(ctx iris.Context) {

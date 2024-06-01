@@ -167,3 +167,47 @@ func (ds *DatabaseStruct) Update(tableName string, id uint, structEntity any) er
 	}
 	return nil
 }
+
+func (ds *DatabaseStruct) Transactional(txFunc func(*gorm.DB) error) error {
+	tx := ds.db.Begin()
+	if tx.Error != nil {
+		return tx.Error
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+			panic(r)
+		}
+		if err := recover(); tx.Error != nil || err != nil {
+			tx.Rollback()
+			return
+		}
+		tx.Commit()
+	}()
+	if err := txFunc(tx); err != nil {
+		tx.Rollback()
+		return err
+	}
+	return tx.Commit().Error
+}
+
+func (ds *DatabaseStruct) CustomQuery(query string, args []interface{}, processRow func(rows *sql.Rows) error) error {
+	var rows *sql.Rows
+	var err error
+	if rows, err = ds.db.Raw(query, args...).Rows(); err != nil {
+		return err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		if err := processRow(rows); err != nil {
+			return err
+		}
+	}
+
+	if err := rows.Err(); err != nil {
+		return err
+	}
+
+	return nil
+}
