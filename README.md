@@ -6,7 +6,8 @@
 <br>
 
 ### 2. 介绍
-后端用Go写的RuoYi权限管理系统 (功能正在持续实现)
+后端用Go写的RuoYi权限管理系统 (功能正在持续实现)  
+后端 [Gitee地址](https://gitee.com/Kun-GitHub/RuoYi-Go)
 
 <br>
 

@@ -9,3 +9,11 @@ const CAPTCHA = "captcha.id"
 const AUTHORIZATION = "Authorization"
 const USER_ID = "user_id"
 const TOKEN = "token"
+
+/** 菜单类型（菜单） */
+const TYPE_MENU = "C"
+const TYPE_DIR = "M"
+const NO_FRAME = 1
+const LAYOUT = "Layout"
+const INNER_LINK = "InnerLink"
+const PARENT_VIEW = "ParentView"

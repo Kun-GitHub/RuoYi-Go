@@ -7,15 +7,17 @@ package ryredis
 
 import (
 	"context"
+	"fmt"
 	"sync"
 	"time"
 
+	"RuoYi-Go/pkg/config"
 	"github.com/redis/go-redis/v9"
 )
 
 type RedisStruct struct {
 	rdb     *redis.Client
-	Options *redis.Options
+	options *redis.Options
 
 	mu sync.Mutex
 }
@@ -23,7 +25,12 @@ type RedisStruct struct {
 var Redis *RedisStruct
 
 func (rs *RedisStruct) NewClient() error {
-	rs.rdb = redis.NewClient(rs.Options)
+	rs.options = &redis.Options{
+		Addr:     fmt.Sprintf("%s:%d", config.Conf.Redis.Host, config.Conf.Redis.Port),
+		Password: config.Conf.Redis.Password, // no password set
+		DB:       config.Conf.Redis.DB,       // use default DB
+	}
+	rs.rdb = redis.NewClient(rs.options)
 
 	// 使用PING命令检查连接
 	_, err := rs.rdb.Ping(context.Background()).Result()

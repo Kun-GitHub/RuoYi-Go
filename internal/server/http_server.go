@@ -11,7 +11,11 @@ import (
 	"github.com/kataras/iris/v12"
 )
 
+var HttServer *iris.Application
+
 func StartServer(s *iris.Application) {
+	HttServer = s
+
 	s.Use(middlewares.MiddlewareHandler)
 
 	s.Get("/captchaImage", handler.CaptchaImage)

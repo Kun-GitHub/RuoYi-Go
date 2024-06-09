@@ -6,7 +6,7 @@
 package main
 
 import (
-	"RuoYi-Go/internal/server"
+	ryserver "RuoYi-Go/internal/server"
 	"RuoYi-Go/internal/shutdown"
 	"RuoYi-Go/internal/websocket"
 	"RuoYi-Go/pkg/config"
@@ -14,6 +14,7 @@ import (
 	"RuoYi-Go/pkg/i18n"
 	"RuoYi-Go/pkg/logger"
 	"RuoYi-Go/pkg/redis"
+	"os"
 
 	"context"
 	"fmt"
@@ -21,7 +22,6 @@ import (
 	"time"
 
 	"github.com/kataras/iris/v12"
-	"github.com/redis/go-redis/v9"
 )
 
 func main() {
@@ -45,19 +45,15 @@ func main() {
 	err = rydb.DB.OpenSqlite()
 	if err != nil {
 		log.Error("failed to initialize database,", zap.Error(err))
+		os.Exit(0)
 	}
 
 	// 创建redisStruct实例
-	ryredis.Redis = &ryredis.RedisStruct{
-		Options: &redis.Options{
-			Addr:     fmt.Sprintf("%s:%d", conf.Redis.Host, conf.Redis.Port),
-			Password: conf.Redis.Password, // no password set
-			DB:       conf.Redis.DB,       // use default DB
-		},
-	}
+	ryredis.Redis = &ryredis.RedisStruct{}
 	err = ryredis.Redis.NewClient()
 	if err != nil {
 		log.Error("failed to connect redis,", zap.Error(err))
+		os.Exit(0)
 	}
 
 	app := iris.New()

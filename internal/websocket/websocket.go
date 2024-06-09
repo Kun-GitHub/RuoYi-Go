@@ -14,7 +14,11 @@ import (
 	"go.uber.org/zap"
 )
 
+var WebSocket *iris.Application
+
 func StartWebSocket(ws *iris.Application) {
+	WebSocket = ws
+
 	ws.Get("/ws", websocket.Handler(initWebsocket()))
 }
 
