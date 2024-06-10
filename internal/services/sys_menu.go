@@ -13,8 +13,8 @@ import (
 
 type SysMenuStruct struct {
 	models.SysMenu
-	ParentName string          `gorm:"-" json:"parentName,omitempty"`
-	Children   []SysMenuStruct `gorm:"-" json:"children,omitempty"`
+	ParentName string           `gorm:"-" json:"parentName,omitempty"`
+	Children   []*SysMenuStruct `gorm:"-" json:"children,omitempty"`
 }
 
 func GetAllMenus() ([]*SysMenuStruct, error) {

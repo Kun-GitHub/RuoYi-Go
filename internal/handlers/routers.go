@@ -99,59 +99,59 @@ func buildMenuTree(menus []*services.SysMenuStruct) []*routerStruct {
 	return rootMenus
 }
 
-//func buildMenus(menus []services.SysMenuStruct) []*routerStruct {
+//func buildMenus(menus []*services.SysMenuStruct) []*routerStruct {
 //	var routers []*routerStruct
 //	for _, menu := range menus {
 //		router := &routerStruct{
-//			hidden:    strings.EqualFold(menu.Visible, "1"),
-//			name:      getRouteName(menu),
-//			path:      getRouterPath(menu),
-//			component: getComponent(menu),
-//			query:     menu.Query,
-//			meta: &MetaStruct{
-//				title:   menu.MenuName,
-//				icon:    menu.Icon,
-//				noCache: menu.IsCache == 1,
-//				link:    menu.Path,
+//			Hidden:    strings.EqualFold(menu.Visible, "1"),
+//			Name:      getRouteName(menu),
+//			Path:      getRouterPath(menu),
+//			Component: getComponent(menu),
+//			Query:     menu.Query,
+//			Meta: &MetaStruct{
+//				Title:   menu.MenuName,
+//				Icon:    menu.Icon,
+//				NoCache: menu.IsCache == 1,
+//				Link:    menu.Path,
 //			},
 //		}
 //
 //		children := menu.Children
 //		if len(children) > 0 && menu.MenuType == "TYPE_DIR" {
-//			router.alwaysShow = true
-//			router.redirect = "noRedirect"
-//			router.children = buildMenus(children)
+//			router.AlwaysShow = true
+//			router.Redirect = "noRedirect"
+//			router.Children = buildMenus(children)
 //		} else if menu.ParentID == 0 && isInnerLink(menu) {
-//			router.meta = &MetaStruct{title: menu.MenuName, icon: menu.Icon}
-//			router.path = "/"
+//			router.Meta = &MetaStruct{Title: menu.MenuName, Icon: menu.Icon}
+//			router.Path = "/"
 //			childrenList := make([]*routerStruct, 1)
 //			childrenList[0] = &routerStruct{
-//				path:      innerLinkReplaceEach(menu.Path),
-//				component: "INNER_LINK",
-//				name:      strings.Title(strings.Replace(menu.Path, "-", " ", -1)),
-//				meta: &MetaStruct{
-//					title: menu.MenuName,
-//					icon:  menu.Icon,
-//					link:  menu.Path,
+//				Path:      innerLinkReplaceEach(menu.Path),
+//				Component: "INNER_LINK",
+//				Name:      strings.Title(strings.Replace(menu.Path, "-", " ", -1)),
+//				Meta: &MetaStruct{
+//					Title: menu.MenuName,
+//					Icon:  menu.Icon,
+//					Link:  menu.Path,
 //				},
 //			}
-//			router.children = childrenList
+//			router.Children = childrenList
 //		} else if isMenuFrame(menu) {
-//			router.meta = nil
+//			router.Meta = nil
 //			childrenList := make([]*routerStruct, 1)
 //			childrenList[0] = &routerStruct{
-//				path:      menu.Path,
-//				component: menu.Component,
-//				name:      strings.Title(strings.Replace(menu.Path, "-", " ", -1)),
-//				meta: &MetaStruct{
-//					title:   menu.MenuName,
-//					icon:    menu.Icon,
-//					noCache: menu.IsCache == 1,
-//					link:    menu.Path,
+//				Path:      menu.Path,
+//				Component: menu.Component,
+//				Name:      strings.Title(strings.Replace(menu.Path, "-", " ", -1)),
+//				Meta: &MetaStruct{
+//					Title:   menu.MenuName,
+//					Icon:    menu.Icon,
+//					NoCache: menu.IsCache == 1,
+//					Link:    menu.Path,
 //				},
-//				query: menu.Query,
+//				Query: menu.Query,
 //			}
-//			router.children = childrenList
+//			router.Children = childrenList
 //		}
 //		routers = append(routers, router)
 //	}
