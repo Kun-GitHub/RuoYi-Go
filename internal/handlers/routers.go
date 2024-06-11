@@ -35,8 +35,12 @@ func GetRouters(ctx iris.Context) {
 		}
 	}
 
+	menuMap := make(map[int64]*routerStruct)
+	rootMenus := make([]*routerStruct, 0)
+	ids := make([]int64, 0)
+
 	// 使用 ctx.JSON 自动将user序列化为JSON并写入响应体
-	ctx.JSON(responses.Success(buildMenuTree(menus)))
+	ctx.JSON(responses.Success(buildMenuTree(menus, 0, menuMap, rootMenus, ids)))
 }
 
 type MetaStruct struct {
@@ -59,18 +63,29 @@ type routerStruct struct {
 }
 
 // BuildMenuTree builds the menu tree from a flat list of SysMenu.
-func buildMenuTree(menus []*services.SysMenuStruct) []*routerStruct {
-	menuMap := make(map[int64]*services.SysMenuStruct)
-	rootMenus := make([]*routerStruct, 0)
+func buildMenuTree(menus []*services.SysMenuStruct, index int, menuMap map[int64]*routerStruct, rootMenus []*routerStruct, ids []int64) []*routerStruct {
+	menu := menus[index]
+	if menu.ParentID == 0 {
+		router := &routerStruct{
+			Hidden:    menu.Visible == "1",
+			Name:      getRouteName(menu),
+			Path:      getRouterPath(menu),
+			Component: getComponent(menu),
+			Query:     menu.Query,
+			Meta: &MetaStruct{
+				Title:   menu.MenuName,
+				Icon:    menu.Icon,
+				NoCache: menu.IsCache == 1,
+				Link:    menu.Path,
+			},
+		}
 
-	// Fill the map with all menus
-	for _, menu := range menus {
-		menuMap[menu.MenuID] = menu
-	}
-
-	// Construct the tree
-	for _, menu := range menus {
-		if menu.ParentID == 0 {
+		rootMenus = append(rootMenus, router)
+		menuMap[menu.MenuID] = router
+		ids = append(ids, menu.MenuID)
+	} else {
+		parent, exists := menuMap[menu.ParentID]
+		if exists {
 			router := &routerStruct{
 				Hidden:    menu.Visible == "1",
 				Name:      getRouteName(menu),
@@ -84,18 +99,26 @@ func buildMenuTree(menus []*services.SysMenuStruct) []*routerStruct {
 					Link:    menu.Path,
 				},
 			}
-
-			rootMenus = append(rootMenus, router)
+			if parent.Children == nil {
+				parent.Children = make([]*routerStruct, 0)
+			}
+			router.Path = parent.Path + "/" + menu.Path
+			parent.Children = append(parent.Children, router)
+			rootMenus = append(rootMenus, parent)
+			menuMap[menu.MenuID] = router
 		} else {
-			parent, exists := menuMap[menu.ParentID]
-			if exists {
-				//parent.Children = append(parent.Children, menu)
-				// Concatenate the path with parent's path
-				menu.Path = parent.Path + "/" + menu.Path
+			id := ids[menu.MenuID]
+			if id != 0 {
+				//for rootMenus {
+				//
+				//}
 			}
 		}
 	}
 
+	if index < len(menus)-1 {
+		buildMenuTree(menus, index+1, menuMap, rootMenus, ids)
+	}
 	return rootMenus
 }
 
