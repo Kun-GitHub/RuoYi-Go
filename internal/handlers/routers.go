@@ -35,24 +35,20 @@ func GetRouters(ctx iris.Context) {
 		}
 	}
 
-	menuMap := make(map[int64]*routerStruct)
-	rootMenus := make([]*routerStruct, 0)
-	ids := make([]int64, 0)
-
 	// 使用 ctx.JSON 自动将user序列化为JSON并写入响应体
-	ctx.JSON(responses.Success(buildMenuTree(menus, 0, menuMap, rootMenus, ids)))
+	ctx.JSON(responses.Success(buildMenuTree(menus)))
 }
 
 type MetaStruct struct {
 	Title   string `json:"title,omitempty"`
 	Icon    string `json:"icon,omitempty"`
-	NoCache bool   `json:"noCache,omitempty"`
-	Link    string `json:"link,omitempty"`
+	NoCache bool   `json:"noCache"`
+	//Link    string `json:"link,omitempty"`
 }
 
 type routerStruct struct {
-	Hidden     bool            `json:"hidden,omitempty"`
-	AlwaysShow bool            `json:"alwaysShow,omitempty"`
+	Hidden     bool            `json:"hidden"`
+	AlwaysShow bool            `json:"alwaysShow"`
 	Name       string          `json:"name,omitempty"`
 	Path       string          `json:"path,omitempty"`
 	Component  string          `json:"component,omitempty"`
@@ -62,124 +58,67 @@ type routerStruct struct {
 	Children   []*routerStruct `json:"children,omitempty"`
 }
 
-// BuildMenuTree builds the menu tree from a flat list of SysMenu.
-func buildMenuTree(menus []*services.SysMenuStruct, index int, menuMap map[int64]*routerStruct, rootMenus []*routerStruct, ids []int64) []*routerStruct {
-	menu := menus[index]
-	if menu.ParentID == 0 {
-		router := &routerStruct{
-			Hidden:    menu.Visible == "1",
-			Name:      getRouteName(menu),
-			Path:      getRouterPath(menu),
-			Component: getComponent(menu),
-			Query:     menu.Query,
-			Meta: &MetaStruct{
-				Title:   menu.MenuName,
-				Icon:    menu.Icon,
-				NoCache: menu.IsCache == 1,
-				Link:    menu.Path,
-			},
-		}
+func buildMenuTree(menus []*services.SysMenuStruct) []*routerStruct {
+	menuMap := make(map[int64]*routerStruct)
+	rootMenus := make([]*routerStruct, 0)
 
-		rootMenus = append(rootMenus, router)
-		menuMap[menu.MenuID] = router
-		ids = append(ids, menu.MenuID)
-	} else {
-		parent, exists := menuMap[menu.ParentID]
-		if exists {
+	for _, menu := range menus {
+		if menu.ParentID == 0 {
 			router := &routerStruct{
 				Hidden:    menu.Visible == "1",
 				Name:      getRouteName(menu),
 				Path:      getRouterPath(menu),
 				Component: getComponent(menu),
-				Query:     menu.Query,
+				Redirect: func() string {
+					if menu.MenuType == "M" {
+						return "noRedirect"
+					}
+					return ""
+				}(),
+				AlwaysShow: func() bool {
+					if menu.MenuType == "M" {
+						return true
+					}
+					return false
+				}(),
+				Query: menu.Query,
 				Meta: &MetaStruct{
 					Title:   menu.MenuName,
 					Icon:    menu.Icon,
 					NoCache: menu.IsCache == 1,
-					Link:    menu.Path,
 				},
 			}
-			if parent.Children == nil {
-				parent.Children = make([]*routerStruct, 0)
-			}
-			router.Path = parent.Path + "/" + menu.Path
-			parent.Children = append(parent.Children, router)
-			rootMenus = append(rootMenus, parent)
+
 			menuMap[menu.MenuID] = router
+			rootMenus = append(rootMenus, router)
 		} else {
-			id := ids[menu.MenuID]
-			if id != 0 {
-				//for rootMenus {
-				//
-				//}
+			if parent, ok := menuMap[menu.ParentID]; ok {
+				router := &routerStruct{
+					Hidden:    menu.Visible == "1",
+					Name:      getRouteName(menu),
+					Path:      getRouterPath(menu),
+					Component: getComponent(menu),
+					Query:     menu.Query,
+					Meta: &MetaStruct{
+						Title:   menu.MenuName,
+						Icon:    menu.Icon,
+						NoCache: menu.IsCache == 1,
+					},
+				}
+
+				if parent.Children == nil {
+					parent.Children = make([]*routerStruct, 0)
+				}
+				parent.Children = append(parent.Children, router)
+				menuMap[menu.MenuID] = router
+			} else {
+
 			}
 		}
 	}
 
-	if index < len(menus)-1 {
-		buildMenuTree(menus, index+1, menuMap, rootMenus, ids)
-	}
 	return rootMenus
 }
-
-//func buildMenus(menus []*services.SysMenuStruct) []*routerStruct {
-//	var routers []*routerStruct
-//	for _, menu := range menus {
-//		router := &routerStruct{
-//			Hidden:    strings.EqualFold(menu.Visible, "1"),
-//			Name:      getRouteName(menu),
-//			Path:      getRouterPath(menu),
-//			Component: getComponent(menu),
-//			Query:     menu.Query,
-//			Meta: &MetaStruct{
-//				Title:   menu.MenuName,
-//				Icon:    menu.Icon,
-//				NoCache: menu.IsCache == 1,
-//				Link:    menu.Path,
-//			},
-//		}
-//
-//		children := menu.Children
-//		if len(children) > 0 && menu.MenuType == "TYPE_DIR" {
-//			router.AlwaysShow = true
-//			router.Redirect = "noRedirect"
-//			router.Children = buildMenus(children)
-//		} else if menu.ParentID == 0 && isInnerLink(menu) {
-//			router.Meta = &MetaStruct{Title: menu.MenuName, Icon: menu.Icon}
-//			router.Path = "/"
-//			childrenList := make([]*routerStruct, 1)
-//			childrenList[0] = &routerStruct{
-//				Path:      innerLinkReplaceEach(menu.Path),
-//				Component: "INNER_LINK",
-//				Name:      strings.Title(strings.Replace(menu.Path, "-", " ", -1)),
-//				Meta: &MetaStruct{
-//					Title: menu.MenuName,
-//					Icon:  menu.Icon,
-//					Link:  menu.Path,
-//				},
-//			}
-//			router.Children = childrenList
-//		} else if isMenuFrame(menu) {
-//			router.Meta = nil
-//			childrenList := make([]*routerStruct, 1)
-//			childrenList[0] = &routerStruct{
-//				Path:      menu.Path,
-//				Component: menu.Component,
-//				Name:      strings.Title(strings.Replace(menu.Path, "-", " ", -1)),
-//				Meta: &MetaStruct{
-//					Title:   menu.MenuName,
-//					Icon:    menu.Icon,
-//					NoCache: menu.IsCache == 1,
-//					Link:    menu.Path,
-//				},
-//				Query: menu.Query,
-//			}
-//			router.Children = childrenList
-//		}
-//		routers = append(routers, router)
-//	}
-//	return routers
-//}
 
 // 注意：以下辅助函数需要根据实际情况实现
 func getRouteName(menu *services.SysMenuStruct) string {
@@ -210,13 +149,13 @@ func getRouterPath(menu *services.SysMenuStruct) string {
 }
 
 func getComponent(menu *services.SysMenuStruct) string {
-	component := "LAYOUT"
+	component := "Layout"
 	if strings.TrimSpace(menu.Component) != "" && !isMenuFrame(menu) {
 		component = menu.Component
 	} else if strings.TrimSpace(menu.Component) == "" && menu.ParentID != 0 && isInnerLink(menu) {
-		component = "INNER_LINK"
+		component = "InnerLink"
 	} else if strings.TrimSpace(menu.Component) == "" && isParentView(menu) {
-		component = "PARENT_VIEW"
+		component = "ParentView"
 	}
 	return component
 }

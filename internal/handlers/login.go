@@ -12,9 +12,11 @@ import (
 	"RuoYi-Go/internal/responses"
 	"RuoYi-Go/internal/services"
 	"RuoYi-Go/pkg/jwt"
+	"RuoYi-Go/pkg/logger"
 	"RuoYi-Go/pkg/redis"
 	"fmt"
 	"github.com/kataras/iris/v12"
+	"go.uber.org/zap"
 	"golang.org/x/crypto/bcrypt"
 	"strings"
 	"time"
@@ -103,10 +105,24 @@ func GetInfo(ctx iris.Context) {
 
 	}
 
+	roles, err := services.GetUserRoles(loginUser.UserID)
+	if err != nil {
+		logger.Log.Error("getInfo error,", zap.Error(err))
+		ctx.JSON(responses.Error(iris.StatusInternalServerError, "获取用户角色失败"))
+		return
+	}
+	loginUser.Roles = roles
+
+	var roleNames []string
+	for _, role := range roles {
+		roleNames = append(roleNames, role.RoleKey)
+	}
+
 	user := getInfoSuccess{
 		Code:        responses.SUCCESS,
 		User:        loginUser,
 		Permissions: p,
+		Roles:       roleNames,
 		Message:     "操作成功",
 	}
 	// 使用 ctx.JSON 自动将user序列化为JSON并写入响应体

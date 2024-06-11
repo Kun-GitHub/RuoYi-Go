@@ -5,12 +5,26 @@
 
 package services
 
-func F() {
+import (
+	"RuoYi-Go/internal/models"
+	rydb "RuoYi-Go/pkg/db"
+	"gorm.io/gorm"
+)
 
-	//err := rydb.DB.FindColumns(models.TableNameSysUserRole, structEntity,
-	//	"login_name = ? and status = '0' and del_flag = '0'", loginname)
-	//if err != nil {
-	//	return err
-	//}
-
+func GetUserRoles(userId int64) ([]*models.SysRole, error) {
+	roles := make([]*models.SysRole, 0)
+	err := rydb.DB.Transactional(func(db *gorm.DB) error {
+		err := db.Table("sys_role sr").Select("sr.*").
+			Joins("LEFT JOIN sys_user_role sur ON sur.role_id = sr.role_id").
+			Where("sur.user_id = ?", userId).
+			Find(&roles).Error
+		if err != nil {
+			return err
+		}
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	return roles, nil
 }

@@ -21,7 +21,8 @@ import (
 
 type LoginUserStruct struct {
 	models.SysUser
-	Admin bool `json:"admin"`
+	Admin bool              `json:"admin"`
+	Roles []*models.SysRole `json:"roles"`
 }
 
 var loginUser = &LoginUserStruct{}
