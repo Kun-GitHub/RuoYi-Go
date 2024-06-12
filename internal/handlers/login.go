@@ -105,7 +105,7 @@ func GetInfo(ctx iris.Context) {
 
 	}
 
-	roles, err := services.GetUserRoles(loginUser.UserID)
+	roles, err := services.QueryRolesByUserId(loginUser.UserID)
 	if err != nil {
 		logger.Log.Error("getInfo error,", zap.Error(err))
 		ctx.JSON(responses.Error(iris.StatusInternalServerError, "获取用户角色失败"))

@@ -12,9 +12,12 @@ import (
 	"RuoYi-Go/internal/services"
 	"RuoYi-Go/pkg/config"
 	"RuoYi-Go/pkg/jwt"
+	"RuoYi-Go/pkg/logger"
 	ryredis "RuoYi-Go/pkg/redis"
 	"fmt"
 	"github.com/kataras/iris/v12"
+	"go.uber.org/zap"
+	"net/http"
 	"regexp"
 	"strings"
 )
@@ -42,7 +45,10 @@ func MiddlewareHandler(ctx iris.Context) {
 		ctx.JSON(responses.Error(iris.StatusUnauthorized, "请重新登录"))
 		return
 	}
-	token := authorization[strings.Index(authorization, " ")+1:]
+	token := authorization
+	if strings.Index(authorization, " ") > 0 {
+		token = authorization[strings.Index(authorization, " ")+1:]
+	}
 
 	jwt_id, err := ryjwt.Valid(common.USER_ID, token)
 	if err != nil || jwt_id == "" {
@@ -83,4 +89,37 @@ func skipInterceptor(path string, notInterceptList []string) bool {
 
 func GetLoginUser() *LoginUserStruct {
 	return loginUser
+}
+
+// 定义一个权限检查函数
+func hasPermission(ctx iris.Context, permission string) bool {
+	if loginUser == nil {
+		return false
+	} else if loginUser.Admin {
+		return true
+	}
+
+	menus, err := services.QueryMenusByUserId(loginUser.UserID)
+	if err != nil {
+		logger.Log.Error("getMenus error,", zap.Error(err))
+		return false
+	}
+	for _, menu := range menus {
+		if menu.Perms == permission {
+			return true
+		}
+	}
+	return false
+}
+
+// 定义一个权限检查的中间件
+func PermissionMiddleware(permission string) iris.Handler {
+	return func(ctx iris.Context) {
+		if !hasPermission(ctx, permission) {
+			ctx.StatusCode(http.StatusForbidden)
+			ctx.StopExecution()
+			return
+		}
+		ctx.Next()
+	}
 }

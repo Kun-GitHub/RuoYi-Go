@@ -11,10 +11,10 @@ import (
 	"github.com/kataras/iris/v12"
 )
 
-var HttServer *iris.Application
+//var HttServer *iris.Application
 
 func StartServer(s *iris.Application) {
-	HttServer = s
+	//HttServer = s
 
 	s.Use(middlewares.MiddlewareHandler)
 
@@ -24,4 +24,7 @@ func StartServer(s *iris.Application) {
 
 	s.Post("/login", handler.Login)
 	s.Post("/logout", handler.Login)
+
+	s.Get("/system/user/list", middlewares.PermissionMiddleware("system:user:list"), handler.Login)
+
 }

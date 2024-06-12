@@ -11,12 +11,12 @@ import (
 	"gorm.io/gorm"
 )
 
-func GetUserRoles(userId int64) ([]*models.SysRole, error) {
+func QueryRolesByUserId(userId int64) ([]*models.SysRole, error) {
 	roles := make([]*models.SysRole, 0)
 	err := rydb.DB.Transactional(func(db *gorm.DB) error {
 		err := db.Table("sys_role sr").Select("sr.*").
 			Joins("LEFT JOIN sys_user_role sur ON sur.role_id = sr.role_id").
-			Where("sur.user_id = ?", userId).
+			Where("sr.status = '0' and sur.user_id = ?", userId).
 			Find(&roles).Error
 		if err != nil {
 			return err

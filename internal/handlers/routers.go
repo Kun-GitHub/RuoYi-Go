@@ -27,7 +27,7 @@ func GetRouters(ctx iris.Context) {
 	var menus = make([]*services.SysMenuStruct, 0)
 	var err error
 	if loginUser.Admin {
-		menus, err = services.GetAllMenus()
+		menus, err = services.QueryAllMenus()
 		if err != nil {
 			logger.Log.Error("getRouters error,", zap.Error(err))
 			ctx.JSON(responses.Error(iris.StatusInternalServerError, "获取菜单失败"))
