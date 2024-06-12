@@ -70,13 +70,13 @@ func buildMenuTree(menus []*services.SysMenuStruct) []*routerStruct {
 				Path:      getRouterPath(menu),
 				Component: getComponent(menu),
 				Redirect: func() string {
-					if menu.MenuType == "M" {
+					if menu.MenuType == common.TYPE_DIR {
 						return "noRedirect"
 					}
 					return ""
 				}(),
 				AlwaysShow: func() bool {
-					if menu.MenuType == "M" {
+					if menu.MenuType == common.TYPE_DIR {
 						return true
 					}
 					return false
@@ -98,7 +98,19 @@ func buildMenuTree(menus []*services.SysMenuStruct) []*routerStruct {
 					Name:      getRouteName(menu),
 					Path:      getRouterPath(menu),
 					Component: getComponent(menu),
-					Query:     menu.Query,
+					Redirect: func() string {
+						if menu.MenuType == common.TYPE_DIR {
+							return "noRedirect"
+						}
+						return ""
+					}(),
+					AlwaysShow: func() bool {
+						if menu.MenuType == common.TYPE_DIR {
+							return true
+						}
+						return false
+					}(),
+					Query: menu.Query,
 					Meta: &MetaStruct{
 						Title:   menu.MenuName,
 						Icon:    menu.Icon,
@@ -139,7 +151,7 @@ func getRouterPath(menu *services.SysMenuStruct) string {
 	}
 
 	// Not an outer link and is a top-level directory (type is directory)
-	if menu.ParentID == 0 && menu.MenuType == "TYPE_DIR" && menu.IsFrame == common.NO_FRAME {
+	if menu.ParentID == 0 && menu.MenuType == common.TYPE_DIR && menu.IsFrame == common.NO_FRAME {
 		routerPath = "/" + menu.Path
 	} else if isMenuFrame(menu) {
 		routerPath = "/"
