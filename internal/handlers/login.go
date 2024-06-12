@@ -128,3 +128,20 @@ func GetInfo(ctx iris.Context) {
 	// 使用 ctx.JSON 自动将user序列化为JSON并写入响应体
 	ctx.JSON(user)
 }
+
+func Logout(ctx iris.Context) {
+	token := ctx.Values().Get(common.TOKEN)
+	if token != nil {
+		ryredis.Redis.Del(fmt.Sprintf("%s:%s", common.TOKEN, token))
+	}
+
+	loginUser := middlewares.GetLoginUser()
+	if loginUser != nil {
+		middlewares.ClearLoginUser()
+	}
+
+	ctx.Values().Set(common.TOKEN, nil)
+	ctx.Values().Set(common.USER_ID, nil)
+
+	ctx.JSON(responses.Success(nil))
+}

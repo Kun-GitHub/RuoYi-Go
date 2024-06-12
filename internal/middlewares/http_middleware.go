@@ -63,6 +63,7 @@ func MiddlewareHandler(ctx iris.Context) {
 
 	sysUser := &models.SysUser{}
 	ctx.Values().Set(common.USER_ID, jwt_id)
+	ctx.Values().Set(common.TOKEN, token)
 	if err := services.QueryUserByUserId(jwt_id, sysUser); err != nil {
 		ctx.JSON(responses.Error(iris.StatusUnauthorized, "请重新登录"))
 		return
@@ -89,6 +90,10 @@ func skipInterceptor(path string, notInterceptList []string) bool {
 
 func GetLoginUser() *LoginUserStruct {
 	return loginUser
+}
+
+func ClearLoginUser() {
+	loginUser = nil
 }
 
 // 定义一个权限检查函数

@@ -31,6 +31,7 @@ func Sign(k, v string, exp int64) (string, error) {
 
 	ryredis.Redis.Set(tokenStr, true, time.Duration(exp)*time.Hour)
 	return tokenStr, err
+
 }
 
 func Valid(k, tokenStr string) (string, error) {
