@@ -229,7 +229,7 @@ PS:发现暂不支持安装插件
 <br>
 
 ### 8. 致谢
-致谢 [RuoYi](https://github.com/yangzongzhuan/RuoYi)  
+致谢 [RuoYi](https://ruoyi.vip)  
 
 致谢以上项目使用到的开源库，不分先后哈   
 
