@@ -106,7 +106,7 @@ func hasPermission(ctx iris.Context, permission string) bool {
 
 	menus, err := services.QueryMenusByUserId(loginUser.UserID)
 	if err != nil {
-		logger.Log.Error("getMenus error,", zap.Error(err))
+		logger.Log.Error("QueryMenusByUserId error,", zap.Error(err))
 		return false
 	}
 	for _, menu := range menus {

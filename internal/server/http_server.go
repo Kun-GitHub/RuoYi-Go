@@ -25,6 +25,6 @@ func StartServer(s *iris.Application) {
 	s.Post("/login", handler.Login)
 	s.Post("/logout", handler.Logout)
 
-	s.Get("/system/user/list", middlewares.PermissionMiddleware("system:user:list"), handler.Login)
+	s.Get("/system/user/list", middlewares.PermissionMiddleware("system:user:list"), handler.UserList)
 
 }
