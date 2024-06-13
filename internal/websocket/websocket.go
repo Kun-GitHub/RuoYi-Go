@@ -26,7 +26,7 @@ func StartWebSocket(ws *iris.Application) {
 func initWebsocket() *neffos.Server {
 	ws := websocket.New(websocket.DefaultGorillaUpgrader, websocket.Events{
 		websocket.OnNativeMessage: func(nsConn *websocket.NSConn, msg websocket.Message) error {
-			logger.Log.Info(fmt.Sprintf("Server got: %s from [%s]", msg.Body, nsConn.Conn.ID()))
+			logger.GetLogger().Info(fmt.Sprintf("Server got: %s from [%s]", msg.Body, nsConn.Conn.ID()))
 
 			//mg := websocket.Message{
 			//	Body:     msg.Body,
@@ -39,16 +39,16 @@ func initWebsocket() *neffos.Server {
 	})
 
 	ws.OnConnect = func(c *websocket.Conn) error {
-		logger.Log.Info("[%s] Connected to server!", c.ID())
+		logger.GetLogger().Info(fmt.Sprintf("Connected to server! [%s]", c.ID()))
 		return nil
 	}
 
 	ws.OnDisconnect = func(c *websocket.Conn) {
-		logger.Log.Info("[%s] Disconnected from server", c.ID())
+		logger.GetLogger().Info(fmt.Sprintf("[%s] Disconnected from server", c.ID()))
 	}
 
 	ws.OnUpgradeError = func(err error) {
-		logger.Log.Error("Upgrade Error: %v", zap.Error(err))
+		logger.GetLogger().Error("Upgrade Error: %v", zap.Error(err))
 	}
 
 	return ws

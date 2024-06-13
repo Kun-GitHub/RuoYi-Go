@@ -29,7 +29,7 @@ func Sign(k, v string, exp int64) (string, error) {
 	// 使用密钥签名令牌
 	tokenStr, err := token.SignedString(signingKey)
 
-	ryredis.Redis.Set(tokenStr, true, time.Duration(exp)*time.Hour)
+	ryredis.GetRedis().Set(tokenStr, true, time.Duration(exp)*time.Hour)
 	return tokenStr, err
 
 }
@@ -51,7 +51,7 @@ func Valid(k, tokenStr string) (string, error) {
 	}
 
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		v, err := ryredis.Redis.Get(tokenStr)
+		v, err := ryredis.GetRedis().Get(tokenStr)
 		if err != nil || v == "" {
 			return "", fmt.Errorf("token失效")
 		}

@@ -43,12 +43,12 @@ func Login(ctx iris.Context) {
 		return
 	}
 
-	v, error := ryredis.Redis.Get(fmt.Sprintf("%s:%d", common.CAPTCHA, l.Uuid))
+	v, error := ryredis.GetRedis().Get(fmt.Sprintf("%s:%d", common.CAPTCHA, l.Uuid))
 	if error != nil || v == "" {
 		ctx.JSON(responses.Error(iris.StatusInternalServerError, "验证码错误或已失效"))
 		return
 	}
-	ryredis.Redis.Del(fmt.Sprintf("%s:%d", common.CAPTCHA, l.Uuid))
+	ryredis.GetRedis().Del(fmt.Sprintf("%s:%d", common.CAPTCHA, l.Uuid))
 
 	if v != "" && strings.EqualFold(v, l.Code) {
 		sysUser := &models.SysUser{}
@@ -67,7 +67,7 @@ func Login(ctx iris.Context) {
 		if error != nil {
 			ctx.JSON(responses.Error(iris.StatusInternalServerError, "生成token失败"))
 		} else {
-			ryredis.Redis.Set(fmt.Sprintf("%s:%s", common.TOKEN, token), sysUser.UserID, 72*time.Hour)
+			ryredis.GetRedis().Set(fmt.Sprintf("%s:%s", common.TOKEN, token), sysUser.UserID, 72*time.Hour)
 
 			user := loginSuccess{
 				Code:    responses.SUCCESS,
@@ -107,7 +107,7 @@ func GetInfo(ctx iris.Context) {
 
 	roles, err := services.QueryRolesByUserId(loginUser.UserID)
 	if err != nil {
-		logger.Log.Error("getInfo error,", zap.Error(err))
+		logger.GetLogger().Error("getInfo error,", zap.Error(err))
 		ctx.JSON(responses.Error(iris.StatusInternalServerError, "获取用户角色失败"))
 		return
 	}
@@ -132,7 +132,7 @@ func GetInfo(ctx iris.Context) {
 func Logout(ctx iris.Context) {
 	token := ctx.Values().Get(common.TOKEN)
 	if token != nil {
-		ryredis.Redis.Del(fmt.Sprintf("%s:%s", common.TOKEN, token))
+		ryredis.GetRedis().Del(fmt.Sprintf("%s:%s", common.TOKEN, token))
 	}
 
 	loginUser := middlewares.GetLoginUser()

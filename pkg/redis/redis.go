@@ -6,8 +6,11 @@
 package ryredis
 
 import (
+	"RuoYi-Go/pkg/logger"
 	"context"
 	"fmt"
+	"go.uber.org/zap"
+	"os"
 	"sync"
 	"time"
 
@@ -22,7 +25,21 @@ type RedisStruct struct {
 	mu sync.Mutex
 }
 
-var Redis *RedisStruct
+var (
+	once sync.Once
+	this *RedisStruct
+)
+
+func GetRedis() *RedisStruct {
+	once.Do(func() {
+		this = &RedisStruct{}
+		if err := this.NewClient(); err != nil {
+			logger.GetLogger().Error("failed to connect redis,", zap.Error(err))
+			os.Exit(0)
+		}
+	})
+	return this
+}
 
 func (rs *RedisStruct) NewClient() error {
 	rs.options = &redis.Options{

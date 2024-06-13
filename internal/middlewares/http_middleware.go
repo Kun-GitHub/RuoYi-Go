@@ -55,7 +55,7 @@ func MiddlewareHandler(ctx iris.Context) {
 		ctx.JSON(responses.Error(iris.StatusUnauthorized, "请重新登录"))
 		return
 	}
-	redis_id, err := ryredis.Redis.Get(fmt.Sprintf("%s:%s", common.TOKEN, token))
+	redis_id, err := ryredis.GetRedis().Get(fmt.Sprintf("%s:%s", common.TOKEN, token))
 	if err != nil || redis_id == "" || jwt_id != redis_id {
 		ctx.JSON(responses.Error(iris.StatusUnauthorized, "请重新登录"))
 		return
@@ -106,7 +106,7 @@ func hasPermission(ctx iris.Context, permission string) bool {
 
 	menus, err := services.QueryMenusByUserId(loginUser.UserID)
 	if err != nil {
-		logger.Log.Error("QueryMenusByUserId error,", zap.Error(err))
+		logger.GetLogger().Error("QueryMenusByUserId error,", zap.Error(err))
 		return false
 	}
 	for _, menu := range menus {
