@@ -30,7 +30,7 @@ func CaptchaImage(ctx iris.Context) {
 		ctx.JSON(responses.Error(iris.StatusInternalServerError, "生成验证码失败"))
 		return
 	}
-	ryredis.GetRedis().Set(fmt.Sprintf("%s:%d", common.CAPTCHA, id), a, time.Minute*5)
+	ryredis.Redis.Set(fmt.Sprintf("%s:%d", common.CAPTCHA, id), a, time.Minute*5)
 
 	user := captchaImage{
 		Code:    responses.SUCCESS,

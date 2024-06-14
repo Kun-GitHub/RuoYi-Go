@@ -28,20 +28,22 @@ type RedisStruct struct {
 var (
 	once sync.Once
 	this *RedisStruct
+
+	Redis = getRedis()
 )
 
-func GetRedis() *RedisStruct {
+func getRedis() *RedisStruct {
 	once.Do(func() {
 		this = &RedisStruct{}
-		if err := this.NewClient(); err != nil {
-			logger.GetLogger().Error("failed to connect redis,", zap.Error(err))
+		if err := this.newClient(); err != nil {
+			logger.Log.Error("failed to connect redis,", zap.Error(err))
 			os.Exit(0)
 		}
 	})
 	return this
 }
 
-func (rs *RedisStruct) NewClient() error {
+func (rs *RedisStruct) newClient() error {
 	rs.options = &redis.Options{
 		Addr:     fmt.Sprintf("%s:%d", config.Conf.Redis.Host, config.Conf.Redis.Port),
 		Password: config.Conf.Redis.Password, // no password set

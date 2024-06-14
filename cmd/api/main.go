@@ -32,13 +32,13 @@ func main() {
 	}
 
 	// 初始化日志
-	log := logger.GetLogger() // 假设配置中有Debug字段
+	log := logger.Log // 假设配置中有Debug字段
 
 	// 初始化国际化
 	ryi18n.GetLocalizer(conf.Language) // 假设配置中指定了Language
 
 	// 创建redisStruct实例
-	ryredis.GetRedis()
+	ryRedis := ryredis.Redis
 
 	// 创建DatabaseStruct实例
 	rydb.DB = &rydb.DatabaseStruct{}
@@ -65,11 +65,6 @@ func main() {
 
 	// 系统关闭
 	shutdown.NewHook().Close(
-		// 关闭 logger
-		func() {
-			logger.GetLogger().Sync()
-		},
-
 		// 关闭 sqlService
 		func() {
 			err = rydb.DB.CloseSqlite()
@@ -80,10 +75,15 @@ func main() {
 
 		func() {
 			// 完成操作后，关闭Redis连接
-			err = ryredis.GetRedis().Close()
+			err = ryRedis.Close()
 			if err != nil {
 				log.Error("Failed to close Redis connection:", zap.Error(err))
 			}
+		},
+
+		// 关闭 logger
+		func() {
+			log.Sync()
 		},
 	)
 }

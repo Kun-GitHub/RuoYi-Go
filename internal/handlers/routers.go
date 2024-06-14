@@ -29,7 +29,7 @@ func GetRouters(ctx iris.Context) {
 	if loginUser.Admin {
 		menus, err = services.QueryAllMenus()
 		if err != nil {
-			logger.GetLogger().Error("getRouters error,", zap.Error(err))
+			logger.Log.Error("getRouters error,", zap.Error(err))
 			ctx.JSON(responses.Error(iris.StatusInternalServerError, "获取菜单失败"))
 			return
 		}

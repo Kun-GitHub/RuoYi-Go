@@ -15,24 +15,22 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
-type LogStruct struct {
-}
-
 var (
 	once sync.Once
 	this *zap.Logger
+
+	Log = getLogger()
 )
 
-func GetLogger() *zap.Logger {
+func getLogger() *zap.Logger {
 	once.Do(func() {
-		logger := LogStruct{}
-		this = logger.InitializeLogger()
+		this = initializeLogger()
 	})
 	return this
 }
 
-// InitializeLogger 初始化zap日志实例，支持按日期和大小滚动日志文件
-func (this *LogStruct) InitializeLogger() *zap.Logger {
+// initializeLogger 初始化zap日志实例，支持按日期和大小滚动日志文件
+func initializeLogger() *zap.Logger {
 	// lumberjack配置
 	lumberjackLogger := &lumberjack.Logger{
 		Filename:   "./logs/app.log", // 日志文件路径
