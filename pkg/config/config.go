@@ -5,24 +5,38 @@
 
 package config
 
-import "github.com/spf13/viper"
+import (
+	"github.com/spf13/viper"
+	"sync"
+)
 
-var Conf *AppConfig
+var (
+	once sync.Once
+	conf *AppConfig
+
+	App = getConfig()
+)
+
+func getConfig() *AppConfig {
+	once.Do(func() {
+		conf = initConfig()
+	})
+	return conf
+}
 
 // InitConfig 函数中使用viper读取配置文件并映射到AppConfig结构体
-func InitConfig() (*AppConfig, error) {
+func initConfig() *AppConfig {
 	v := viper.New()
 	v.SetConfigName("config")
 	//v.SetConfigName("demo")
 	v.SetConfigType("yaml")
 	v.AddConfigPath("./config")
+
 	if err := v.ReadInConfig(); err != nil {
-		return nil, err
+		return nil
 	}
-
-	if err := v.Unmarshal(&Conf); err != nil {
-		return nil, err
+	if err := v.Unmarshal(&conf); err != nil {
+		return nil
 	}
-
-	return Conf, nil
+	return conf
 }

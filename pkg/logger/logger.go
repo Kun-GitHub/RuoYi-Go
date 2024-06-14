@@ -60,7 +60,7 @@ func initializeLogger() *zap.Logger {
 
 	var zaplogger *zap.Logger
 	// 根据debug标志创建logger实例
-	if config.Conf.Debug {
+	if config.App.Debug {
 		zaplogger = zap.New(core, zap.Development(), zap.AddCaller(), zap.AddStacktrace(zap.ErrorLevel))
 	} else {
 		zaplogger = zap.New(core, zap.AddCaller())

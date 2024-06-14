@@ -34,7 +34,7 @@ func MiddlewareHandler(ctx iris.Context) {
 	uri := ctx.Request().RequestURI
 
 	// 检查当前请求路径是否在跳过列表中
-	if skipInterceptor(uri, config.Conf.Server.NotIntercept) {
+	if skipInterceptor(uri, config.App.Server.NotIntercept) {
 		// 如果是，则直接调用Next，跳过此中间件的其余部分
 		ctx.Next()
 		return

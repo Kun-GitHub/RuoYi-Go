@@ -26,10 +26,7 @@ import (
 
 func main() {
 	// 初始化配置
-	conf, err := config.InitConfig()
-	if err != nil {
-		panic(err)
-	}
+	conf := config.App
 
 	// 初始化日志
 	log := logger.Log // 假设配置中有Debug字段
@@ -42,7 +39,7 @@ func main() {
 
 	// 创建DatabaseStruct实例
 	rydb.DB = &rydb.DatabaseStruct{}
-	err = rydb.DB.OpenSqlite()
+	err := rydb.DB.OpenSqlite()
 	if err != nil {
 		log.Error("failed to initialize database,", zap.Error(err))
 		os.Exit(0)
@@ -67,7 +64,7 @@ func main() {
 	shutdown.NewHook().Close(
 		// 关闭 sqlService
 		func() {
-			err = rydb.DB.CloseSqlite()
+			err := rydb.DB.CloseSqlite()
 			if err != nil {
 				log.Error("Failed to close the database connection:", zap.Error(err))
 			}
@@ -75,7 +72,7 @@ func main() {
 
 		func() {
 			// 完成操作后，关闭Redis连接
-			err = ryRedis.Close()
+			err := ryRedis.Close()
 			if err != nil {
 				log.Error("Failed to close Redis connection:", zap.Error(err))
 			}

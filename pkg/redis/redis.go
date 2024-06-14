@@ -45,9 +45,9 @@ func getRedis() *RedisStruct {
 
 func (rs *RedisStruct) newClient() error {
 	rs.options = &redis.Options{
-		Addr:     fmt.Sprintf("%s:%d", config.Conf.Redis.Host, config.Conf.Redis.Port),
-		Password: config.Conf.Redis.Password, // no password set
-		DB:       config.Conf.Redis.DB,       // use default DB
+		Addr:     fmt.Sprintf("%s:%d", config.App.Redis.Host, config.App.Redis.Port),
+		Password: config.App.Redis.Password, // no password set
+		DB:       config.App.Redis.DB,       // use default DB
 	}
 	rs.rdb = redis.NewClient(rs.options)
 

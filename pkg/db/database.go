@@ -32,18 +32,18 @@ func (ds *DatabaseStruct) OpenSqlite() error {
 	var err error = nil
 	var dialector gorm.Dialector = nil
 
-	switch config.Conf.Database.DBtype {
+	switch config.App.Database.DBtype {
 	case "postgresql":
 		dsn := fmt.Sprintf("%s://%s:%s@%s:%d/%s?sslmode=disable&TimeZone=Asia/Shanghai",
-			config.Conf.Database.DBtype, config.Conf.Database.User, config.Conf.Database.Password, config.Conf.Database.Host,
-			config.Conf.Database.Port, config.Conf.Database.DBName)
+			config.App.Database.DBtype, config.App.Database.User, config.App.Database.Password, config.App.Database.Host,
+			config.App.Database.Port, config.App.Database.DBName)
 		dialector = postgres.Open(dsn)
 	case "sqlite":
 		dsn := "./test.db"
 		dialector = sqlite.Open(dsn)
 	default:
-		dsn := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&parseTime=True&loc=Local", config.Conf.Database.User,
-			config.Conf.Database.Password, config.Conf.Database.Host, config.Conf.Database.Port, config.Conf.Database.DBName)
+		dsn := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&parseTime=True&loc=Local", config.App.Database.User,
+			config.App.Database.Password, config.App.Database.Host, config.App.Database.Port, config.App.Database.DBName)
 		dialector = mysql.Open(dsn)
 	}
 	ds.db, err = gorm.Open(dialector, &gorm.Config{})
