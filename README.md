@@ -203,39 +203,38 @@
 ```项目结构
 RuoYi-Go/
 ├── cmd/
-│   └── myproject/
+│   └── api/
 │       └── main.go
 ├── config/
 │   └── config.go
 ├── internal/
 │   ├── domain/
 │   │   ├── model/
-│   │   │   ├── user.go
-│   │   │   └── other_model.go
+│   │   │   └── demo.go
 │   ├── application/
 │   │   └── usecase/
-│   │       ├── user_usecase.go
-│   │       └── other_usecase.go
+│   │       └── demo_usecase.go
 │   ├── ports/
 │   │   ├── input/
-│   │   │   ├── user_service.go
-│   │   │   └── other_service.go
+│   │   │   └── demo_service.go
 │   │   └── output/
-│   │       ├── user_repository.go
-│   │       └── other_repository.go
+│   │       └── demo_repository.go
 │   ├── adapters/
 │   │   ├── api/
-│   │   │   ├── user_handler.go
-│   │   │   └── other_handler.go
+│   │   │   └── demo_handler.go
 │   │   ├── persistence/
-│   │   │   ├── user_repository.go
-│   │   │   └── other_repository.go
-│   │   ├── cache/
-│   │   │   └── redis_client.go
-│   │   └── logger/
-│   │       └── zap_logger.go
+│   │   │   └── demo_repository.go
 ├── di/
 │   └── container.go
+├── pkg/
+│   │   ├── db/
+│   │   │   └── database.go
+│   │   ├── jwt/
+│   │   │   └── jwt.go
+│   │   ├── logger/
+│   │   │   └── logger.go
+│   │   ├── config/
+│   │   │   └── config.go
 └── go.mod
 ```
 <br>

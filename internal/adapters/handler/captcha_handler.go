@@ -14,8 +14,8 @@ func NewCaptchaHandler(service input.CaptchaService) *CaptchaHandler {
 	return &CaptchaHandler{service: service}
 }
 
-// GetCaptchaImage
-func (h *CaptchaHandler) GetCaptchaImage(ctx iris.Context) {
+// GenerateCaptchaImage
+func (h *CaptchaHandler) GenerateCaptchaImage(ctx iris.Context) {
 	c, err := h.service.GenerateCaptchaImage()
 	if err != nil {
 		ctx.JSON(common.Error(iris.StatusInternalServerError, "生成验证码失败"))

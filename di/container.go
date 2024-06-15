@@ -60,7 +60,7 @@ func NewContainer(c config.AppConfig) (*Container, error) {
 	//app.Get("/generate-code", demoHandler.GenerateRandomCode)
 
 	captchaHandler := resolveCaptchaHandler(redis, log)
-	app.Get("/captchaImage", captchaHandler.GetCaptchaImage)
+	app.Get("/captchaImage", captchaHandler.GenerateCaptchaImage)
 
 	ryws.StartWebSocket(app, log)
 
