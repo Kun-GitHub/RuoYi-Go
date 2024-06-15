@@ -4,6 +4,7 @@ import (
 	"RuoYi-Go/internal/common"
 	"RuoYi-Go/internal/ports/input"
 	"github.com/kataras/iris/v12"
+	"time"
 )
 
 type CaptchaHandler struct {
@@ -21,6 +22,13 @@ func (h *CaptchaHandler) GenerateCaptchaImage(ctx iris.Context) {
 		ctx.JSON(common.Error(iris.StatusInternalServerError, "生成验证码失败"))
 		return
 	}
+	// 获取当前时间并格式化为HTTP日期格式
+	currentTime := time.Now().UTC().Format(time.DateTime)
+	ctx.Header("Date", currentTime) // 设置Date头
+	ctx.Header("Cache-Control", "no-store, no-cache, must-revalidate")
+	ctx.Header("Cache-Control", "post-check=0, pre-check=0")
+	ctx.Header("Pragma", "no-cache")
+	ctx.ContentType("image/jpeg")
 
 	ctx.JSON(c)
 }

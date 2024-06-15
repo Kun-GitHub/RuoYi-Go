@@ -15,8 +15,8 @@ type Response struct {
 	Data    interface{} `json:"data,omitempty"` // 使用omitempty确保没有数据时此字段不会出现在JSON中
 }
 
-func Success(data interface{}) Response {
-	return Response{Code: SUCCESS, Message: "success", Data: data}
+func Success(data interface{}) *Response {
+	return &Response{Code: SUCCESS, Message: "操作成功", Data: data}
 }
 
 func Error(code int, message string) Response {

@@ -12,27 +12,7 @@ import (
 	"github.com/kataras/iris/v12"
 )
 
-type loginStruct struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
-	Code     string `json:"code"`
-	Uuid     string `json:"uuid"`
-}
-
-type loginSuccess struct {
-	Code    int    `json:"code"`
-	Message string `json:"msg"`
-	Token   string `json:"token"`
-}
-
 func Login(ctx iris.Context) {
-	var l loginStruct
-	// Attempt to read and bind the JSON request body to the 'user' variable
-	if err := ctx.ReadJSON(&l); err != nil {
-		ctx.JSON(common.ErrorFormat(iris.StatusBadRequest, "Invalid JSON, error:%s", err.Error()))
-		return
-	}
-
 	//v, error := ryredis.Redis.Get(fmt.Sprintf("%s:%d", common.CAPTCHA, l.Uuid))
 	//if error != nil || v == "" {
 	//	ctx.JSON(common.Error(iris.StatusInternalServerError, "验证码错误或已失效"))

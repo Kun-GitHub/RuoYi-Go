@@ -3,7 +3,6 @@ package di
 import (
 	"RuoYi-Go/config"
 	"RuoYi-Go/internal/adapters/handler"
-	"RuoYi-Go/internal/adapters/persistence"
 	"RuoYi-Go/internal/application/usecase"
 	ryws "RuoYi-Go/internal/websocket"
 	"RuoYi-Go/pkg/cache"
@@ -81,13 +80,18 @@ func NewContainer(c config.AppConfig) (*Container, error) {
 	}, nil
 }
 
-func resolveDemoHandler(redis *cache.RedisClient, cache *freecache.Cache, logger *zap.Logger) *handler.DemoHandler {
-	demoRepo := persistence.NewDemoRepository()
-	demoService := usecase.NewDemoService(demoRepo, redis, cache, logger)
-	return handler.NewDemoHandler(demoService, logger)
-}
+//func resolveDemoHandler(redis *cache.RedisClient, cache *freecache.Cache, logger *zap.Logger) *handler.DemoHandler {
+//	demoRepo := persistence.NewDemoRepository()
+//	demoService := usecase.NewDemoService(demoRepo, redis, cache, logger)
+//	return handler.NewDemoHandler(demoService, logger)
+//}
 
 func resolveCaptchaHandler(redis *cache.RedisClient, logger *zap.Logger) *handler.CaptchaHandler {
+	demoService := usecase.NewCaptchaService(redis, logger)
+	return handler.NewCaptchaHandler(demoService)
+}
+
+func resolveAuthHandler(redis *cache.RedisClient, logger *zap.Logger) *handler.CaptchaHandler {
 	demoService := usecase.NewCaptchaService(redis, logger)
 	return handler.NewCaptchaHandler(demoService)
 }
