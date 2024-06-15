@@ -2,6 +2,9 @@ package di
 
 import (
 	"RuoYi-Go/config"
+	"RuoYi-Go/internal/adapters/handler"
+	"RuoYi-Go/internal/adapters/persistence"
+	"RuoYi-Go/internal/application/usecase"
 	ryws "RuoYi-Go/internal/websocket"
 	"RuoYi-Go/pkg/cache"
 	rydb "RuoYi-Go/pkg/db"
@@ -9,6 +12,7 @@ import (
 	"RuoYi-Go/pkg/logger"
 	"context"
 	"fmt"
+	"github.com/coocood/freecache"
 	"github.com/kataras/iris/v12"
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 	"go.uber.org/zap"
@@ -22,6 +26,7 @@ type Container struct {
 	localizer *i18n.Localizer
 	db        *rydb.DatabaseStruct
 	app       *iris.Application
+	cache     *freecache.Cache
 }
 
 func NewContainer(c config.AppConfig) (*Container, error) {
@@ -45,7 +50,18 @@ func NewContainer(c config.AppConfig) (*Container, error) {
 		return nil, fmt.Errorf("failed to initialize database: %w", err)
 	}
 
+	// 初始化Freecache
+	cache := freecache.NewCache(100 * 1024 * 1024) // 100MB
+
 	app := iris.New()
+
+	//demoHandler := resolveDemoHandler(redis, cache, log)
+	//app.Get("/demos/{id:uint}", demoHandler.GetDemoByID)
+	//app.Get("/generate-code", demoHandler.GenerateRandomCode)
+
+	captchaHandler := resolveCaptchaHandler(redis, log)
+	app.Get("/captchaImage", captchaHandler.GetCaptchaImage)
+
 	ryws.StartWebSocket(app, log)
 
 	err = app.Run(iris.Addr(fmt.Sprintf(":%d", c.Server.Port)))
@@ -61,7 +77,19 @@ func NewContainer(c config.AppConfig) (*Container, error) {
 		localizer: l,
 		db:        db,
 		app:       app,
+		cache:     cache,
 	}, nil
+}
+
+func resolveDemoHandler(redis *cache.RedisClient, cache *freecache.Cache, logger *zap.Logger) *handler.DemoHandler {
+	demoRepo := persistence.NewDemoRepository()
+	demoService := usecase.NewDemoService(demoRepo, redis, cache, logger)
+	return handler.NewDemoHandler(demoService, logger)
+}
+
+func resolveCaptchaHandler(redis *cache.RedisClient, logger *zap.Logger) *handler.CaptchaHandler {
+	demoService := usecase.NewCaptchaService(redis, logger)
+	return handler.NewCaptchaHandler(demoService)
 }
 
 func (c *Container) Close() {

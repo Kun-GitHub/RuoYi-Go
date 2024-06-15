@@ -202,23 +202,41 @@
 ### 6. 项目目录（持续在对齐项目，在补充）
 ```项目结构
 RuoYi-Go/
-|-- build/
-|   |-- build.cmd     // go build 文件
-|-- cmd/
-|   |-- main.go       // 主入口文件
-|-- config/           // 配置文件目录
-|   |-- config.yml    // 示例配置文件
-|-- internal/
-|   |-- handler/      // HTTP请求处理器
-|   |-- service/      // 业务逻辑层
-|   |-- repository/   // 数据访问层
-|-- pkg/
-|   |-- i18n/         // 国际化
-|-- middleware/       // 中间件（如JWT验证）
-|-- model/            // 数据模型
-|-- websocket/        // WebSocket处理逻辑
-|-- go.mod            // Go模块依赖管理
-|-- go.sum            // Go模块依赖哈希
+├── cmd/
+│   └── myproject/
+│       └── main.go
+├── config/
+│   └── config.go
+├── internal/
+│   ├── domain/
+│   │   ├── model/
+│   │   │   ├── user.go
+│   │   │   └── other_model.go
+│   ├── application/
+│   │   └── usecase/
+│   │       ├── user_usecase.go
+│   │       └── other_usecase.go
+│   ├── ports/
+│   │   ├── input/
+│   │   │   ├── user_service.go
+│   │   │   └── other_service.go
+│   │   └── output/
+│   │       ├── user_repository.go
+│   │       └── other_repository.go
+│   ├── adapters/
+│   │   ├── api/
+│   │   │   ├── user_handler.go
+│   │   │   └── other_handler.go
+│   │   ├── persistence/
+│   │   │   ├── user_repository.go
+│   │   │   └── other_repository.go
+│   │   ├── cache/
+│   │   │   └── redis_client.go
+│   │   └── logger/
+│   │       └── zap_logger.go
+├── di/
+│   └── container.go
+└── go.mod
 ```
 <br>
 

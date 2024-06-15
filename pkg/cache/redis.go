@@ -54,6 +54,13 @@ func (rs *RedisClient) Set(key string, value interface{}, expiration time.Durati
 	return rs.client.Set(context.Background(), key, value, expiration).Err()
 }
 
+func (rs *RedisClient) SetNotTime(key string, value interface{}) error {
+	rs.mu.Lock()
+	defer rs.mu.Unlock()
+
+	return rs.client.Set(context.Background(), key, value, time.Hour*1).Err()
+}
+
 func (rs *RedisClient) Del(key string) error {
 	rs.mu.Lock()
 	defer rs.mu.Unlock()

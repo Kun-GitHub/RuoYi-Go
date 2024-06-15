@@ -35,11 +35,3 @@ func CaptchaImage(ctx iris.Context) {
 	//// 使用 ctx.JSON 自动将user序列化为JSON并写入响应体
 	//ctx.JSON(user)
 }
-
-type captchaImage struct {
-	Code           int    `json:"code"`
-	Message        string `json:"msg"`
-	Uuid           string `json:"uuid"`
-	CaptchaEnabled bool   `json:"captchaEnabled,omitempty"`
-	Img            string `json:"img"`
-}
