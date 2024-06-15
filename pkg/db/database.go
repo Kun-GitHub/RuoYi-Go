@@ -36,9 +36,9 @@ func OpenDB(cfg config.AppConfig) (*DatabaseStruct, error) {
 			cfg.Database.Port, cfg.Database.DBName)
 		dialector = postgres.Open(dsn)
 	case "sqlite":
-		dsn := "./sqlite.db"
+		dsn := "./sqlite.db" //我已经导入初始数据到sqlite文件里，放在项目上了
 		dialector = sqlite.Open(dsn)
-	default: //
+	default: //mysql
 		dsn := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&parseTime=True&loc=Local", cfg.Database.User,
 			cfg.Database.Password, cfg.Database.Host, cfg.Database.Port, cfg.Database.DBName)
 		dialector = mysql.Open(dsn)
