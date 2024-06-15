@@ -3,10 +3,9 @@
 // Author: K. See：https://github.com/Kun-GitHub/RuoYi-Go
 // Email: hot_kun@hotmail.com or BusinessCallKun@gmail.com
 
-package rywebsocket
+package ryws
 
 import (
-	"RuoYi-Go/pkg/logger"
 	"fmt"
 	"github.com/kataras/iris/v12"
 	"github.com/kataras/iris/v12/websocket"
@@ -14,19 +13,20 @@ import (
 	"go.uber.org/zap"
 )
 
-var WebSocket *iris.Application
+var (
+	logger *zap.Logger
+)
 
-func StartWebSocket(ws *iris.Application) {
-	WebSocket = ws
+func StartWebSocket(ws *iris.Application, l *zap.Logger) {
+	logger = l
 
-	ws.Get("/ws", websocket.Handler(initWebsocket()))
+	ws.Get("/ws", websocket.Handler(handlerWebsocket()))
 }
 
-// InitConfig 函数中使用viper读取配置文件并映射到AppConfig结构体
-func initWebsocket() *neffos.Server {
+func handlerWebsocket() *neffos.Server {
 	ws := websocket.New(websocket.DefaultGorillaUpgrader, websocket.Events{
 		websocket.OnNativeMessage: func(nsConn *websocket.NSConn, msg websocket.Message) error {
-			logger.Log.Info(fmt.Sprintf("Server got: %s from [%s]", msg.Body, nsConn.Conn.ID()))
+			logger.Debug(fmt.Sprintf("Server got: %s from [%s]", msg.Body, nsConn.Conn.ID()))
 
 			//mg := websocket.Message{
 			//	Body:     msg.Body,
@@ -39,16 +39,16 @@ func initWebsocket() *neffos.Server {
 	})
 
 	ws.OnConnect = func(c *websocket.Conn) error {
-		logger.Log.Info(fmt.Sprintf("Connected to server! [%s]", c.ID()))
+		logger.Info(fmt.Sprintf("Connected to server! [%s]", c.ID()))
 		return nil
 	}
 
 	ws.OnDisconnect = func(c *websocket.Conn) {
-		logger.Log.Info(fmt.Sprintf("[%s] Disconnected from server", c.ID()))
+		logger.Info(fmt.Sprintf("[%s] Disconnected from server", c.ID()))
 	}
 
 	ws.OnUpgradeError = func(err error) {
-		logger.Log.Error("Upgrade Error: %v", zap.Error(err))
+		logger.Error("Upgrade Error: %v", zap.Error(err))
 	}
 
 	return ws

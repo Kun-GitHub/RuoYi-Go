@@ -26,22 +26,6 @@ func main() {
 	}
 	defer container.Close()
 
-	//
-	//app := iris.New()
-	//ryserver.StartServer(app)
-	//rywebsocket.StartWebSocket(app)
-	//
-	////log.Info("start server on:%d", conf.Server.Port)
-	//app.Run(iris.Addr(fmt.Sprintf(":%d", cfg.Server.Port)))
-	//
-	//iris.RegisterOnInterrupt(func() {
-	//	timeout := 5 * time.Second
-	//	ctx, cancel := context.WithTimeout(context.Background(), timeout)
-	//	defer cancel()
-	//	// close all hosts
-	//	app.Shutdown(ctx)
-	//})
-
 	// 系统关闭
 	shutdown.NewHook().Close(
 		func() {

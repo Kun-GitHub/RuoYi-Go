@@ -37,7 +37,7 @@ func NewZapLogger(level zapcore.Level) *zap.Logger {
 			zapcore.AddSync(lumberjackLogger), // 输出到文件，使用lumberjack进行日志分割管理
 		),
 		zap.LevelEnablerFunc(func(lvl zapcore.Level) bool {
-			return lvl >= zap.InfoLevel // 设置日志级别
+			return lvl >= level // 设置日志级别
 		}),
 	)
 

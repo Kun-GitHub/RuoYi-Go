@@ -12,7 +12,7 @@ import (
 )
 
 // 获取Localizer实例
-func GetLocalizer(lang string) *i18n.Localizer {
+func LoadLocalizer(lang string) *i18n.Localizer {
 	var bundle = i18n.NewBundle(language.SimplifiedChinese)
 	bundle.RegisterUnmarshalFunc("yaml", yaml.Unmarshal)
 
