@@ -50,5 +50,8 @@ func (h *SysHandler) Logout(ctx iris.Context) {
 		middlewares.ClearLoginUser()
 	}
 
+	ctx.Values().Set(common.TOKEN, nil)
+	ctx.Values().Set(common.USER_ID, nil)
+
 	ctx.JSON(common.Success("Logout successful"))
 }
