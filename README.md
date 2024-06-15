@@ -1,12 +1,13 @@
-# RuoYi-Go
+# RuoYi-Go(DDD)
 
-### 1. 关于我
+### 1. 关于我(在找远程工作，给机会的老板可以联系)
 [个人介绍](https://github.com/Kun-GitHub)
 
 <br>
 
 ### 2. 后端
-后端是用Go写的RuoYi权限管理系统 (功能正在持续实现)  
+后端是用Go写的RuoYi权限管理系统 (功能正在持续实现)   
+用DDD领域驱动设计(六边形架构)做实践
 
 后端 [GitHub地址](https://github.com/Kun-GitHub/RuoYi-Go)    
 

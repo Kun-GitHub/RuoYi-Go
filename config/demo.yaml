@@ -6,7 +6,7 @@
 
 # v.SetConfigName("config") //修改配置文件名
 
-logLevel: 0 # 设置是否开启调试模式
+logLevel: -1 # -1 Debug 0 Info 1 Warn 2 Error
 language: "zh-CN" # 应用默认语言
 
 server:
