@@ -8,7 +8,6 @@ package handler
 import (
 	"RuoYi-Go/internal/common"
 	"RuoYi-Go/internal/middlewares"
-	"RuoYi-Go/internal/responses"
 	"RuoYi-Go/internal/services"
 	"RuoYi-Go/pkg/logger"
 	"github.com/kataras/iris/v12"
@@ -20,7 +19,7 @@ import (
 func GetRouters(ctx iris.Context) {
 	loginUser := middlewares.GetLoginUser()
 	if loginUser == nil || loginUser.UserID == 0 {
-		ctx.JSON(responses.Error(iris.StatusUnauthorized, "请重新登录"))
+		ctx.JSON(common.Error(iris.StatusUnauthorized, "请重新登录"))
 		return
 	}
 
@@ -30,13 +29,13 @@ func GetRouters(ctx iris.Context) {
 		menus, err = services.QueryAllMenus()
 		if err != nil {
 			logger.Log.Error("getRouters error,", zap.Error(err))
-			ctx.JSON(responses.Error(iris.StatusInternalServerError, "获取菜单失败"))
+			ctx.JSON(common.Error(iris.StatusInternalServerError, "获取菜单失败"))
 			return
 		}
 	}
 
 	// 使用 ctx.JSON 自动将user序列化为JSON并写入响应体
-	ctx.JSON(responses.Success(buildMenuTree(menus)))
+	ctx.JSON(common.Success(buildMenuTree(menus)))
 }
 
 type MetaStruct struct {

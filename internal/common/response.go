@@ -3,7 +3,7 @@
 // Author: K. See：https://github.com/Kun-GitHub/RuoYi-Go
 // Email: hot_kun@hotmail.com or BusinessCallKun@gmail.com
 
-package responses
+package common
 
 import "fmt"
 

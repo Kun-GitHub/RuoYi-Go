@@ -6,18 +6,19 @@
 package config
 
 import (
+	"RuoYi-Go/config"
 	"github.com/spf13/viper"
 	"sync"
 )
 
 var (
 	once sync.Once
-	conf *AppConfig
+	conf *config.AppConfig
 
 	App = getConfig()
 )
 
-func getConfig() *AppConfig {
+func getConfig() *config.AppConfig {
 	once.Do(func() {
 		conf = initConfig()
 	})
@@ -25,7 +26,7 @@ func getConfig() *AppConfig {
 }
 
 // InitConfig 函数中使用viper读取配置文件并映射到AppConfig结构体
-func initConfig() *AppConfig {
+func initConfig() *config.AppConfig {
 	v := viper.New()
 	v.SetConfigName("config")
 	//v.SetConfigName("demo")

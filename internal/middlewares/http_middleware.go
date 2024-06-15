@@ -8,7 +8,6 @@ package middlewares
 import (
 	"RuoYi-Go/internal/common"
 	"RuoYi-Go/internal/models"
-	"RuoYi-Go/internal/responses"
 	"RuoYi-Go/internal/services"
 	"RuoYi-Go/pkg/config"
 	"RuoYi-Go/pkg/jwt"
@@ -42,7 +41,7 @@ func MiddlewareHandler(ctx iris.Context) {
 
 	authorization := ctx.GetHeader(common.AUTHORIZATION)
 	if authorization == "" {
-		ctx.JSON(responses.Error(iris.StatusUnauthorized, "请重新登录"))
+		ctx.JSON(common.Error(iris.StatusUnauthorized, "请重新登录"))
 		return
 	}
 	token := authorization
@@ -52,12 +51,12 @@ func MiddlewareHandler(ctx iris.Context) {
 
 	jwt_id, err := ryjwt.Valid(common.USER_ID, token)
 	if err != nil || jwt_id == "" {
-		ctx.JSON(responses.Error(iris.StatusUnauthorized, "请重新登录"))
+		ctx.JSON(common.Error(iris.StatusUnauthorized, "请重新登录"))
 		return
 	}
 	redis_id, err := ryredis.Redis.Get(fmt.Sprintf("%s:%s", common.TOKEN, token))
 	if err != nil || redis_id == "" || jwt_id != redis_id {
-		ctx.JSON(responses.Error(iris.StatusUnauthorized, "请重新登录"))
+		ctx.JSON(common.Error(iris.StatusUnauthorized, "请重新登录"))
 		return
 	}
 
@@ -65,7 +64,7 @@ func MiddlewareHandler(ctx iris.Context) {
 	ctx.Values().Set(common.USER_ID, jwt_id)
 	ctx.Values().Set(common.TOKEN, token)
 	if err := services.QueryUserByUserId(jwt_id, sysUser); err != nil {
-		ctx.JSON(responses.Error(iris.StatusUnauthorized, "请重新登录"))
+		ctx.JSON(common.Error(iris.StatusUnauthorized, "请重新登录"))
 		return
 	}
 

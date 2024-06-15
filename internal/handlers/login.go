@@ -9,7 +9,6 @@ import (
 	"RuoYi-Go/internal/common"
 	"RuoYi-Go/internal/middlewares"
 	"RuoYi-Go/internal/models"
-	"RuoYi-Go/internal/responses"
 	"RuoYi-Go/internal/services"
 	"RuoYi-Go/pkg/jwt"
 	"RuoYi-Go/pkg/logger"
@@ -39,13 +38,13 @@ func Login(ctx iris.Context) {
 	var l loginStruct
 	// Attempt to read and bind the JSON request body to the 'user' variable
 	if err := ctx.ReadJSON(&l); err != nil {
-		ctx.JSON(responses.ErrorFormat(iris.StatusBadRequest, "Invalid JSON, error:%s", err.Error()))
+		ctx.JSON(common.ErrorFormat(iris.StatusBadRequest, "Invalid JSON, error:%s", err.Error()))
 		return
 	}
 
 	v, error := ryredis.Redis.Get(fmt.Sprintf("%s:%d", common.CAPTCHA, l.Uuid))
 	if error != nil || v == "" {
-		ctx.JSON(responses.Error(iris.StatusInternalServerError, "验证码错误或已失效"))
+		ctx.JSON(common.Error(iris.StatusInternalServerError, "验证码错误或已失效"))
 		return
 	}
 	ryredis.Redis.Del(fmt.Sprintf("%s:%d", common.CAPTCHA, l.Uuid))
@@ -54,23 +53,23 @@ func Login(ctx iris.Context) {
 		sysUser := &models.SysUser{}
 
 		if err := services.QueryUserByUserName(l.Username, sysUser); sysUser.UserID == 0 || err != nil {
-			ctx.JSON(responses.Error(iris.StatusInternalServerError, "用户名或密码错误"))
+			ctx.JSON(common.Error(iris.StatusInternalServerError, "用户名或密码错误"))
 			return
 		}
 
 		if err := bcrypt.CompareHashAndPassword([]byte(sysUser.Password), []byte(l.Password)); err != nil {
-			ctx.JSON(responses.Error(iris.StatusInternalServerError, "账号或密码错误"))
+			ctx.JSON(common.Error(iris.StatusInternalServerError, "账号或密码错误"))
 			return
 		}
 
 		token, error := ryjwt.Sign(common.USER_ID, fmt.Sprintf("%d", sysUser.UserID), 72)
 		if error != nil {
-			ctx.JSON(responses.Error(iris.StatusInternalServerError, "生成token失败"))
+			ctx.JSON(common.Error(iris.StatusInternalServerError, "生成token失败"))
 		} else {
 			ryredis.Redis.Set(fmt.Sprintf("%s:%s", common.TOKEN, token), sysUser.UserID, 72*time.Hour)
 
 			user := loginSuccess{
-				Code:    responses.SUCCESS,
+				Code:    common.SUCCESS,
 				Token:   token,
 				Message: "操作成功",
 			}
@@ -78,7 +77,7 @@ func Login(ctx iris.Context) {
 			ctx.JSON(user)
 		}
 	} else {
-		ctx.JSON(responses.Error(iris.StatusInternalServerError, "验证码错误"))
+		ctx.JSON(common.Error(iris.StatusInternalServerError, "验证码错误"))
 		return
 	}
 }
@@ -94,7 +93,7 @@ type getInfoSuccess struct {
 func GetInfo(ctx iris.Context) {
 	loginUser := middlewares.GetLoginUser()
 	if loginUser == nil || loginUser.UserID == 0 {
-		ctx.JSON(responses.Error(iris.StatusUnauthorized, "请重新登录"))
+		ctx.JSON(common.Error(iris.StatusUnauthorized, "请重新登录"))
 		return
 	}
 
@@ -108,7 +107,7 @@ func GetInfo(ctx iris.Context) {
 	roles, err := services.QueryRolesByUserId(loginUser.UserID)
 	if err != nil {
 		logger.Log.Error("getInfo error,", zap.Error(err))
-		ctx.JSON(responses.Error(iris.StatusInternalServerError, "获取用户角色失败"))
+		ctx.JSON(common.Error(iris.StatusInternalServerError, "获取用户角色失败"))
 		return
 	}
 	loginUser.Roles = roles
@@ -119,7 +118,7 @@ func GetInfo(ctx iris.Context) {
 	}
 
 	user := getInfoSuccess{
-		Code:        responses.SUCCESS,
+		Code:        common.SUCCESS,
 		User:        loginUser,
 		Permissions: p,
 		Roles:       roleNames,
@@ -143,5 +142,5 @@ func Logout(ctx iris.Context) {
 	ctx.Values().Set(common.TOKEN, nil)
 	ctx.Values().Set(common.USER_ID, nil)
 
-	ctx.JSON(responses.Success(nil))
+	ctx.JSON(common.Success(nil))
 }
