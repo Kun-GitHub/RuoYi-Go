@@ -16,7 +16,7 @@
 # vendor/
 
 # Project runtime log
-#logs/*.log
+logs/*.log
 config/config.yaml
 
 .vscode/
