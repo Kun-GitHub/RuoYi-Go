@@ -7,12 +7,11 @@ package handler
 
 import (
 	"RuoYi-Go/internal/common"
+	"RuoYi-Go/internal/domain/model"
+	service2 "RuoYi-Go/internal/domain/service"
 	"RuoYi-Go/internal/middlewares"
-	"RuoYi-Go/internal/models"
-	"RuoYi-Go/internal/services"
 	"RuoYi-Go/pkg/jwt"
 	"RuoYi-Go/pkg/logger"
-	"RuoYi-Go/pkg/redis"
 	"fmt"
 	"github.com/kataras/iris/v12"
 	"go.uber.org/zap"
@@ -50,9 +49,9 @@ func Login(ctx iris.Context) {
 	ryredis.Redis.Del(fmt.Sprintf("%s:%d", common.CAPTCHA, l.Uuid))
 
 	if v != "" && strings.EqualFold(v, l.Code) {
-		sysUser := &models.SysUser{}
+		sysUser := &model.SysUser{}
 
-		if err := services.QueryUserByUserName(l.Username, sysUser); sysUser.UserID == 0 || err != nil {
+		if err := service2.QueryUserByUserName(l.Username, sysUser); sysUser.UserID == 0 || err != nil {
 			ctx.JSON(common.Error(iris.StatusInternalServerError, "用户名或密码错误"))
 			return
 		}
@@ -104,7 +103,7 @@ func GetInfo(ctx iris.Context) {
 
 	}
 
-	roles, err := services.QueryRolesByUserId(loginUser.UserID)
+	roles, err := service2.QueryRolesByUserId(loginUser.UserID)
 	if err != nil {
 		logger.Log.Error("getInfo error,", zap.Error(err))
 		ctx.JSON(common.Error(iris.StatusInternalServerError, "获取用户角色失败"))

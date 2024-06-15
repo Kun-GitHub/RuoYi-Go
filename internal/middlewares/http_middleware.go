@@ -7,12 +7,12 @@ package middlewares
 
 import (
 	"RuoYi-Go/internal/common"
-	"RuoYi-Go/internal/models"
-	"RuoYi-Go/internal/services"
+	model2 "RuoYi-Go/internal/domain/model"
+	service2 "RuoYi-Go/internal/domain/service"
+	ryredis "RuoYi-Go/pkg/cache"
 	"RuoYi-Go/pkg/config"
 	"RuoYi-Go/pkg/jwt"
 	"RuoYi-Go/pkg/logger"
-	ryredis "RuoYi-Go/pkg/redis"
 	"fmt"
 	"github.com/kataras/iris/v12"
 	"go.uber.org/zap"
@@ -22,9 +22,9 @@ import (
 )
 
 type LoginUserStruct struct {
-	models.SysUser
+	model2.SysUser
 	Admin bool              `json:"admin"`
-	Roles []*models.SysRole `json:"roles"`
+	Roles []*model2.SysRole `json:"roles"`
 }
 
 var loginUser = &LoginUserStruct{}
@@ -60,10 +60,10 @@ func MiddlewareHandler(ctx iris.Context) {
 		return
 	}
 
-	sysUser := &models.SysUser{}
+	sysUser := &model2.SysUser{}
 	ctx.Values().Set(common.USER_ID, jwt_id)
 	ctx.Values().Set(common.TOKEN, token)
-	if err := services.QueryUserByUserId(jwt_id, sysUser); err != nil {
+	if err := service2.QueryUserByUserId(jwt_id, sysUser); err != nil {
 		ctx.JSON(common.Error(iris.StatusUnauthorized, "请重新登录"))
 		return
 	}
@@ -103,7 +103,7 @@ func hasPermission(ctx iris.Context, permission string) bool {
 		return true
 	}
 
-	menus, err := services.QueryMenusByUserId(loginUser.UserID)
+	menus, err := service2.QueryMenusByUserId(loginUser.UserID)
 	if err != nil {
 		logger.Log.Error("QueryMenusByUserId error,", zap.Error(err))
 		return false

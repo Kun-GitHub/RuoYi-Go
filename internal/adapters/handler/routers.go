@@ -7,8 +7,8 @@ package handler
 
 import (
 	"RuoYi-Go/internal/common"
+	"RuoYi-Go/internal/domain/service"
 	"RuoYi-Go/internal/middlewares"
-	"RuoYi-Go/internal/services"
 	"RuoYi-Go/pkg/logger"
 	"github.com/kataras/iris/v12"
 	"go.uber.org/zap"
@@ -23,10 +23,10 @@ func GetRouters(ctx iris.Context) {
 		return
 	}
 
-	var menus = make([]*services.SysMenuStruct, 0)
+	var menus = make([]*service.SysMenuStruct, 0)
 	var err error
 	if loginUser.Admin {
-		menus, err = services.QueryAllMenus()
+		menus, err = service.QueryAllMenus()
 		if err != nil {
 			logger.Log.Error("getRouters error,", zap.Error(err))
 			ctx.JSON(common.Error(iris.StatusInternalServerError, "获取菜单失败"))
@@ -57,7 +57,7 @@ type routerStruct struct {
 	Children   []*routerStruct `json:"children,omitempty"`
 }
 
-func buildMenuTree(menus []*services.SysMenuStruct) []*routerStruct {
+func buildMenuTree(menus []*service.SysMenuStruct) []*routerStruct {
 	menuMap := make(map[int64]*routerStruct)
 	rootMenus := make([]*routerStruct, 0)
 
@@ -132,7 +132,7 @@ func buildMenuTree(menus []*services.SysMenuStruct) []*routerStruct {
 }
 
 // 注意：以下辅助函数需要根据实际情况实现
-func getRouteName(menu *services.SysMenuStruct) string {
+func getRouteName(menu *service.SysMenuStruct) string {
 	routerName := strings.Title(menu.Path)
 	// Non-outer link and is a first-level directory (type is directory)
 	if isMenuFrame(menu) {
@@ -141,7 +141,7 @@ func getRouteName(menu *services.SysMenuStruct) string {
 	return routerName
 }
 
-func getRouterPath(menu *services.SysMenuStruct) string {
+func getRouterPath(menu *service.SysMenuStruct) string {
 	routerPath := menu.Path
 
 	// Inner link open external way
@@ -159,7 +159,7 @@ func getRouterPath(menu *services.SysMenuStruct) string {
 	return routerPath
 }
 
-func getComponent(menu *services.SysMenuStruct) string {
+func getComponent(menu *service.SysMenuStruct) string {
 	component := "Layout"
 	if strings.TrimSpace(menu.Component) != "" && !isMenuFrame(menu) {
 		component = menu.Component
@@ -171,17 +171,17 @@ func getComponent(menu *services.SysMenuStruct) string {
 	return component
 }
 
-func isMenuFrame(menu *services.SysMenuStruct) bool {
+func isMenuFrame(menu *service.SysMenuStruct) bool {
 	return menu.ParentID == 0 && common.TYPE_MENU == menu.MenuType && menu.IsFrame == common.NO_FRAME
 }
 
-func isInnerLink(menu *services.SysMenuStruct) bool {
+func isInnerLink(menu *service.SysMenuStruct) bool {
 	return menu.IsFrame == common.NO_FRAME && isHTTP(menu.Path)
 }
 
 // isParentView checks if the given menu is a parent view.
 // This function needs to be implemented based on your specific logic.
-func isParentView(menu *services.SysMenuStruct) bool {
+func isParentView(menu *service.SysMenuStruct) bool {
 	// Implement your logic here.
 	return menu.ParentID != 0 && common.TYPE_DIR == menu.MenuType
 }

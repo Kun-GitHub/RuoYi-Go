@@ -3,10 +3,10 @@
 // Author: K. See：https://github.com/Kun-GitHub/RuoYi-Go
 // Email: hot_kun@hotmail.com or BusinessCallKun@gmail.com
 
-package services
+package service
 
 import (
-	"RuoYi-Go/internal/models"
+	"RuoYi-Go/internal/domain/model"
 	rydb "RuoYi-Go/pkg/db"
 	"encoding/json"
 	"fmt"
@@ -14,7 +14,7 @@ import (
 
 var expireSeconds = 0
 
-func QueryUserByUserName(username string, structEntity *models.SysUser) error {
+func QueryUserByUserName(username string, structEntity *model.SysUser) error {
 	// 尝试从缓存中获取
 	userBytes, err := rydb.DB.Cache.Get([]byte(fmt.Sprintf("UserName:%s", username)))
 	if err == nil {
@@ -23,7 +23,7 @@ func QueryUserByUserName(username string, structEntity *models.SysUser) error {
 		return nil
 	}
 
-	err = rydb.DB.FindColumns(models.TableNameSysUser, structEntity,
+	err = rydb.DB.FindColumns(model.TableNameSysUser, structEntity,
 		"user_name = ? and status = '0' and del_flag = '0'", username)
 	if err != nil {
 		return err
@@ -38,7 +38,7 @@ func QueryUserByUserName(username string, structEntity *models.SysUser) error {
 	}
 }
 
-func QueryUserByUserId(userId string, structEntity *models.SysUser) error {
+func QueryUserByUserId(userId string, structEntity *model.SysUser) error {
 	// 尝试从缓存中获取
 	userBytes, err := rydb.DB.Cache.Get([]byte(fmt.Sprintf("UserID:%s", userId)))
 	if err == nil {
@@ -47,7 +47,7 @@ func QueryUserByUserId(userId string, structEntity *models.SysUser) error {
 		return nil
 	}
 
-	err = rydb.DB.FindColumns(models.TableNameSysUser, structEntity,
+	err = rydb.DB.FindColumns(model.TableNameSysUser, structEntity,
 		"user_id = ? and status = '0' and del_flag = '0'", userId)
 	if err != nil {
 		return err

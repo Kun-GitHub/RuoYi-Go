@@ -3,16 +3,16 @@
 // Author: K. See：https://github.com/Kun-GitHub/RuoYi-Go
 // Email: hot_kun@hotmail.com or BusinessCallKun@gmail.com
 
-package services
+package service
 
 import (
-	"RuoYi-Go/internal/models"
+	"RuoYi-Go/internal/domain/model"
 	rydb "RuoYi-Go/pkg/db"
 	"gorm.io/gorm"
 )
 
 type SysMenuStruct struct {
-	models.SysMenu
+	model.SysMenu
 	ParentName string           `gorm:"-" json:"parentName,omitempty"` // gorm:"-" 忽略
 	Children   []*SysMenuStruct `gorm:"-" json:"children,omitempty"`
 }
@@ -35,8 +35,8 @@ func QueryAllMenus() ([]*SysMenuStruct, error) {
 	return menus, nil
 }
 
-func QueryMenusByUserId(userId int64) ([]*models.SysMenu, error) {
-	roles := make([]*models.SysMenu, 0)
+func QueryMenusByUserId(userId int64) ([]*model.SysMenu, error) {
+	roles := make([]*model.SysMenu, 0)
 	err := rydb.DB.Transactional(func(db *gorm.DB) error {
 		err := db.Table("sys_menu sm").Distinct("sm.*").
 			Joins("left join sys_role_menu srm on srm.menu_id = sm.menu_id").

@@ -6,7 +6,6 @@
 package main
 
 import (
-	"RuoYi-Go/pkg/redis"
 	"fmt"
 	"testing"
 

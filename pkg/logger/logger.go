@@ -6,31 +6,13 @@
 package logger
 
 import (
-	"RuoYi-Go/pkg/config"
-	"gopkg.in/natefinch/lumberjack.v2"
-	"os"
-	"sync"
-
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
+	"gopkg.in/natefinch/lumberjack.v2"
 )
 
-var (
-	once sync.Once
-	this *zap.Logger
-
-	Log = getLogger()
-)
-
-func getLogger() *zap.Logger {
-	once.Do(func() {
-		this = initializeLogger()
-	})
-	return this
-}
-
-// initializeLogger 初始化zap日志实例，支持按日期和大小滚动日志文件
-func initializeLogger() *zap.Logger {
+// NewZapLogger
+func NewZapLogger(level zapcore.Level) *zap.Logger {
 	// lumberjack配置
 	lumberjackLogger := &lumberjack.Logger{
 		Filename:   "./logs/app.log", // 日志文件路径
@@ -40,31 +22,12 @@ func initializeLogger() *zap.Logger {
 		Compress:   true,             // 是否压缩旧文件
 	}
 
-	// 自定义zap的encoder配置
+	writeSyncer := zapcore.AddSync(lumberjackLogger)
 	encoderConfig := zap.NewProductionEncoderConfig()
-	encoderConfig.TimeKey = "timestamp"
 	encoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder
-	encoderConfig.EncodeLevel = zapcore.CapitalLevelEncoder
+	encoder := zapcore.NewJSONEncoder(encoderConfig)
 
-	// 构建zap.Core
-	core := zapcore.NewCore(
-		zapcore.NewJSONEncoder(encoderConfig), // 使用JSON格式编码日志
-		zapcore.NewMultiWriteSyncer( // 同时写入多个地方：控制台和文件
-			zapcore.AddSync(os.Stdout),        // 输出到控制台
-			zapcore.AddSync(lumberjackLogger), // 输出到文件，使用lumberjack进行日志分割管理
-		),
-		zap.LevelEnablerFunc(func(lvl zapcore.Level) bool {
-			return lvl >= zap.InfoLevel // 设置日志级别
-		}),
-	)
-
-	var zaplogger *zap.Logger
-	// 根据debug标志创建logger实例
-	if config.App.Debug {
-		zaplogger = zap.New(core, zap.Development(), zap.AddCaller(), zap.AddStacktrace(zap.ErrorLevel))
-	} else {
-		zaplogger = zap.New(core, zap.AddCaller())
-	}
-
-	return zaplogger
+	core := zapcore.NewCore(encoder, writeSyncer, level)
+	zapLogger := zap.New(core, zap.AddCaller())
+	return zapLogger
 }

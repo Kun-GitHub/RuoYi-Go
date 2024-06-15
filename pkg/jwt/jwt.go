@@ -1,7 +1,7 @@
 package ryjwt
 
 import (
-	ryredis "RuoYi-Go/pkg/redis"
+	ryredis "RuoYi-Go/pkg/cache"
 	"fmt"
 	"github.com/golang-jwt/jwt/v5"
 	"time"
@@ -16,7 +16,6 @@ func Sign(k, v string, exp int64) (string, error) {
 
 	// 定义签名密钥
 	signingKey := []byte(key)
-
 	// 创建一个 claims
 	claims := jwt.MapClaims{
 		k:     v,
@@ -25,13 +24,11 @@ func Sign(k, v string, exp int64) (string, error) {
 
 	// 创建一个令牌对象，头部默认类型为 HS256
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-
 	// 使用密钥签名令牌
 	tokenStr, err := token.SignedString(signingKey)
 
 	ryredis.Redis.Set(tokenStr, true, time.Duration(exp)*time.Hour)
 	return tokenStr, err
-
 }
 
 func Valid(k, tokenStr string) (string, error) {

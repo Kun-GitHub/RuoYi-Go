@@ -8,36 +8,22 @@ package config
 import (
 	"RuoYi-Go/config"
 	"github.com/spf13/viper"
-	"sync"
 )
 
-var (
-	once sync.Once
-	conf *config.AppConfig
+func LoadConfig() (config.AppConfig, error) {
+	var config config.AppConfig
 
-	App = getConfig()
-)
-
-func getConfig() *config.AppConfig {
-	once.Do(func() {
-		conf = initConfig()
-	})
-	return conf
-}
-
-// InitConfig 函数中使用viper读取配置文件并映射到AppConfig结构体
-func initConfig() *config.AppConfig {
-	v := viper.New()
-	v.SetConfigName("config")
-	//v.SetConfigName("demo")
-	v.SetConfigType("yaml")
-	v.AddConfigPath("./config")
-
-	if err := v.ReadInConfig(); err != nil {
-		return nil
+	viper.SetConfigName("config")
+	//viper.SetConfigName("demo")
+	viper.SetConfigType("yaml")
+	viper.AddConfigPath("./config")
+	//viper.AutomaticEnv() //将环境变量与配置绑定
+	if err := viper.ReadInConfig(); err != nil {
+		return config, err
 	}
-	if err := v.Unmarshal(&conf); err != nil {
-		return nil
+
+	if err := viper.Unmarshal(&config); err != nil {
+		return config, err
 	}
-	return conf
+	return config, nil
 }

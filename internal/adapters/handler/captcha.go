@@ -8,7 +8,6 @@ package handler
 import (
 	"RuoYi-Go/internal/common"
 	"RuoYi-Go/pkg/captcha"
-	"RuoYi-Go/pkg/redis"
 	"fmt"
 	"github.com/kataras/iris/v12"
 	"strings"

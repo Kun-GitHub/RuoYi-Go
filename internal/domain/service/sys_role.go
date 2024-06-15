@@ -3,16 +3,16 @@
 // Author: K. See：https://github.com/Kun-GitHub/RuoYi-Go
 // Email: hot_kun@hotmail.com or BusinessCallKun@gmail.com
 
-package services
+package service
 
 import (
-	"RuoYi-Go/internal/models"
+	"RuoYi-Go/internal/domain/model"
 	rydb "RuoYi-Go/pkg/db"
 	"gorm.io/gorm"
 )
 
-func QueryRolesByUserId(userId int64) ([]*models.SysRole, error) {
-	roles := make([]*models.SysRole, 0)
+func QueryRolesByUserId(userId int64) ([]*model.SysRole, error) {
+	roles := make([]*model.SysRole, 0)
 	err := rydb.DB.Transactional(func(db *gorm.DB) error {
 		err := db.Table("sys_role sr").Select("sr.*").
 			Joins("LEFT JOIN sys_user_role sur ON sur.role_id = sr.role_id").
