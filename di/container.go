@@ -39,7 +39,7 @@ func NewContainer(c config.AppConfig) (*Container, error) {
 	l := ryi18n.LoadLocalizer(c.Language) // 假设配置中指定了Language
 
 	// 创建DatabaseStruct实例
-	db, err := rydb.OpenSqlite(c)
+	db, err := rydb.OpenDB(c)
 	if err != nil {
 		log.Error("failed to initialize database", zap.Error(err))
 		return nil, fmt.Errorf("failed to initialize database: %w", err)
@@ -65,7 +65,7 @@ func NewContainer(c config.AppConfig) (*Container, error) {
 }
 
 func (c *Container) Close() {
-	err := c.db.CloseSqlite()
+	err := c.db.CloseDB()
 	if err != nil {
 		c.logger.Error("Failed to close the database connection:", zap.Error(err))
 	} else {

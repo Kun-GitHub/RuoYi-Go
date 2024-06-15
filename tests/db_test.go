@@ -35,7 +35,7 @@ func TestSqlite(t *testing.T) {
 	//
 	//// 完成所有操作后，关闭数据库连接
 	//defer func() {
-	//	err = sqliteService.CloseSqlite()
+	//	err = sqliteService.CloseDB()
 	//	if err != nil {
 	//		fmt.Println("Failed to close the database connection:", err)
 	//	}

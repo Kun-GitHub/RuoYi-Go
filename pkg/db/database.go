@@ -25,7 +25,7 @@ type DatabaseStruct struct {
 	mu sync.Mutex
 }
 
-func OpenSqlite(cfg config.AppConfig) (*DatabaseStruct, error) {
+func OpenDB(cfg config.AppConfig) (*DatabaseStruct, error) {
 	var err error = nil
 	var dialector gorm.Dialector = nil
 
@@ -36,9 +36,9 @@ func OpenSqlite(cfg config.AppConfig) (*DatabaseStruct, error) {
 			cfg.Database.Port, cfg.Database.DBName)
 		dialector = postgres.Open(dsn)
 	case "sqlite":
-		dsn := "./test.db"
+		dsn := "./sqlite.db"
 		dialector = sqlite.Open(dsn)
-	default:
+	default: //
 		dsn := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&parseTime=True&loc=Local", cfg.Database.User,
 			cfg.Database.Password, cfg.Database.Host, cfg.Database.Port, cfg.Database.DBName)
 		dialector = mysql.Open(dsn)
@@ -81,7 +81,7 @@ func OpenSqlite(cfg config.AppConfig) (*DatabaseStruct, error) {
 	}, nil
 }
 
-func (ds *DatabaseStruct) CloseSqlite() error {
+func (ds *DatabaseStruct) CloseDB() error {
 	ds.mu.Lock()
 	defer ds.mu.Unlock()
 
