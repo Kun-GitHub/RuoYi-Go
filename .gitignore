@@ -17,6 +17,7 @@
 
 # Project runtime log
 logs/*.log
+logs/app.log
 logs
 config/config.yaml
 
