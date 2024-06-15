@@ -16,7 +16,7 @@ server:
     - "/login"
 
 database:
-  dbtype: "postgresql" # 数据库类型 postgresql mysql sqlite
+  dbtype: "sqlite" # 数据库类型 postgresql mysql sqlite
   host: "172.16.10.215" # 数据库地址
   port: 5432 # 数据库端口
   user: "postgres" # 数据库用户名
