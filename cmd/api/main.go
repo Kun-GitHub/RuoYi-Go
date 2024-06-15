@@ -9,8 +9,6 @@ import (
 	"RuoYi-Go/di"
 	"RuoYi-Go/internal/shutdown"
 	"RuoYi-Go/pkg/config"
-	"RuoYi-Go/pkg/i18n"
-	"log"
 	"os"
 )
 
@@ -24,21 +22,10 @@ func main() {
 	// 创建依赖注入容器
 	container, err := di.NewContainer(cfg)
 	if err != nil {
-		log.Fatalf("failed to initialize container: %v", err)
 		os.Exit(2)
 	}
 	defer container.Close()
 
-	// 初始化国际化
-	ryi18n.GetLocalizer(cfg.Language) // 假设配置中指定了Language
-
-	//// 创建DatabaseStruct实例
-	//rydb.DB = &rydb.DatabaseStruct{}
-	//err := rydb.DB.OpenSqlite()
-	//if err != nil {
-	//	log.Error("failed to initialize database,", zap.Error(err))
-	//	os.Exit(0)
-	//}
 	//
 	//app := iris.New()
 	//ryserver.StartServer(app)
@@ -57,14 +44,6 @@ func main() {
 
 	// 系统关闭
 	shutdown.NewHook().Close(
-		//// 关闭 sqlService
-		//func() {
-		//	err := rydb.DB.CloseSqlite()
-		//	if err != nil {
-		//		log.Error("Failed to close the database connection:", zap.Error(err))
-		//	}
-		//},
-
 		func() {
 			container.Close()
 			os.Exit(0)

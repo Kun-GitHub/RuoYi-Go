@@ -9,9 +9,7 @@ import (
 	"RuoYi-Go/internal/common"
 	"RuoYi-Go/internal/domain/service"
 	"RuoYi-Go/internal/middlewares"
-	"RuoYi-Go/pkg/logger"
 	"github.com/kataras/iris/v12"
-	"go.uber.org/zap"
 	"net/url"
 	"strings"
 )
@@ -28,7 +26,7 @@ func GetRouters(ctx iris.Context) {
 	if loginUser.Admin {
 		menus, err = service.QueryAllMenus()
 		if err != nil {
-			logger.Log.Error("getRouters error,", zap.Error(err))
+			//logger.Log.Error("getRouters error,", zap.Error(err))
 			ctx.JSON(common.Error(iris.StatusInternalServerError, "获取菜单失败"))
 			return
 		}

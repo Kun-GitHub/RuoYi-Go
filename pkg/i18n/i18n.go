@@ -11,8 +11,6 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-var Localizer *i18n.Localizer
-
 // 获取Localizer实例
 func GetLocalizer(lang string) *i18n.Localizer {
 	var bundle = i18n.NewBundle(language.SimplifiedChinese)
@@ -23,8 +21,7 @@ func GetLocalizer(lang string) *i18n.Localizer {
 	bundle.LoadMessageFile("./locales/zh-CN.yaml")
 
 	if bundle != nil {
-		Localizer = i18n.NewLocalizer(bundle, lang)
-		return Localizer
+		return i18n.NewLocalizer(bundle, lang)
 	} else {
 		return nil
 	}

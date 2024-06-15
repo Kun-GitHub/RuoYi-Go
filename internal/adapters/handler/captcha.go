@@ -6,11 +6,7 @@
 package handler
 
 import (
-	"RuoYi-Go/internal/common"
-	"RuoYi-Go/pkg/captcha"
-	"fmt"
 	"github.com/kataras/iris/v12"
-	"strings"
 	"time"
 )
 
@@ -23,21 +19,21 @@ func CaptchaImage(ctx iris.Context) {
 	ctx.Header("Pragma", "no-cache")
 	ctx.ContentType("image/jpeg")
 
-	id, b64s, a, err := captcha.GenerateCaptcha()
-	if err != nil {
-		ctx.JSON(common.Error(iris.StatusInternalServerError, "生成验证码失败"))
-		return
-	}
-	ryredis.Redis.Set(fmt.Sprintf("%s:%d", common.CAPTCHA, id), a, time.Minute*5)
-
-	user := captchaImage{
-		Code:    common.SUCCESS,
-		Uuid:    id,
-		Img:     b64s[strings.Index(b64s, ",")+1:],
-		Message: "操作成功",
-	}
-	// 使用 ctx.JSON 自动将user序列化为JSON并写入响应体
-	ctx.JSON(user)
+	//id, b64s, a, err := captcha.GenerateCaptcha()
+	//if err != nil {
+	//	ctx.JSON(common.Error(iris.StatusInternalServerError, "生成验证码失败"))
+	//	return
+	//}
+	//ryredis.Redis.Set(fmt.Sprintf("%s:%d", common.CAPTCHA, id), a, time.Minute*5)
+	//
+	//user := captchaImage{
+	//	Code:    common.SUCCESS,
+	//	Uuid:    id,
+	//	Img:     b64s[strings.Index(b64s, ",")+1:],
+	//	Message: "操作成功",
+	//}
+	//// 使用 ctx.JSON 自动将user序列化为JSON并写入响应体
+	//ctx.JSON(user)
 }
 
 type captchaImage struct {

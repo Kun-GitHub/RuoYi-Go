@@ -1,7 +1,6 @@
 package ryjwt
 
 import (
-	ryredis "RuoYi-Go/pkg/cache"
 	"fmt"
 	"github.com/golang-jwt/jwt/v5"
 	"time"
@@ -27,7 +26,7 @@ func Sign(k, v string, exp int64) (string, error) {
 	// 使用密钥签名令牌
 	tokenStr, err := token.SignedString(signingKey)
 
-	ryredis.Redis.Set(tokenStr, true, time.Duration(exp)*time.Hour)
+	//ryredis.Redis.Set(tokenStr, true, time.Duration(exp)*time.Hour)
 	return tokenStr, err
 }
 
@@ -48,10 +47,10 @@ func Valid(k, tokenStr string) (string, error) {
 	}
 
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		v, err := ryredis.Redis.Get(tokenStr)
-		if err != nil || v == "" {
-			return "", fmt.Errorf("token失效")
-		}
+		//v, err := ryredis.Redis.Get(tokenStr)
+		//if err != nil || v == "" {
+		//	return "", fmt.Errorf("token失效")
+		//}
 
 		return claims[k].(string), nil
 	}

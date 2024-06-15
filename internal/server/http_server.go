@@ -18,7 +18,7 @@ func StartServer(s *iris.Application) {
 
 	s.Use(middlewares.MiddlewareHandler)
 
-	s.Get("/captchaImage", handler.handler.CaptchaImage)
+	s.Get("/captchaImage", handler.CaptchaImage)
 	s.Get("/getInfo", handler.GetInfo)
 	s.Get("/getRouters", handler.GetRouters)
 

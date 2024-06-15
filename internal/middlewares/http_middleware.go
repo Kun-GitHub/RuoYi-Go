@@ -9,13 +9,8 @@ import (
 	"RuoYi-Go/internal/common"
 	model2 "RuoYi-Go/internal/domain/model"
 	service2 "RuoYi-Go/internal/domain/service"
-	ryredis "RuoYi-Go/pkg/cache"
-	"RuoYi-Go/pkg/config"
 	"RuoYi-Go/pkg/jwt"
-	"RuoYi-Go/pkg/logger"
-	"fmt"
 	"github.com/kataras/iris/v12"
-	"go.uber.org/zap"
 	"net/http"
 	"regexp"
 	"strings"
@@ -30,14 +25,14 @@ type LoginUserStruct struct {
 var loginUser = &LoginUserStruct{}
 
 func MiddlewareHandler(ctx iris.Context) {
-	uri := ctx.Request().RequestURI
+	//uri := ctx.Request().RequestURI
 
-	// 检查当前请求路径是否在跳过列表中
-	if skipInterceptor(uri, config.App.Server.NotIntercept) {
-		// 如果是，则直接调用Next，跳过此中间件的其余部分
-		ctx.Next()
-		return
-	}
+	//// 检查当前请求路径是否在跳过列表中
+	//if skipInterceptor(uri, config.App.Server.NotIntercept) {
+	//	// 如果是，则直接调用Next，跳过此中间件的其余部分
+	//	ctx.Next()
+	//	return
+	//}
 
 	authorization := ctx.GetHeader(common.AUTHORIZATION)
 	if authorization == "" {
@@ -54,11 +49,11 @@ func MiddlewareHandler(ctx iris.Context) {
 		ctx.JSON(common.Error(iris.StatusUnauthorized, "请重新登录"))
 		return
 	}
-	redis_id, err := ryredis.Redis.Get(fmt.Sprintf("%s:%s", common.TOKEN, token))
-	if err != nil || redis_id == "" || jwt_id != redis_id {
-		ctx.JSON(common.Error(iris.StatusUnauthorized, "请重新登录"))
-		return
-	}
+	//redis_id, err := ryredis.Redis.Get(fmt.Sprintf("%s:%s", common.TOKEN, token))
+	//if err != nil || redis_id == "" || jwt_id != redis_id {
+	//	ctx.JSON(common.Error(iris.StatusUnauthorized, "请重新登录"))
+	//	return
+	//}
 
 	sysUser := &model2.SysUser{}
 	ctx.Values().Set(common.USER_ID, jwt_id)
@@ -105,7 +100,7 @@ func hasPermission(ctx iris.Context, permission string) bool {
 
 	menus, err := service2.QueryMenusByUserId(loginUser.UserID)
 	if err != nil {
-		logger.Log.Error("QueryMenusByUserId error,", zap.Error(err))
+		//logger.Log.Error("QueryMenusByUserId error,", zap.Error(err))
 		return false
 	}
 	for _, menu := range menus {
