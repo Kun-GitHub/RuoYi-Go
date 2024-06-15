@@ -180,7 +180,7 @@
 <td rowspan="3">gorm</td>
 <td><a href="https://www.postgresql.org">PostgreSQL</a></td>
 <td>✅</td>
-<td>主要是想用这个</td>
+<td>试试性能</td>
 </tr>
 <tr>
 <td><a href="https://www.mysql.com/">Mysql</a></td>
@@ -189,8 +189,8 @@
 </tr>
 <tr>
 <td><a href="https://www.sqlite.org/">Sqlite</a></td>
-<td></td>
-<td></td>
+<td>✅</td>
+<td>默认</td>
 </tr>
 </tbody>
 </table>
@@ -206,7 +206,7 @@ RuoYi-Go/
 │   └── api/
 │       └── main.go
 ├── config/
-│   └── config.go
+│   └── config.yaml
 ├── internal/
 │   ├── domain/
 │   │   ├── model/
