@@ -222,9 +222,13 @@ RuoYi-Go/
 ```
 <br>
 
-### 7. 环境(工具)
-[JetBrains Fleet](https://www.jetbrains.com/fleet) （目前还是免费用，类似微软的VS Code，个人刚用这个Fleet，不喜勿喷）
-PS:发现暂不支持安装插件
+### 7. 环境(工具)  
+[Go 1.22.2](https://go.dev/doc/install) 
+
+[Visual Studio Code](https://code.visualstudio.com/) 神器
+
+[JetBrains Fleet](https://www.jetbrains.com/fleet) （目前还是免费用，类似微软的VS Code，不喜勿喷）
+PS:发现暂不支持安装插件，不太好用
 
 [DBeaver Community](https://dbeaver.io/) （SQL客户端和数据库管理工具）
 
