@@ -15,8 +15,8 @@ func NewDemoRepository() *DemoRepository {
 
 func (r *DemoRepository) GetDemoByID(id uint) (*model.Demo, error) {
 	var demo model.Demo
-	//if err := r.db.First(&demo, id).Error; err != nil {
-	//	return nil, err
-	//}
+	if err := r.db.First(&demo, id).Error; err != nil {
+		return nil, err
+	}
 	return &demo, nil
 }

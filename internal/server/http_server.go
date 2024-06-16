@@ -7,23 +7,14 @@ package ryserver
 
 import (
 	"RuoYi-Go/internal/adapters/handler"
-	"RuoYi-Go/internal/middlewares"
 	"github.com/kataras/iris/v12"
 )
 
-//var HttServer *iris.Application
-
 func StartServer(s *iris.Application) {
-	//HttServer = s
-
-	//s.Use(middlewares.MiddlewareHandler)
 
 	s.Get("/getInfo", handler.GetInfo)
 	s.Get("/getRouters", handler.GetRouters)
 
-	s.Post("/login", handler.Login)
-	s.Post("/logout", handler.Logout)
-
-	s.Get("/system/user/list", middlewares.PermissionMiddleware("system:user:list"), handler.UserList)
+	//s.Get("/system/user/list", middlewares.PermissionMiddleware("system:user:list"), handler.UserList)
 
 }
