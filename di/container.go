@@ -3,7 +3,9 @@ package di
 import (
 	"RuoYi-Go/config"
 	"RuoYi-Go/internal/adapters/handler"
+	"RuoYi-Go/internal/adapters/persistence"
 	"RuoYi-Go/internal/application/usecase"
+	"RuoYi-Go/internal/middlewares"
 	ryws "RuoYi-Go/internal/websocket"
 	"RuoYi-Go/pkg/cache"
 	rydb "RuoYi-Go/pkg/db"
@@ -35,8 +37,8 @@ func NewContainer(c config.AppConfig) (*Container, error) {
 	// 初始化Redis
 	redis, err := cache.NewRedisClient(c, log)
 	if err != nil {
-		log.Error("failed to connect to cache", zap.Error(err))
-		return nil, fmt.Errorf("failed to connect to cache: %w", err)
+		log.Error("failed to connect to redis", zap.Error(err))
+		return nil, fmt.Errorf("failed to connect to redis: %w", err)
 	}
 
 	// 初始化国际化
@@ -54,12 +56,19 @@ func NewContainer(c config.AppConfig) (*Container, error) {
 
 	app := iris.New()
 
+	ms := middlewares.NewMiddlewareStruct(redis, log, c)
+	app.Use(ms.MiddlewareHandler)
+
 	//demoHandler := resolveDemoHandler(redis, cache, log)
 	//app.Get("/demos/{id:uint}", demoHandler.GetDemoByID)
 	//app.Get("/generate-code", demoHandler.GenerateRandomCode)
 
 	captchaHandler := resolveCaptchaHandler(redis, log)
 	app.Get("/captchaImage", captchaHandler.GenerateCaptchaImage)
+
+	authHandler := resolveAuthHandler(db, redis, log, cache)
+	app.Post("/login", authHandler.Login)
+	app.Post("/logout", authHandler.Logout)
 
 	ryws.StartWebSocket(app, log)
 
@@ -91,9 +100,11 @@ func resolveCaptchaHandler(redis *cache.RedisClient, logger *zap.Logger) *handle
 	return handler.NewCaptchaHandler(demoService)
 }
 
-func resolveAuthHandler(redis *cache.RedisClient, logger *zap.Logger) *handler.CaptchaHandler {
-	demoService := usecase.NewCaptchaService(redis, logger)
-	return handler.NewCaptchaHandler(demoService)
+func resolveAuthHandler(db *rydb.DatabaseStruct, redis *cache.RedisClient, logger *zap.Logger, cache *freecache.Cache) *handler.AuthHandler {
+	sysUserRepo := persistence.NewSysUserRepository(db)
+	sysUserService := usecase.NewSysUserService(sysUserRepo, cache, logger)
+	authService := usecase.NewAuthService(sysUserService, redis, logger)
+	return handler.NewAuthHandler(authService, logger)
 }
 
 func (c *Container) Close() {
@@ -119,6 +130,10 @@ func (c *Container) Close() {
 		c.logger.Error("failed to close all hosts", zap.Error(err))
 	} else {
 		c.logger.Info("all hosts closed")
+	}
+
+	if c.cache != nil {
+		c.cache.Clear()
 	}
 
 	// 关闭日志

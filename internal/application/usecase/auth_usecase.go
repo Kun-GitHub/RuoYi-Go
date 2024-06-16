@@ -1,10 +1,16 @@
 package usecase
 
 import (
+	"RuoYi-Go/internal/common"
 	"RuoYi-Go/internal/domain/model"
 	"RuoYi-Go/internal/ports/input"
 	"RuoYi-Go/pkg/cache"
+	ryjwt "RuoYi-Go/pkg/jwt"
+	"fmt"
 	"go.uber.org/zap"
+	"golang.org/x/crypto/bcrypt"
+	"strings"
+	"time"
 )
 
 type AuthService struct {
@@ -18,9 +24,44 @@ func NewAuthService(service input.SysUserService, redis *cache.RedisClient, logg
 }
 
 func (this *AuthService) Login(l model.LoginRequest) (*model.LoginSuccess, error) {
-	_, err := this.service.QueryUserByUserName(l.Username)
+	v, err := this.redis.Get(fmt.Sprintf("%s:%v", common.CAPTCHA, l.Uuid))
+	if err != nil || v == "" {
+		return nil, fmt.Errorf("验证码错误或已失效")
+	}
+	this.redis.Del(fmt.Sprintf("%s:%v", common.CAPTCHA, l.Uuid))
 
-	return nil, err
+	if strings.EqualFold(v, l.Code) {
+		sysUser := &model.SysUser{}
+		sysUser, err = this.service.QueryUserByUserName(l.Username)
+		if err != nil {
+			return nil, err
+		}
+		if sysUser.UserID == 0 {
+			return nil, fmt.Errorf("用户名或密码错误")
+		}
+
+		if err = bcrypt.CompareHashAndPassword([]byte(sysUser.Password), []byte(l.Password)); err != nil {
+			return nil, fmt.Errorf("用户名或密码错误", zap.Error(err))
+		}
+
+		var token = ""
+		token, err = ryjwt.Sign(common.USER_ID, fmt.Sprintf("%d", sysUser.UserID), 72)
+		if err != nil {
+			this.logger.Error("生成token失败", zap.Error(err))
+			return nil, fmt.Errorf("生成token失败", zap.Error(err))
+		} else {
+			this.redis.Set(fmt.Sprintf("%s:%s", common.TOKEN, token), sysUser.UserID, 72*time.Hour)
+
+			loginSuccess := &model.LoginSuccess{
+				Code:    common.SUCCESS,
+				Token:   token,
+				Message: "操作成功",
+			}
+			return loginSuccess, nil
+		}
+	} else {
+		return nil, fmt.Errorf("验证码错误或已失效")
+	}
 }
 
 func (this *AuthService) Logout(token string) error {

@@ -10,16 +10,16 @@ import (
 	"go.uber.org/zap"
 )
 
-type SysHandler struct {
+type AuthHandler struct {
 	service input.AuthService
 	logger  *zap.Logger
 }
 
-func NewSysHandler(service input.AuthService, logger *zap.Logger) *SysHandler {
-	return &SysHandler{service: service, logger: logger}
+func NewAuthHandler(service input.AuthService, logger *zap.Logger) *AuthHandler {
+	return &AuthHandler{service: service, logger: logger}
 }
 
-func (h *SysHandler) Login(ctx iris.Context) {
+func (h *AuthHandler) Login(ctx iris.Context) {
 	var l model.LoginRequest
 	// Attempt to read and bind the JSON request body to the 'user' variable
 	if err := ctx.ReadJSON(&l); err != nil {
@@ -29,15 +29,15 @@ func (h *SysHandler) Login(ctx iris.Context) {
 
 	resp, err := h.service.Login(l)
 	if err != nil {
-		h.logger.Error("login failed，", zap.Error(err))
-		ctx.JSON(common.Error(iris.StatusInternalServerError, err.Error()))
+		//h.logger.Debug("login failed", zap.Error(err))
+		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "login failed, error：%s", err.Error()))
 		return
 	}
 
 	ctx.JSON(resp)
 }
 
-func (h *SysHandler) Logout(ctx iris.Context) {
+func (h *AuthHandler) Logout(ctx iris.Context) {
 	token := ctx.Values().Get(common.TOKEN)
 	if token != nil {
 		if err := h.service.Logout(fmt.Sprintf("%s:%s", common.TOKEN, token)); err != nil {

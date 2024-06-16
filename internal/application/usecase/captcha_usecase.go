@@ -27,7 +27,7 @@ func (this *CaptchaService) GenerateCaptchaImage() (model.CaptchaImage, error) {
 		this.logger.Error("生成验证码失败", zap.Error(err))
 		return model.CaptchaImage{}, err
 	}
-	this.redis.Set(fmt.Sprintf("%s:%d", common.CAPTCHA, id), a, time.Minute*5)
+	this.redis.Set(fmt.Sprintf("%s:%v", common.CAPTCHA, id), a, time.Minute*5)
 
 	c := model.CaptchaImage{
 		Code:    common.SUCCESS,

@@ -16,9 +16,8 @@ import (
 func StartServer(s *iris.Application) {
 	//HttServer = s
 
-	s.Use(middlewares.MiddlewareHandler)
+	//s.Use(middlewares.MiddlewareHandler)
 
-	s.Get("/captchaImage", handler.CaptchaImage)
 	s.Get("/getInfo", handler.GetInfo)
 	s.Get("/getRouters", handler.GetRouters)
 

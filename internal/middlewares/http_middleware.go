@@ -6,33 +6,51 @@
 package middlewares
 
 import (
+	"RuoYi-Go/config"
 	"RuoYi-Go/internal/common"
-	model2 "RuoYi-Go/internal/domain/model"
+	"RuoYi-Go/internal/domain/model"
 	service2 "RuoYi-Go/internal/domain/service"
+	"RuoYi-Go/pkg/cache"
 	"RuoYi-Go/pkg/jwt"
+	"fmt"
 	"github.com/kataras/iris/v12"
+	"go.uber.org/zap"
 	"net/http"
 	"regexp"
 	"strings"
 )
 
 type LoginUserStruct struct {
-	model2.SysUser
-	Admin bool              `json:"admin"`
-	Roles []*model2.SysRole `json:"roles"`
+	model.SysUser
+	Admin bool             `json:"admin"`
+	Roles []*model.SysRole `json:"roles"`
 }
 
 var loginUser = &LoginUserStruct{}
 
-func MiddlewareHandler(ctx iris.Context) {
-	//uri := ctx.Request().RequestURI
+type MiddlewareStruct struct {
+	redis  *cache.RedisClient
+	logger *zap.Logger
+	cfg    config.AppConfig
+}
 
-	//// 检查当前请求路径是否在跳过列表中
-	//if skipInterceptor(uri, config.App.Server.NotIntercept) {
-	//	// 如果是，则直接调用Next，跳过此中间件的其余部分
-	//	ctx.Next()
-	//	return
-	//}
+func NewMiddlewareStruct(r *cache.RedisClient, l *zap.Logger, c config.AppConfig) *MiddlewareStruct {
+	return &MiddlewareStruct{
+		redis:  r,
+		logger: l,
+		cfg:    c,
+	}
+}
+
+func (this *MiddlewareStruct) MiddlewareHandler(ctx iris.Context) {
+	uri := ctx.Request().RequestURI
+
+	// 检查当前请求路径是否在跳过列表中
+	if skipInterceptor(uri, this.cfg.Server.NotIntercept) {
+		// 如果是，则直接调用Next，跳过此中间件的其余部分
+		ctx.Next()
+		return
+	}
 
 	authorization := ctx.GetHeader(common.AUTHORIZATION)
 	if authorization == "" {
@@ -49,13 +67,13 @@ func MiddlewareHandler(ctx iris.Context) {
 		ctx.JSON(common.Error(iris.StatusUnauthorized, "请重新登录"))
 		return
 	}
-	//redis_id, err := ryredis.Redis.Get(fmt.Sprintf("%s:%s", common.TOKEN, token))
-	//if err != nil || redis_id == "" || jwt_id != redis_id {
-	//	ctx.JSON(common.Error(iris.StatusUnauthorized, "请重新登录"))
-	//	return
-	//}
+	redis_id, err := this.redis.Get(fmt.Sprintf("%s:%s", common.TOKEN, token))
+	if err != nil || redis_id == "" || jwt_id != redis_id {
+		ctx.JSON(common.Error(iris.StatusUnauthorized, "请重新登录"))
+		return
+	}
 
-	sysUser := &model2.SysUser{}
+	sysUser := &model.SysUser{}
 	ctx.Values().Set(common.USER_ID, jwt_id)
 	ctx.Values().Set(common.TOKEN, token)
 	if err := service2.QueryUserByUserId(jwt_id, sysUser); err != nil {

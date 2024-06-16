@@ -37,8 +37,8 @@ func (this *SysUserService) QueryUserByUserName(username string) (*model.SysUser
 
 	structEntity, err = this.repo.QueryUserByUserName(username)
 	if err != nil {
-		this.logger.Debug("查询用户信息失败", zap.Error(err))
-		return nil, fmt.Errorf("查询用户信息失败", zap.Error(err))
+		this.logger.Error("查询用户信息失败", zap.Error(err))
+		return nil, err
 	} else {
 		// 序列化用户对象并存入缓存
 		userBytes, err = json.Marshal(structEntity)

@@ -9,7 +9,6 @@ import (
 	"RuoYi-Go/config"
 	"database/sql"
 	"fmt"
-	"github.com/coocood/freecache"
 	"gorm.io/driver/mysql"
 	"gorm.io/driver/postgres"
 	"gorm.io/driver/sqlite"
@@ -19,8 +18,7 @@ import (
 )
 
 type DatabaseStruct struct {
-	db    *gorm.DB
-	Cache *freecache.Cache
+	db *gorm.DB
 
 	mu sync.Mutex
 }
@@ -71,23 +69,14 @@ func OpenDB(cfg config.AppConfig) (*DatabaseStruct, error) {
 	//	log.Fatalf("Failed to apply migrations: %v", err)
 	//}
 
-	//设置缓存大小
-	cacheSize := 100 * 1024 * 1024 // 100MB缓存大小
-	cache := freecache.NewCache(cacheSize)
-
 	return &DatabaseStruct{
-		db:    db,
-		Cache: cache,
+		db: db,
 	}, nil
 }
 
 func (ds *DatabaseStruct) CloseDB() error {
 	ds.mu.Lock()
 	defer ds.mu.Unlock()
-
-	if ds.Cache != nil {
-		ds.Cache.Clear()
-	}
 
 	if ds.db != nil {
 		sqlDB, err := ds.db.DB()
