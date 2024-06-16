@@ -13,7 +13,6 @@ import (
 	"RuoYi-Go/pkg/logger"
 	"context"
 	"fmt"
-	"github.com/coocood/freecache"
 	"github.com/kataras/iris/v12"
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 	"go.uber.org/zap"
@@ -21,13 +20,13 @@ import (
 )
 
 type Container struct {
-	cfg       config.AppConfig
+	appConfig config.AppConfig
 	logger    *zap.Logger
 	redis     *cache.RedisClient
 	localizer *i18n.Localizer
-	db        *rydb.DatabaseStruct
+	gormDB    *rydb.DatabaseStruct
 	app       *iris.Application
-	cache     *freecache.Cache
+	freeCache *cache.FreeCacheClient
 }
 
 func NewContainer(c config.AppConfig) (*Container, error) {
@@ -51,12 +50,10 @@ func NewContainer(c config.AppConfig) (*Container, error) {
 		return nil, fmt.Errorf("failed to initialize database: %w", err)
 	}
 
-	// 初始化Freecache
-	cache := freecache.NewCache(100 * 1024 * 1024) // 100MB
+	freeCache := cache.NewFreeCacheClient(100 * 1024 * 1024)
 
 	app := iris.New()
-
-	ms := middlewares.NewMiddlewareStruct(redis, log, c)
+	ms := resolveMiddlewareStruct(db, redis, log, freeCache, c)
 	app.Use(ms.MiddlewareHandler)
 
 	//demoHandler := resolveDemoHandler(redis, cache, log)
@@ -66,7 +63,7 @@ func NewContainer(c config.AppConfig) (*Container, error) {
 	captchaHandler := resolveCaptchaHandler(redis, log)
 	app.Get("/captchaImage", captchaHandler.GenerateCaptchaImage)
 
-	authHandler := resolveAuthHandler(db, redis, log, cache)
+	authHandler := resolveAuthHandler(db, redis, log, freeCache)
 	app.Post("/login", authHandler.Login)
 	app.Post("/logout", authHandler.Logout)
 
@@ -79,28 +76,34 @@ func NewContainer(c config.AppConfig) (*Container, error) {
 	}
 
 	return &Container{
-		cfg:       c,
+		appConfig: c,
 		logger:    log,
 		redis:     redis,
 		localizer: l,
-		db:        db,
+		gormDB:    db,
 		app:       app,
-		cache:     cache,
+		freeCache: freeCache,
 	}, nil
 }
 
-//func resolveDemoHandler(redis *cache.RedisClient, cache *freecache.Cache, logger *zap.Logger) *handler.DemoHandler {
-//	demoRepo := persistence.NewDemoRepository()
-//	demoService := usecase.NewDemoService(demoRepo, redis, cache, logger)
-//	return handler.NewDemoHandler(demoService, logger)
-//}
+//	func resolveDemoHandler(redis *cache.RedisClient, cache *freecache.Cache, logger *zap.Logger) *handler.DemoHandler {
+//		demoRepo := persistence.NewDemoRepository()
+//		demoService := usecase.NewDemoService(demoRepo, redis, cache, logger)
+//		return handler.NewDemoHandler(demoService, logger)
+//	}
+
+func resolveMiddlewareStruct(db *rydb.DatabaseStruct, redis *cache.RedisClient, logger *zap.Logger, cache *cache.FreeCacheClient, appConfig config.AppConfig) *middlewares.MiddlewareStruct {
+	sysUserRepo := persistence.NewSysUserRepository(db)
+	sysUserService := usecase.NewSysUserService(sysUserRepo, cache, logger)
+	return middlewares.NewMiddlewareStruct(redis, logger, appConfig, sysUserService)
+}
 
 func resolveCaptchaHandler(redis *cache.RedisClient, logger *zap.Logger) *handler.CaptchaHandler {
 	demoService := usecase.NewCaptchaService(redis, logger)
 	return handler.NewCaptchaHandler(demoService)
 }
 
-func resolveAuthHandler(db *rydb.DatabaseStruct, redis *cache.RedisClient, logger *zap.Logger, cache *freecache.Cache) *handler.AuthHandler {
+func resolveAuthHandler(db *rydb.DatabaseStruct, redis *cache.RedisClient, logger *zap.Logger, cache *cache.FreeCacheClient) *handler.AuthHandler {
 	sysUserRepo := persistence.NewSysUserRepository(db)
 	sysUserService := usecase.NewSysUserService(sysUserRepo, cache, logger)
 	authService := usecase.NewAuthService(sysUserService, redis, logger)
@@ -108,7 +111,7 @@ func resolveAuthHandler(db *rydb.DatabaseStruct, redis *cache.RedisClient, logge
 }
 
 func (c *Container) Close() {
-	err := c.db.CloseDB()
+	err := c.gormDB.CloseDB()
 	if err != nil {
 		c.logger.Error("Failed to close the database connection:", zap.Error(err))
 	} else {
@@ -132,8 +135,8 @@ func (c *Container) Close() {
 		c.logger.Info("all hosts closed")
 	}
 
-	if c.cache != nil {
-		c.cache.Clear()
+	if c.freeCache != nil {
+		c.freeCache.Clear()
 	}
 
 	// 关闭日志

@@ -1,7 +1,6 @@
 package cache
 
 import (
-	"fmt"
 	"github.com/coocood/freecache"
 )
 
@@ -13,16 +12,12 @@ func NewFreeCacheClient(size int) *FreeCacheClient {
 	return &FreeCacheClient{cache: freecache.NewCache(size)}
 }
 
-func (c *FreeCacheClient) Set(key string, value interface{}, expireSeconds int) error {
-	return c.cache.Set([]byte(key), []byte(fmt.Sprintf("%v", value)), expireSeconds)
+func (c *FreeCacheClient) Set(key, value []byte, expireSeconds int) (err error) {
+	return c.cache.Set(key, value, expireSeconds)
 }
 
-func (c *FreeCacheClient) Get(key string) (interface{}, error) {
-	data, err := c.cache.Get([]byte(key))
-	if err != nil {
-		return nil, err
-	}
-	return string(data), nil
+func (c *FreeCacheClient) Get(key []byte) (value []byte, err error) {
+	return c.cache.Get(key)
 }
 
 func (c *FreeCacheClient) Del(key string) bool {

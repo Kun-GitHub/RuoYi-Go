@@ -9,13 +9,12 @@ import (
 	"RuoYi-Go/config"
 	"RuoYi-Go/internal/common"
 	"RuoYi-Go/internal/domain/model"
-	service2 "RuoYi-Go/internal/domain/service"
+	"RuoYi-Go/internal/ports/input"
 	"RuoYi-Go/pkg/cache"
 	"RuoYi-Go/pkg/jwt"
 	"fmt"
 	"github.com/kataras/iris/v12"
 	"go.uber.org/zap"
-	"net/http"
 	"regexp"
 	"strings"
 )
@@ -29,22 +28,23 @@ type LoginUserStruct struct {
 var loginUser = &LoginUserStruct{}
 
 type MiddlewareStruct struct {
-	redis  *cache.RedisClient
-	logger *zap.Logger
-	cfg    config.AppConfig
+	redis   *cache.RedisClient
+	logger  *zap.Logger
+	cfg     config.AppConfig
+	service input.SysUserService
 }
 
-func NewMiddlewareStruct(r *cache.RedisClient, l *zap.Logger, c config.AppConfig) *MiddlewareStruct {
+func NewMiddlewareStruct(r *cache.RedisClient, l *zap.Logger, c config.AppConfig, s input.SysUserService) *MiddlewareStruct {
 	return &MiddlewareStruct{
-		redis:  r,
-		logger: l,
-		cfg:    c,
+		redis:   r,
+		logger:  l,
+		cfg:     c,
+		service: s,
 	}
 }
 
 func (this *MiddlewareStruct) MiddlewareHandler(ctx iris.Context) {
 	uri := ctx.Request().RequestURI
-
 	// 检查当前请求路径是否在跳过列表中
 	if skipInterceptor(uri, this.cfg.Server.NotIntercept) {
 		// 如果是，则直接调用Next，跳过此中间件的其余部分
@@ -73,13 +73,14 @@ func (this *MiddlewareStruct) MiddlewareHandler(ctx iris.Context) {
 		return
 	}
 
-	sysUser := &model.SysUser{}
-	ctx.Values().Set(common.USER_ID, jwt_id)
-	ctx.Values().Set(common.TOKEN, token)
-	if err := service2.QueryUserByUserId(jwt_id, sysUser); err != nil {
+	sysUser, err := this.service.QueryUserByUserId(jwt_id)
+	if err != nil {
 		ctx.JSON(common.Error(iris.StatusUnauthorized, "请重新登录"))
 		return
 	}
+
+	ctx.Values().Set(common.USER_ID, jwt_id)
+	ctx.Values().Set(common.TOKEN, token)
 
 	loginUser.SysUser = *sysUser
 	if sysUser.UserID == 1 {
@@ -108,35 +109,35 @@ func ClearLoginUser() {
 	loginUser = nil
 }
 
-// 定义一个权限检查函数
-func hasPermission(ctx iris.Context, permission string) bool {
-	if loginUser == nil {
-		return false
-	} else if loginUser.Admin {
-		return true
-	}
-
-	menus, err := service2.QueryMenusByUserId(loginUser.UserID)
-	if err != nil {
-		//logger.Log.Error("QueryMenusByUserId error,", zap.Error(err))
-		return false
-	}
-	for _, menu := range menus {
-		if menu.Perms == permission {
-			return true
-		}
-	}
-	return false
-}
-
-// 定义一个权限检查的中间件
-func PermissionMiddleware(permission string) iris.Handler {
-	return func(ctx iris.Context) {
-		if !hasPermission(ctx, permission) {
-			ctx.StatusCode(http.StatusForbidden)
-			ctx.StopExecution()
-			return
-		}
-		ctx.Next()
-	}
-}
+//// 定义一个权限检查函数
+//func hasPermission(ctx iris.Context, permission string) bool {
+//	if loginUser == nil {
+//		return false
+//	} else if loginUser.Admin {
+//		return true
+//	}
+//
+//	menus, err := service2.QueryMenusByUserId(loginUser.UserID)
+//	if err != nil {
+//		//logger.Log.Error("QueryMenusByUserId error,", zap.Error(err))
+//		return false
+//	}
+//	for _, menu := range menus {
+//		if menu.Perms == permission {
+//			return true
+//		}
+//	}
+//	return false
+//}
+//
+//// 定义一个权限检查的中间件
+//func PermissionMiddleware(permission string) iris.Handler {
+//	return func(ctx iris.Context) {
+//		if !hasPermission(ctx, permission) {
+//			ctx.StatusCode(http.StatusForbidden)
+//			ctx.StopExecution()
+//			return
+//		}
+//		ctx.Next()
+//	}
+//}

@@ -22,3 +22,13 @@ func (this *SysUserRepository) QueryUserByUserName(username string) (*model.SysU
 	}
 	return structEntity, nil
 }
+
+func (this *SysUserRepository) QueryUserByUserId(userId string) (*model.SysUser, error) {
+	structEntity := &model.SysUser{}
+	err := this.db.FindColumns(model.TableNameSysUser, structEntity,
+		"user_id = ? and status = '0' and del_flag = '0'", userId)
+	if err != nil {
+		return nil, err
+	}
+	return structEntity, nil
+}
