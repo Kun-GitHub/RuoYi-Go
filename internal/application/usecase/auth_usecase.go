@@ -81,7 +81,7 @@ func (this *AuthService) Logout(token string) error {
 
 func (this *AuthService) GetInfo(loginUser *model.LoginUserStruct) (*model.GetInfoSuccess, error) {
 	var p []string
-	if loginUser.UserID == 1 {
+	if loginUser.UserID == common.ADMINID {
 		p = append(p, "*:*:*")
 	} else {
 	}

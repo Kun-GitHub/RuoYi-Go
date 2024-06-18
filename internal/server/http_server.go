@@ -10,6 +10,7 @@ import (
 	"RuoYi-Go/internal/adapters/handler"
 	"RuoYi-Go/internal/adapters/persistence"
 	"RuoYi-Go/internal/application/usecase"
+	"RuoYi-Go/internal/domain/model"
 	"RuoYi-Go/internal/middlewares"
 	"RuoYi-Go/pkg/cache"
 	rydb "RuoYi-Go/pkg/db"
@@ -18,7 +19,6 @@ import (
 )
 
 func StartServer(s *iris.Application) {
-	s.Get("/getRouters", handler.GetRouters)
 
 	//s.Get("/system/user/list", middlewares.PermissionMiddleware("system:user:list"), handler.UserList)
 }
@@ -52,4 +52,10 @@ func ResolveAuthHandler(db *rydb.DatabaseStruct, redis *cache.RedisClient, logge
 
 	authService := usecase.NewAuthService(sysUserService, sysRoleService, sysDeptService, redis, logger)
 	return handler.NewAuthHandler(authService, logger)
+}
+
+func ResolveSysMenuHandler(db *rydb.DatabaseStruct, logger *zap.Logger, cache *cache.FreeCacheClient, appConfig config.AppConfig) *model.SysMenuHandler {
+	sysMenuRepo := persistence.NewSysMenuRepository(db)
+	sysMenuService := usecase.NewSysMenuService(sysMenuRepo, cache, logger)
+	return handler.NewSysMenuHandler(sysMenuService)
 }

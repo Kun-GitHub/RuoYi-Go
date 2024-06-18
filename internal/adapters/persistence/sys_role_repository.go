@@ -24,7 +24,7 @@ func (this *SysRoleRepository) QueryRolesByUserId(userId int64) ([]*model.SysRol
 	err := this.db.Transactional(func(db *gorm.DB) error {
 		err := db.Table("sys_role sr").Select("sr.*").
 			Joins("LEFT JOIN sys_user_role sur ON sur.role_id = sr.role_id").
-			Where("sr.status = '0' and sur.user_id = ?", userId).
+			Where("sr.status = '0' and sr.del_flag = '0' and sur.user_id = ?", userId).
 			Find(&roles).Error
 		return err
 	})

@@ -77,7 +77,7 @@ func (this *MiddlewareStruct) MiddlewareHandler(ctx iris.Context) {
 	ctx.Values().Set(common.TOKEN, token)
 
 	loginUser.SysUser = sysUser
-	if sysUser.UserID == 1 {
+	if sysUser.UserID == common.ADMINID {
 		loginUser.Admin = true
 	}
 

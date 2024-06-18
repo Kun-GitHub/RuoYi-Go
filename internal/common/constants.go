@@ -5,6 +5,8 @@
 
 package common
 
+const ADMINID = 1
+
 const CAPTCHA = "captcha.id"
 const AUTHORIZATION = "Authorization"
 const USER_ID = "user_id"
