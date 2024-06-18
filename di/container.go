@@ -7,14 +7,11 @@ package di
 
 import (
 	"RuoYi-Go/config"
-	"RuoYi-Go/internal/adapters/handler"
-	"RuoYi-Go/internal/adapters/persistence"
-	"RuoYi-Go/internal/application/usecase"
-	"RuoYi-Go/internal/middlewares"
-	ryws "RuoYi-Go/internal/websocket"
+	"RuoYi-Go/internal/server"
+	"RuoYi-Go/internal/websocket"
 	"RuoYi-Go/pkg/cache"
-	rydb "RuoYi-Go/pkg/db"
-	ryi18n "RuoYi-Go/pkg/i18n"
+	"RuoYi-Go/pkg/db"
+	"RuoYi-Go/pkg/i18n"
 	"RuoYi-Go/pkg/logger"
 	"context"
 	"fmt"
@@ -58,19 +55,20 @@ func NewContainer(c config.AppConfig) (*Container, error) {
 	freeCache := cache.NewFreeCacheClient(100 * 1024 * 1024)
 
 	app := iris.New()
-	ms := resolveMiddlewareStruct(db, redis, log, freeCache, c)
+	ms := ryserver.ResolveMiddlewareStruct(db, redis, log, freeCache, c)
 	app.Use(ms.MiddlewareHandler)
 
-	//demoHandler := resolveDemoHandler(redis, cache, log)
+	//demoHandler := ryserver.ResolveDemoHandler(redis, cache, log)
 	//app.Get("/demos/{id:uint}", demoHandler.GetDemoByID)
 	//app.Get("/generate-code", demoHandler.GenerateRandomCode)
 
-	captchaHandler := resolveCaptchaHandler(redis, log)
+	captchaHandler := ryserver.ResolveCaptchaHandler(redis, log)
 	app.Get("/captchaImage", captchaHandler.GenerateCaptchaImage)
 
-	authHandler := resolveAuthHandler(db, redis, log, freeCache)
+	authHandler := ryserver.ResolveAuthHandler(db, redis, log, freeCache)
 	app.Post("/login", authHandler.Login)
 	app.Post("/logout", authHandler.Logout)
+	app.Get("/getInfo", authHandler.GetInfo)
 
 	ryws.StartWebSocket(app, log)
 
@@ -91,30 +89,6 @@ func NewContainer(c config.AppConfig) (*Container, error) {
 	}, nil
 }
 
-//	func resolveDemoHandler(redis *cache.RedisClient, cache *freecache.Cache, logger *zap.Logger) *handler.DemoHandler {
-//		demoRepo := persistence.NewDemoRepository()
-//		demoService := usecase.NewDemoService(demoRepo, redis, cache, logger)
-//		return handler.NewDemoHandler(demoService, logger)
-//	}
-
-func resolveMiddlewareStruct(db *rydb.DatabaseStruct, redis *cache.RedisClient, logger *zap.Logger, cache *cache.FreeCacheClient, appConfig config.AppConfig) *middlewares.MiddlewareStruct {
-	sysUserRepo := persistence.NewSysUserRepository(db)
-	sysUserService := usecase.NewSysUserService(sysUserRepo, cache, logger)
-	return middlewares.NewMiddlewareStruct(redis, logger, appConfig, sysUserService)
-}
-
-func resolveCaptchaHandler(redis *cache.RedisClient, logger *zap.Logger) *handler.CaptchaHandler {
-	demoService := usecase.NewCaptchaService(redis, logger)
-	return handler.NewCaptchaHandler(demoService)
-}
-
-func resolveAuthHandler(db *rydb.DatabaseStruct, redis *cache.RedisClient, logger *zap.Logger, cache *cache.FreeCacheClient) *handler.AuthHandler {
-	sysUserRepo := persistence.NewSysUserRepository(db)
-	sysUserService := usecase.NewSysUserService(sysUserRepo, cache, logger)
-	authService := usecase.NewAuthService(sysUserService, redis, logger)
-	return handler.NewAuthHandler(authService, logger)
-}
-
 func (c *Container) Close() {
 	err := c.gormDB.CloseDB()
 	if err != nil {
@@ -130,8 +104,7 @@ func (c *Container) Close() {
 		c.logger.Info("Redis client closed")
 	}
 
-	timeout := 5 * time.Second
-	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	// close all hosts
 	if err := c.app.Shutdown(ctx); err != nil {

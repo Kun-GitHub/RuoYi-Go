@@ -3,15 +3,12 @@
 // Author: K. See：https://github.com/Kun-GitHub/RuoYi-Go
 // Email: hot_kun@hotmail.com or BusinessCallKun@gmail.com
 
-package input
+package output
 
 import (
 	"RuoYi-Go/internal/domain/model"
 )
 
-// AuthService 输入端口接口
-type AuthService interface {
-	Login(l model.LoginRequest) (*model.LoginSuccess, error)
-	Logout(token string) error
-	GetInfo(loginUser *model.LoginUserStruct) (*model.GetInfoSuccess, error)
+type SysRoleRepository interface {
+	QueryRolesByUserId(userId int64) ([]*model.SysRole, error)
 }

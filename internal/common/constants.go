@@ -17,3 +17,5 @@ const NO_FRAME = 1
 const LAYOUT = "Layout"
 const INNER_LINK = "InnerLink"
 const PARENT_VIEW = "ParentView"
+
+const EXPIRESECONDS = 0

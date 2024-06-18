@@ -19,13 +19,7 @@ import (
 	"strings"
 )
 
-type LoginUserStruct struct {
-	model.SysUser
-	Admin bool             `json:"admin"`
-	Roles []*model.SysRole `json:"roles"`
-}
-
-var loginUser = &LoginUserStruct{}
+var loginUser = &model.LoginUserStruct{}
 
 type MiddlewareStruct struct {
 	redis   *cache.RedisClient
@@ -82,7 +76,7 @@ func (this *MiddlewareStruct) MiddlewareHandler(ctx iris.Context) {
 	ctx.Values().Set(common.USER_ID, jwt_id)
 	ctx.Values().Set(common.TOKEN, token)
 
-	loginUser.SysUser = *sysUser
+	loginUser.SysUser = sysUser
 	if sysUser.UserID == 1 {
 		loginUser.Admin = true
 	}
@@ -101,7 +95,7 @@ func skipInterceptor(path string, notInterceptList []string) bool {
 	return false
 }
 
-func GetLoginUser() *LoginUserStruct {
+func GetLoginUser() *model.LoginUserStruct {
 	return loginUser
 }
 

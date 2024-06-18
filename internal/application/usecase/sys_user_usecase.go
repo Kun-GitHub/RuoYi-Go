@@ -6,6 +6,7 @@
 package usecase
 
 import (
+	"RuoYi-Go/internal/common"
 	"RuoYi-Go/internal/domain/model"
 	"RuoYi-Go/internal/ports/input"
 	"RuoYi-Go/internal/ports/output"
@@ -20,8 +21,6 @@ type SysUserService struct {
 	cache  *cache.FreeCacheClient
 	logger *zap.Logger
 }
-
-var expireSeconds = 0
 
 func NewSysUserService(repo output.SysUserRepository, cache *cache.FreeCacheClient, logger *zap.Logger) input.SysUserService {
 	return &SysUserService{repo: repo, cache: cache, logger: logger}
@@ -48,8 +47,8 @@ func (this *SysUserService) QueryUserByUserName(username string) (*model.SysUser
 		// 序列化用户对象并存入缓存
 		userBytes, err = json.Marshal(structEntity)
 		if err == nil && structEntity.UserID != 0 {
-			this.cache.Set([]byte(fmt.Sprintf("UserName:%s", username)), userBytes, expireSeconds)          // 第三个参数是过期时间，0表示永不过期
-			this.cache.Set([]byte(fmt.Sprintf("UserID:%d", structEntity.UserID)), userBytes, expireSeconds) // 第三个参数是过期时间，0表示永不过期
+			this.cache.Set([]byte(fmt.Sprintf("UserName:%s", username)), userBytes, common.EXPIRESECONDS)          // 第三个参数是过期时间，0表示永不过期
+			this.cache.Set([]byte(fmt.Sprintf("UserID:%d", structEntity.UserID)), userBytes, common.EXPIRESECONDS) // 第三个参数是过期时间，0表示永不过期
 			return structEntity, nil
 		}
 	}
@@ -79,7 +78,7 @@ func (this *SysUserService) QueryUserByUserId(userId string) (*model.SysUser, er
 		// 序列化用户对象并存入缓存
 		userBytes, err = json.Marshal(structEntity)
 		if err == nil && structEntity.UserID != 0 {
-			this.cache.Set([]byte(fmt.Sprintf("UserID:%d", structEntity.UserID)), userBytes, expireSeconds) // 第三个参数是过期时间，0表示永不过期
+			this.cache.Set([]byte(fmt.Sprintf("UserID:%d", structEntity.UserID)), userBytes, common.EXPIRESECONDS) // 第三个参数是过期时间，0表示永不过期
 			return structEntity, nil
 		}
 	}

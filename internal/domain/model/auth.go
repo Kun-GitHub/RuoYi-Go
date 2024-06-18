@@ -5,7 +5,11 @@
 
 package model
 
-import "RuoYi-Go/internal/middlewares"
+type LoginUserStruct struct {
+	*SysUser
+	Admin bool       `json:"admin"`
+	Roles []*SysRole `json:"roles"`
+}
 
 type LoginSuccess struct {
 	Code    int    `json:"code"`
@@ -21,9 +25,9 @@ type LoginRequest struct {
 }
 
 type GetInfoSuccess struct {
-	Code        int                          `json:"code"`
-	Message     string                       `json:"msg"`
-	Permissions []string                     `json:"permissions"`
-	User        *middlewares.LoginUserStruct `json:"user"`
-	Roles       []string                     `json:"roles"`
+	Code        int              `json:"code"`
+	Message     string           `json:"msg"`
+	Permissions []string         `json:"permissions"`
+	User        *LoginUserStruct `json:"user"`
+	Roles       []string         `json:"roles"`
 }

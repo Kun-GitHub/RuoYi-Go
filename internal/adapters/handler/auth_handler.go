@@ -61,3 +61,19 @@ func (h *AuthHandler) Logout(ctx iris.Context) {
 
 	ctx.JSON(common.Success("Logout successful"))
 }
+
+func (h *AuthHandler) GetInfo(ctx iris.Context) {
+	loginUser := middlewares.GetLoginUser()
+	if loginUser == nil || loginUser.UserID == 0 {
+		ctx.JSON(common.Error(iris.StatusUnauthorized, "请重新登录"))
+		return
+	}
+
+	info, err := h.service.GetInfo(loginUser)
+	if err != nil {
+		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "getInfo failed, error：%s", err.Error()))
+		return
+	}
+	// 使用 ctx.JSON 自动将user序列化为JSON并写入响应体
+	ctx.JSON(info)
+}

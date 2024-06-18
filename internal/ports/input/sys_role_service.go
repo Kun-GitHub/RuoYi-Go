@@ -9,9 +9,7 @@ import (
 	"RuoYi-Go/internal/domain/model"
 )
 
-// AuthService 输入端口接口
-type AuthService interface {
-	Login(l model.LoginRequest) (*model.LoginSuccess, error)
-	Logout(token string) error
-	GetInfo(loginUser *model.LoginUserStruct) (*model.GetInfoSuccess, error)
+// SysRoleService 输入端口接口
+type SysRoleService interface {
+	QueryRolesByUserId(userId int64) ([]*model.SysRole, error)
 }

@@ -19,13 +19,14 @@ import (
 )
 
 type AuthService struct {
-	service input.SysUserService
-	redis   *cache.RedisClient
-	logger  *zap.Logger
+	service     input.SysUserService
+	roleService input.SysRoleService
+	redis       *cache.RedisClient
+	logger      *zap.Logger
 }
 
-func NewAuthService(service input.SysUserService, redis *cache.RedisClient, logger *zap.Logger) input.AuthService {
-	return &AuthService{service: service, redis: redis, logger: logger}
+func NewAuthService(service input.SysUserService, roleService input.SysRoleService, redis *cache.RedisClient, logger *zap.Logger) input.AuthService {
+	return &AuthService{service: service, roleService: roleService, redis: redis, logger: logger}
 }
 
 func (this *AuthService) Login(l model.LoginRequest) (*model.LoginSuccess, error) {
@@ -75,4 +76,33 @@ func (this *AuthService) Logout(token string) error {
 		return err
 	}
 	return nil
+}
+
+func (this *AuthService) GetInfo(loginUser *model.LoginUserStruct) (*model.GetInfoSuccess, error) {
+	var p []string
+	if loginUser.UserID == 1 {
+		p = append(p, "*:*:*")
+	} else {
+	}
+
+	roles, err := this.roleService.QueryRolesByUserId(loginUser.UserID)
+	if err != nil {
+		this.logger.Error("getInfo error,", zap.Error(err))
+		return nil, fmt.Errorf("getInfo error", zap.Error(err))
+	}
+
+	loginUser.Roles = roles
+	var roleNames []string
+	for _, role := range roles {
+		roleNames = append(roleNames, role.RoleKey)
+	}
+
+	infoSuccess := &model.GetInfoSuccess{
+		Code:        common.SUCCESS,
+		User:        loginUser,
+		Permissions: p,
+		Roles:       roleNames,
+		Message:     "操作成功",
+	}
+	return infoSuccess, nil
 }
