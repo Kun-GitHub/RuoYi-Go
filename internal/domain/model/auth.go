@@ -9,6 +9,7 @@ type LoginUserStruct struct {
 	*SysUser
 	Admin bool       `json:"admin"`
 	Roles []*SysRole `json:"roles"`
+	Dept  *SysDept   `json:"dept"`
 }
 
 type LoginSuccess struct {

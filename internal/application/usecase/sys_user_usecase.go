@@ -60,7 +60,7 @@ func (this *SysUserService) QueryUserByUserName(username string) (*model.SysUser
 func (this *SysUserService) QueryUserByUserId(userId string) (*model.SysUser, error) {
 	structEntity := &model.SysUser{}
 	// 尝试从缓存中获取
-	userBytes, err := this.cache.Get([]byte(fmt.Sprintf("UserID:%s", userId)))
+	userBytes, err := this.cache.Get([]byte(fmt.Sprintf("UserID:%v", userId)))
 	if err == nil {
 		// 缓存命中
 		err = json.Unmarshal(userBytes, &structEntity)

@@ -18,11 +18,9 @@ import (
 )
 
 func StartServer(s *iris.Application) {
-
 	s.Get("/getRouters", handler.GetRouters)
 
 	//s.Get("/system/user/list", middlewares.PermissionMiddleware("system:user:list"), handler.UserList)
-
 }
 
 //	func ResolveDemoHandler(redis *cache.RedisClient, cache *freecache.Cache, logger *zap.Logger) *handler.DemoHandler {
@@ -49,6 +47,9 @@ func ResolveAuthHandler(db *rydb.DatabaseStruct, redis *cache.RedisClient, logge
 	sysRoleRepo := persistence.NewSysRoleRepository(db)
 	sysRoleService := usecase.NewSysRoleService(sysRoleRepo, cache, logger)
 
-	authService := usecase.NewAuthService(sysUserService, sysRoleService, redis, logger)
+	sysDeptRepo := persistence.NewSysDeptRepository(db)
+	sysDeptService := usecase.NewSysDeptService(sysDeptRepo, cache, logger)
+
+	authService := usecase.NewAuthService(sysUserService, sysRoleService, sysDeptService, redis, logger)
 	return handler.NewAuthHandler(authService, logger)
 }

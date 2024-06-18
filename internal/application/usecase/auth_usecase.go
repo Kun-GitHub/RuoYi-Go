@@ -21,12 +21,13 @@ import (
 type AuthService struct {
 	service     input.SysUserService
 	roleService input.SysRoleService
+	deptService input.SysDeptService
 	redis       *cache.RedisClient
 	logger      *zap.Logger
 }
 
-func NewAuthService(service input.SysUserService, roleService input.SysRoleService, redis *cache.RedisClient, logger *zap.Logger) input.AuthService {
-	return &AuthService{service: service, roleService: roleService, redis: redis, logger: logger}
+func NewAuthService(service input.SysUserService, roleService input.SysRoleService, deptService input.SysDeptService, redis *cache.RedisClient, logger *zap.Logger) input.AuthService {
+	return &AuthService{service: service, roleService: roleService, deptService: deptService, redis: redis, logger: logger}
 }
 
 func (this *AuthService) Login(l model.LoginRequest) (*model.LoginSuccess, error) {
@@ -87,7 +88,7 @@ func (this *AuthService) GetInfo(loginUser *model.LoginUserStruct) (*model.GetIn
 
 	roles, err := this.roleService.QueryRolesByUserId(loginUser.UserID)
 	if err != nil {
-		this.logger.Error("getInfo error,", zap.Error(err))
+		this.logger.Error("QueryRolesByUserId error,", zap.Error(err))
 		return nil, fmt.Errorf("getInfo error", zap.Error(err))
 	}
 
@@ -96,6 +97,13 @@ func (this *AuthService) GetInfo(loginUser *model.LoginUserStruct) (*model.GetIn
 	for _, role := range roles {
 		roleNames = append(roleNames, role.RoleKey)
 	}
+
+	dept, err := this.deptService.QueryRolesByDeptId(loginUser.DeptID)
+	if err != nil {
+		this.logger.Error("QueryRolesByDeptId error,", zap.Error(err))
+		return nil, fmt.Errorf("getInfo error", zap.Error(err))
+	}
+	loginUser.Dept = dept
 
 	infoSuccess := &model.GetInfoSuccess{
 		Code:        common.SUCCESS,
