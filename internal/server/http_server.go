@@ -10,7 +10,6 @@ import (
 	"RuoYi-Go/internal/adapters/handler"
 	"RuoYi-Go/internal/adapters/persistence"
 	"RuoYi-Go/internal/application/usecase"
-	"RuoYi-Go/internal/domain/model"
 	"RuoYi-Go/internal/middlewares"
 	"RuoYi-Go/pkg/cache"
 	rydb "RuoYi-Go/pkg/db"
@@ -54,7 +53,7 @@ func ResolveAuthHandler(db *rydb.DatabaseStruct, redis *cache.RedisClient, logge
 	return handler.NewAuthHandler(authService, logger)
 }
 
-func ResolveSysMenuHandler(db *rydb.DatabaseStruct, logger *zap.Logger, cache *cache.FreeCacheClient, appConfig config.AppConfig) *model.SysMenuHandler {
+func ResolveSysMenuHandler(db *rydb.DatabaseStruct, logger *zap.Logger, cache *cache.FreeCacheClient) *handler.SysMenuHandler {
 	sysMenuRepo := persistence.NewSysMenuRepository(db)
 	sysMenuService := usecase.NewSysMenuService(sysMenuRepo, cache, logger)
 	return handler.NewSysMenuHandler(sysMenuService)

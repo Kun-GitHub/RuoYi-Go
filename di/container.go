@@ -70,6 +70,9 @@ func NewContainer(c config.AppConfig) (*Container, error) {
 	app.Post("/logout", authHandler.Logout)
 	app.Get("/getInfo", authHandler.GetInfo)
 
+	sysMenuHandler := ryserver.ResolveSysMenuHandler(db, log, freeCache)
+	app.Get("/getRouters", sysMenuHandler.GetRouters)
+
 	ryws.StartWebSocket(app, log)
 
 	err = app.Run(iris.Addr(fmt.Sprintf(":%d", c.Server.Port)))

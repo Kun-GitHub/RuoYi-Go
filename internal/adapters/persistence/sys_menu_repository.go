@@ -20,12 +20,12 @@ func NewSysMenuRepository(db *rydb.DatabaseStruct) *SysMenuRepository {
 	return &SysMenuRepository{db: db}
 }
 
-func (this *SysDeptRepository) QueryMenusByUserId(userId int64) ([]*model.SysMenu, error) {
+func (this *SysMenuRepository) QueryMenusByUserId(userId int64) ([]*model.SysMenu, error) {
 	var menus []*model.SysMenu
 	err := this.db.Transactional(func(db *gorm.DB) error {
 		if userId == common.ADMINID {
 			err := db.Table("sys_menu AS sm").Select("sm.menu_id, sm.parent_id, sm.menu_name, sm.path, sm.component, sm.query, sm.visible, sm.status, sm.perms, sm.is_frame, sm.is_cache, sm.menu_type, sm.icon, sm.order_num, sm.create_time").
-				Where("sm.menu_type IN (?, ?) AND sm.status = '0' and sm.del_flag = '0'", "M", "C").
+				Where("sm.menu_type IN (?, ?) AND sm.status = '0'", "M", "C").
 				Order("sm.parent_id, sm.order_num").
 				Find(&menus).Error
 			return err
@@ -33,7 +33,7 @@ func (this *SysDeptRepository) QueryMenusByUserId(userId int64) ([]*model.SysMen
 			err := db.Table("sys_menu AS sm").Select("sm.menu_id, sm.parent_id, sm.menu_name, sm.path, sm.component, sm.query, sm.visible, sm.status, sm.perms, sm.is_frame, sm.is_cache, sm.menu_type, sm.icon, sm.order_num, sm.create_time").
 				Joins("LEFT JOIN sys_role_menu srm on srm.menu_id = sm.menu_id").
 				Joins("LEFT JOIN sys_user_role sur on sur.role_id = srm.role_id").
-				Where("sm.menu_type IN (?, ?) AND sm.status = '0' and sm.del_flag = '0' and srm.user_id = ? ", "M", "C", userId).
+				Where("sm.menu_type IN (?, ?) AND sm.status = '0' and srm.user_id = ? ", "M", "C", userId).
 				Order("sm.parent_id, sm.order_num").
 				Find(&menus).Error
 			return err
