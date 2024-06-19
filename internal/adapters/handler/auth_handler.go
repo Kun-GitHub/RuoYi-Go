@@ -8,7 +8,7 @@ package handler
 import (
 	"RuoYi-Go/internal/common"
 	"RuoYi-Go/internal/domain/model"
-	"RuoYi-Go/internal/middlewares"
+	"RuoYi-Go/internal/filter"
 	"RuoYi-Go/internal/ports/input"
 	"fmt"
 	"github.com/kataras/iris/v12"
@@ -27,7 +27,7 @@ func NewAuthHandler(service input.AuthService, logger *zap.Logger) *AuthHandler 
 func (h *AuthHandler) Login(ctx iris.Context) {
 	var l model.LoginRequest
 	// Attempt to read and bind the JSON request body to the 'user' variable
-	if err := ctx.ReadJSON(&l); err != nil {
+	if err := filter.ValidateRequest(ctx, &l); err != nil {
 		ctx.JSON(common.ErrorFormat(iris.StatusBadRequest, "Invalid JSON, error:%s", err.Error()))
 		return
 	}
@@ -51,9 +51,9 @@ func (h *AuthHandler) Logout(ctx iris.Context) {
 		}
 	}
 
-	loginUser := middlewares.GetLoginUser()
+	loginUser := filter.GetLoginUser()
 	if loginUser != nil {
-		middlewares.ClearLoginUser()
+		filter.ClearLoginUser()
 	}
 
 	ctx.Values().Set(common.TOKEN, nil)
@@ -63,7 +63,7 @@ func (h *AuthHandler) Logout(ctx iris.Context) {
 }
 
 func (h *AuthHandler) GetInfo(ctx iris.Context) {
-	loginUser := middlewares.GetLoginUser()
+	loginUser := filter.GetLoginUser()
 	if loginUser == nil || loginUser.UserID == 0 {
 		ctx.JSON(common.Error(iris.StatusUnauthorized, "请重新登录"))
 		return

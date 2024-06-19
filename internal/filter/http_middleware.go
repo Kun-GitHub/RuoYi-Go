@@ -3,7 +3,7 @@
 // Author: K. See：https://github.com/Kun-GitHub/RuoYi-Go
 // Email: hot_kun@hotmail.com or BusinessCallKun@gmail.com
 
-package middlewares
+package filter
 
 import (
 	"RuoYi-Go/config"
@@ -78,6 +78,10 @@ func (this *ServerMiddleware) MiddlewareHandler(ctx iris.Context) {
 
 	ctx.Values().Set(common.USER_ID, jwt_id)
 	ctx.Values().Set(common.TOKEN, token)
+
+	if loginUser == nil {
+		loginUser = &model.LoginUserStruct{}
+	}
 
 	loginUser.SysUser = sysUser
 	if sysUser.UserID == common.ADMINID {

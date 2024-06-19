@@ -19,10 +19,10 @@ type LoginSuccess struct {
 }
 
 type LoginRequest struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
-	Code     string `json:"code"`
-	Uuid     string `json:"uuid"`
+	Username string `json:"username" validate:"required"`
+	Password string `json:"password" validate:"required"`
+	Code     string `json:"code" validate:"required"`
+	Uuid     string `json:"uuid" validate:"required"`
 }
 
 type GetInfoSuccess struct {

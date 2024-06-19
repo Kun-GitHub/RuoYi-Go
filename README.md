@@ -160,6 +160,17 @@
 <td></td>
 <td>实现各种 JWx（JWA/JWE/JWK/JWS/JWT，也称为 JOSE）技术的 Go 模块</td>
 </tr>
+<tr>
+<td rowspan="2">参数校验</td>
+<td><a href="https://github.com/go-playground/validator">validator</a></td>
+<td>✅</td>
+<td>提供了一种优雅的方式来定义和执行各种数据验证规则</td>
+</tr>
+<tr>
+<td><a href="https://github.com/asaskevich/govalidator">govalidator</a></td>
+<td></td>
+<td>提供了多种内置的验证标签和自定义标签支持</td>
+</tr>
 </tbody>
 </table>
 
