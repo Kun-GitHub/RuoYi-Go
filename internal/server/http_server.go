@@ -13,14 +13,8 @@ import (
 	"RuoYi-Go/internal/middlewares"
 	"RuoYi-Go/pkg/cache"
 	rydb "RuoYi-Go/pkg/db"
-	"github.com/kataras/iris/v12"
 	"go.uber.org/zap"
 )
-
-func StartServer(s *iris.Application) {
-
-	//s.Get("/system/user/list", middlewares.PermissionMiddleware("system:user:list"), handler.UserList)
-}
 
 //	func ResolveDemoHandler(redis *cache.RedisClient, cache *freecache.Cache, logger *zap.Logger) *handler.DemoHandler {
 //		demoRepo := persistence.NewDemoRepository()
@@ -28,10 +22,12 @@ func StartServer(s *iris.Application) {
 //		return handler.NewDemoHandler(demoService, logger)
 //	}
 
-func ResolveMiddlewareStruct(db *rydb.DatabaseStruct, redis *cache.RedisClient, logger *zap.Logger, cache *cache.FreeCacheClient, appConfig config.AppConfig) *middlewares.MiddlewareStruct {
+func ResolveServerMiddleware(db *rydb.DatabaseStruct, redis *cache.RedisClient, logger *zap.Logger, cache *cache.FreeCacheClient, appConfig config.AppConfig) *middlewares.ServerMiddleware {
 	sysUserRepo := persistence.NewSysUserRepository(db)
 	sysUserService := usecase.NewSysUserService(sysUserRepo, cache, logger)
-	return middlewares.NewMiddlewareStruct(redis, logger, appConfig, sysUserService)
+	sysMenuRepo := persistence.NewSysMenuRepository(db)
+	sysMenuService := usecase.NewSysMenuService(sysMenuRepo, cache, logger)
+	return middlewares.NewServerMiddleware(redis, logger, appConfig, sysUserService, sysMenuService)
 }
 
 func ResolveCaptchaHandler(redis *cache.RedisClient, logger *zap.Logger) *handler.CaptchaHandler {
