@@ -26,7 +26,7 @@ func NewSysUserService(repo output.SysUserRepository, cache *cache.FreeCacheClie
 	return &SysUserService{repo: repo, cache: cache, logger: logger}
 }
 
-func (this *SysUserService) QueryUserByUserName(username string) (*model.SysUser, error) {
+func (this *SysUserService) QueryUserInfoByUserName(username string) (*model.SysUser, error) {
 	structEntity := &model.SysUser{}
 	// 尝试从缓存中获取
 	userBytes, err := this.cache.Get([]byte(fmt.Sprintf("UserName:%s", username)))
@@ -39,7 +39,7 @@ func (this *SysUserService) QueryUserByUserName(username string) (*model.SysUser
 		}
 	}
 
-	structEntity, err = this.repo.QueryUserByUserName(username)
+	structEntity, err = this.repo.QueryUserInfoByUserName(username)
 	if err != nil {
 		this.logger.Error("查询用户信息失败", zap.Error(err))
 		return nil, err
@@ -57,7 +57,7 @@ func (this *SysUserService) QueryUserByUserName(username string) (*model.SysUser
 	return nil, fmt.Errorf("查询用户信息失败", zap.Error(err))
 }
 
-func (this *SysUserService) QueryUserByUserId(userId string) (*model.SysUser, error) {
+func (this *SysUserService) QueryUserInfoByUserId(userId string) (*model.SysUser, error) {
 	structEntity := &model.SysUser{}
 	// 尝试从缓存中获取
 	userBytes, err := this.cache.Get([]byte(fmt.Sprintf("UserID:%v", userId)))
@@ -70,7 +70,7 @@ func (this *SysUserService) QueryUserByUserId(userId string) (*model.SysUser, er
 		}
 	}
 
-	structEntity, err = this.repo.QueryUserByUserId(userId)
+	structEntity, err = this.repo.QueryUserInfoByUserId(userId)
 	if err != nil {
 		this.logger.Error("查询用户信息失败", zap.Error(err))
 		return nil, err

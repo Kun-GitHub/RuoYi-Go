@@ -11,6 +11,6 @@ import (
 
 // SysUserService 输入端口接口
 type SysUserService interface {
-	QueryUserByUserName(username string) (*model.SysUser, error)
-	QueryUserByUserId(userId string) (*model.SysUser, error)
+	QueryUserInfoByUserName(username string) (*model.SysUser, error)
+	QueryUserInfoByUserId(userId string) (*model.SysUser, error)
 }

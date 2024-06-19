@@ -38,7 +38,6 @@ func (h *SysMenuHandler) GetRouters(ctx iris.Context) {
 		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "GetRouters, error：%s", err.Error()))
 		return
 	}
-
 	ctx.JSON(common.Success(buildMenuTree(menus)))
 }
 
@@ -131,7 +130,6 @@ func buildMenuTree(menus []*model.SysMenu) []*routerStruct {
 			}
 		}
 	}
-
 	return rootMenus
 }
 
@@ -159,18 +157,17 @@ func getRouterPath(menu *model.SysMenu) string {
 	} else if isMenuFrame(menu) {
 		routerPath = "/"
 	}
-
 	return routerPath
 }
 
 func getComponent(menu *model.SysMenu) string {
-	component := "Layout"
+	component := common.LAYOUT
 	if strings.TrimSpace(menu.Component) != "" && !isMenuFrame(menu) {
 		component = menu.Component
 	} else if strings.TrimSpace(menu.Component) == "" && menu.ParentID != 0 && isInnerLink(menu) {
-		component = "InnerLink"
+		component = common.INNER_LINK
 	} else if strings.TrimSpace(menu.Component) == "" && isParentView(menu) {
-		component = "ParentView"
+		component = common.PARENT_VIEW
 	}
 	return component
 }
@@ -201,19 +198,6 @@ func isHTTP(urlStr string) bool {
 
 func innerLinkReplaceEach(path string) string {
 	// 实现逻辑
-	return replaceEach(path)
-}
-
-const (
-	HTTP  = "http://"
-	HTTPS = "https://"
-	WWW   = "www."
-	DOT   = "."
-	COLON = ":"
-	SLASH = "/"
-)
-
-func replaceEach(path string) string {
 	// 创建一个替换器，用于替换path中的目标子串
 	replacer := strings.NewReplacer(
 		HTTP, "",
@@ -225,3 +209,12 @@ func replaceEach(path string) string {
 	// 使用替换器替换path中的目标子串
 	return replacer.Replace(path)
 }
+
+const (
+	HTTP  = "http://"
+	HTTPS = "https://"
+	WWW   = "www."
+	DOT   = "."
+	COLON = ":"
+	SLASH = "/"
+)

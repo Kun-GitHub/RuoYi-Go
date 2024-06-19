@@ -18,7 +18,7 @@ func NewSysUserRepository(db *rydb.DatabaseStruct) *SysUserRepository {
 	return &SysUserRepository{db: db}
 }
 
-func (this *SysUserRepository) QueryUserByUserName(username string) (*model.SysUser, error) {
+func (this *SysUserRepository) QueryUserInfoByUserName(username string) (*model.SysUser, error) {
 	structEntity := &model.SysUser{}
 	err := this.db.FindColumns(model.TableNameSysUser, structEntity,
 		"user_name = ? and status = '0' and del_flag = '0'", username)
@@ -28,7 +28,7 @@ func (this *SysUserRepository) QueryUserByUserName(username string) (*model.SysU
 	return structEntity, nil
 }
 
-func (this *SysUserRepository) QueryUserByUserId(userId string) (*model.SysUser, error) {
+func (this *SysUserRepository) QueryUserInfoByUserId(userId string) (*model.SysUser, error) {
 	structEntity := &model.SysUser{}
 	err := this.db.FindColumns(model.TableNameSysUser, structEntity,
 		"user_id = ? and status = '0' and del_flag = '0'", userId)
