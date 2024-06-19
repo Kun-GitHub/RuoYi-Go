@@ -8,7 +8,7 @@ package handler
 import (
 	"RuoYi-Go/internal/common"
 	"RuoYi-Go/internal/domain/model"
-	"RuoYi-Go/internal/middlewares"
+	"RuoYi-Go/internal/filter"
 	"RuoYi-Go/internal/ports/input"
 	"github.com/kataras/iris/v12"
 	"net/url"
@@ -25,7 +25,7 @@ func NewSysMenuHandler(service input.SysMenuService) *SysMenuHandler {
 
 // GenerateCaptchaImage
 func (h *SysMenuHandler) GetRouters(ctx iris.Context) {
-	loginUser := middlewares.GetLoginUser()
+	loginUser := filter.GetLoginUser()
 	if loginUser == nil || loginUser.UserID == 0 {
 		ctx.JSON(common.Error(iris.StatusUnauthorized, "请重新登录"))
 		return

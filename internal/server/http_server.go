@@ -10,7 +10,7 @@ import (
 	"RuoYi-Go/internal/adapters/handler"
 	"RuoYi-Go/internal/adapters/persistence"
 	"RuoYi-Go/internal/application/usecase"
-	"RuoYi-Go/internal/middlewares"
+	"RuoYi-Go/internal/filter"
 	"RuoYi-Go/pkg/cache"
 	rydb "RuoYi-Go/pkg/db"
 	"go.uber.org/zap"
@@ -22,12 +22,12 @@ import (
 //		return handler.NewDemoHandler(demoService, logger)
 //	}
 
-func ResolveServerMiddleware(db *rydb.DatabaseStruct, redis *cache.RedisClient, logger *zap.Logger, cache *cache.FreeCacheClient, appConfig config.AppConfig) *middlewares.ServerMiddleware {
+func ResolveServerMiddleware(db *rydb.DatabaseStruct, redis *cache.RedisClient, logger *zap.Logger, cache *cache.FreeCacheClient, appConfig config.AppConfig) *filter.ServerMiddleware {
 	sysUserRepo := persistence.NewSysUserRepository(db)
 	sysUserService := usecase.NewSysUserService(sysUserRepo, cache, logger)
 	sysMenuRepo := persistence.NewSysMenuRepository(db)
 	sysMenuService := usecase.NewSysMenuService(sysMenuRepo, cache, logger)
-	return middlewares.NewServerMiddleware(redis, logger, appConfig, sysUserService, sysMenuService)
+	return filter.NewServerMiddleware(redis, logger, appConfig, sysUserService, sysMenuService)
 }
 
 func ResolveCaptchaHandler(redis *cache.RedisClient, logger *zap.Logger) *handler.CaptchaHandler {
