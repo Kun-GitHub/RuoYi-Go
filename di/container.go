@@ -55,7 +55,7 @@ func NewContainer(c config.AppConfig) (*Container, error) {
 	freeCache := cache.NewFreeCacheClient(100 * 1024 * 1024)
 
 	app := iris.New()
-	ms := ryserver.ResolveMiddlewareStruct(db, redis, log, freeCache, c)
+	ms := ryserver.ResolveServerMiddleware(db, redis, log, freeCache, c)
 	app.Use(ms.MiddlewareHandler)
 
 	//demoHandler := ryserver.ResolveDemoHandler(redis, cache, log)
@@ -72,6 +72,8 @@ func NewContainer(c config.AppConfig) (*Container, error) {
 
 	sysMenuHandler := ryserver.ResolveSysMenuHandler(db, log, freeCache)
 	app.Get("/getRouters", sysMenuHandler.GetRouters)
+
+	//app.Get("/system/user/list", ms.PermissionMiddleware("system:user:list"), sysMenuHandler.GetRouters)
 
 	ryws.StartWebSocket(app, log)
 

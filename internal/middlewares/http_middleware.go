@@ -15,29 +15,32 @@ import (
 	"fmt"
 	"github.com/kataras/iris/v12"
 	"go.uber.org/zap"
+	"net/http"
 	"regexp"
 	"strings"
 )
 
 var loginUser = &model.LoginUserStruct{}
 
-type MiddlewareStruct struct {
-	redis   *cache.RedisClient
-	logger  *zap.Logger
-	cfg     config.AppConfig
-	service input.SysUserService
+type ServerMiddleware struct {
+	redis       *cache.RedisClient
+	logger      *zap.Logger
+	cfg         config.AppConfig
+	service     input.SysUserService
+	menuService input.SysMenuService
 }
 
-func NewMiddlewareStruct(r *cache.RedisClient, l *zap.Logger, c config.AppConfig, s input.SysUserService) *MiddlewareStruct {
-	return &MiddlewareStruct{
-		redis:   r,
-		logger:  l,
-		cfg:     c,
-		service: s,
+func NewServerMiddleware(r *cache.RedisClient, l *zap.Logger, c config.AppConfig, s input.SysUserService, menuService input.SysMenuService) *ServerMiddleware {
+	return &ServerMiddleware{
+		redis:       r,
+		logger:      l,
+		cfg:         c,
+		service:     s,
+		menuService: menuService,
 	}
 }
 
-func (this *MiddlewareStruct) MiddlewareHandler(ctx iris.Context) {
+func (this *ServerMiddleware) MiddlewareHandler(ctx iris.Context) {
 	uri := ctx.Request().RequestURI
 	// 检查当前请求路径是否在跳过列表中
 	if skipInterceptor(uri, this.cfg.Server.NotIntercept) {
@@ -103,35 +106,34 @@ func ClearLoginUser() {
 	loginUser = nil
 }
 
-//// 定义一个权限检查函数
-//func hasPermission(ctx iris.Context, permission string) bool {
-//	if loginUser == nil {
-//		return false
-//	} else if loginUser.Admin {
-//		return true
-//	}
-//
-//	menus, err := service2.QueryMenusByUserId(loginUser.UserID)
-//	if err != nil {
-//		//logger.Log.Error("QueryMenusByUserId error,", zap.Error(err))
-//		return false
-//	}
-//	for _, menu := range menus {
-//		if menu.Perms == permission {
-//			return true
-//		}
-//	}
-//	return false
-//}
-//
-//// 定义一个权限检查的中间件
-//func PermissionMiddleware(permission string) iris.Handler {
-//	return func(ctx iris.Context) {
-//		if !hasPermission(ctx, permission) {
-//			ctx.StatusCode(http.StatusForbidden)
-//			ctx.StopExecution()
-//			return
-//		}
-//		ctx.Next()
-//	}
-//}
+// 定义一个权限检查函数
+func (this *ServerMiddleware) hasPermission(ctx iris.Context, permission string) bool {
+	if loginUser == nil {
+		return false
+	} else if loginUser.Admin {
+		return true
+	}
+
+	menus, err := this.menuService.QueryMenusByUserId(loginUser.UserID)
+	if err != nil {
+		return false
+	}
+	for _, menu := range menus {
+		if menu.Perms == permission {
+			return true
+		}
+	}
+	return false
+}
+
+// 定义一个权限检查的中间件
+func (this *ServerMiddleware) PermissionMiddleware(permission string) iris.Handler {
+	return func(ctx iris.Context) {
+		if !this.hasPermission(ctx, permission) {
+			ctx.StatusCode(http.StatusForbidden)
+			ctx.StopExecution()
+			return
+		}
+		ctx.Next()
+	}
+}
