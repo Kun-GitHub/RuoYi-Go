@@ -82,11 +82,11 @@ func (this *ServerMiddleware) MiddlewareHandler(ctx iris.Context) {
 	if loginUser == nil {
 		loginUser = &model.LoginUserStruct{}
 	}
-
 	loginUser.SysUser = sysUser
 	if sysUser.UserID == common.ADMINID {
 		loginUser.Admin = true
 	}
+	ctx.Values().Set(common.LOGINUSER, loginUser)
 
 	// 继续执行下一个中间件或处理函数
 	ctx.Next()
@@ -100,14 +100,6 @@ func skipInterceptor(path string, notInterceptList []string) bool {
 		}
 	}
 	return false
-}
-
-func GetLoginUser() *model.LoginUserStruct {
-	return loginUser
-}
-
-func ClearLoginUser() {
-	loginUser = nil
 }
 
 // 定义一个权限检查函数

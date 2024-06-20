@@ -51,20 +51,24 @@ func (h *AuthHandler) Logout(ctx iris.Context) {
 		}
 	}
 
-	loginUser := filter.GetLoginUser()
-	if loginUser != nil {
-		filter.ClearLoginUser()
+	loginUser := ctx.Values().Get(common.LOGINUSER)
+	// 类型断言
+	_, ok := loginUser.(*model.LoginUserStruct)
+	if ok {
+		ctx.Values().Remove(common.LOGINUSER)
 	}
 
-	ctx.Values().Set(common.TOKEN, nil)
-	ctx.Values().Set(common.USER_ID, nil)
+	ctx.Values().Remove(common.TOKEN)
+	ctx.Values().Remove(common.USER_ID)
 
 	ctx.JSON(common.Success("Logout successful"))
 }
 
 func (h *AuthHandler) GetInfo(ctx iris.Context) {
-	loginUser := filter.GetLoginUser()
-	if loginUser == nil || loginUser.UserID == 0 {
+	user := ctx.Values().Get(common.LOGINUSER)
+	// 类型断言
+	loginUser, ok := user.(*model.LoginUserStruct)
+	if !ok {
 		ctx.JSON(common.Error(iris.StatusUnauthorized, "请重新登录"))
 		return
 	}

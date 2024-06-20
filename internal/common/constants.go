@@ -11,6 +11,7 @@ const CAPTCHA = "captcha.id"
 const AUTHORIZATION = "Authorization"
 const USER_ID = "user_id"
 const TOKEN = "token"
+const LOGINUSER = "loginUser"
 
 /** 菜单类型（菜单） */
 const TYPE_MENU = "C"
