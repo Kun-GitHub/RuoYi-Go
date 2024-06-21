@@ -6,11 +6,12 @@
 package output
 
 import (
+	"RuoYi-Go/internal/common"
 	"RuoYi-Go/internal/domain/model"
 )
 
 type SysUserRepository interface {
 	QueryUserInfoByUserName(username string) (*model.SysUser, error)
 	QueryUserInfoByUserId(userId string) (*model.SysUser, error)
-	QueryUserPage(userId int64, username string, phone string, status string, deptId int64) (*[]model.UserList, error)
+	QueryUserPage(pageReq common.PageRequest, userId int64, username string, phone string, status string, deptId int64) (*common.PageResponse, error)
 }

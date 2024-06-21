@@ -54,3 +54,9 @@ func ResolveSysMenuHandler(db *rydb.DatabaseStruct, logger *zap.Logger, cache *c
 	sysMenuService := usecase.NewSysMenuService(sysMenuRepo, cache, logger)
 	return handler.NewSysMenuHandler(sysMenuService)
 }
+
+func ResolveSysUserHandler(db *rydb.DatabaseStruct, logger *zap.Logger, cache *cache.FreeCacheClient) *handler.SysUserHandler {
+	sysUserRepo := persistence.NewSysUserRepository(db)
+	sysUserService := usecase.NewSysUserService(sysUserRepo, cache, logger)
+	return handler.NewSysUserHandler(sysUserService)
+}

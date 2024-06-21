@@ -5,7 +5,6 @@
 package model
 
 import (
-	"RuoYi-Go/internal/common"
 	"time"
 )
 
@@ -40,7 +39,6 @@ func (*SysUser) TableName() string {
 }
 
 type UserList struct {
-	*common.PageRequest
 	*SysUser
 	DeptName string `gorm:"column:dept_name;comment:部门名称" json:"dept_name"`
 	Leader   string `gorm:"column:leader;comment:负责人" json:"leader"`

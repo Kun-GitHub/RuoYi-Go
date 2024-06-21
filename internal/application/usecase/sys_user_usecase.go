@@ -86,3 +86,12 @@ func (this *SysUserService) QueryUserInfoByUserId(userId string) (*model.SysUser
 	this.logger.Debug("查询用户信息失败", zap.Error(err))
 	return nil, fmt.Errorf("查询用户信息失败", zap.Error(err))
 }
+
+func (this *SysUserService) QueryUserPage(pageReq common.PageRequest, userId int64, username string, phone string, status string, deptId int64) (*common.PageResponse, error) {
+	data, err := this.repo.QueryUserPage(pageReq, userId, username, phone, status, deptId)
+	if err != nil {
+		this.logger.Error("查询用户分页信息失败", zap.Error(err))
+		return nil, err
+	}
+	return data, nil
+}

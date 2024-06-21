@@ -7,6 +7,7 @@ package rydb
 
 import (
 	"RuoYi-Go/config"
+	"RuoYi-Go/internal/common"
 	"database/sql"
 	"fmt"
 	"gorm.io/driver/mysql"
@@ -152,6 +153,9 @@ func (ds *DatabaseStruct) Update(tableName string, id uint, structEntity any) er
 }
 
 func (ds *DatabaseStruct) Transactional(txFunc func(*gorm.DB) error) error {
+	ds.mu.Lock()
+	defer ds.mu.Unlock()
+
 	tx := ds.db.Begin()
 	if tx.Error != nil {
 		return tx.Error
@@ -218,3 +222,25 @@ func (ds *DatabaseStruct) CustomQuery(query string, args []interface{}, processR
 //		Data:     data,
 //	}, nil
 //}
+
+func (ds *DatabaseStruct) PageQuery(txFunc func(*gorm.DB) *gorm.DB, pageReq common.PageRequest, results any) (*common.PageResponse, error) {
+	var total int64
+	err := txFunc(ds.db).Count(&total).Error
+	if err != nil {
+		return nil, err
+	}
+
+	err = txFunc(ds.db).Limit(pageReq.PageSize).Offset((pageReq.PageNum - 1) * pageReq.PageSize).Scan(&results).Error
+	if err != nil {
+		return nil, err
+	}
+
+	pageResp := &common.PageResponse{
+		Total:    int(total),
+		PageNum:  pageReq.PageNum,
+		PageSize: pageReq.PageSize,
+		Data:     results,
+	}
+
+	return pageResp, nil
+}

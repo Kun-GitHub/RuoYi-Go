@@ -7,10 +7,9 @@ package handler
 
 import (
 	"RuoYi-Go/internal/common"
-	"RuoYi-Go/internal/domain/model"
-	"RuoYi-Go/internal/filter"
 	"RuoYi-Go/internal/ports/input"
 	"github.com/kataras/iris/v12"
+	"strconv"
 )
 
 type SysUserHandler struct {
@@ -31,14 +30,27 @@ func (h *SysUserHandler) UserPage(ctx iris.Context) {
 	//	return
 	//}
 
-	var l model.UserList
+	pageNumStr := ctx.URLParam("pageNum")
+	pageSizeStr := ctx.URLParam("pageSize")
+
+	pageNum, _ := strconv.Atoi(pageNumStr)
+	pageSize, _ := strconv.Atoi(pageSizeStr)
+
+	l := common.PageRequest{
+		pageNum,
+		pageSize,
+	}
 	// Attempt to read and bind the JSON request body to the 'user' variable
-	if err := filter.ValidateRequest(ctx, &l); err != nil {
-		ctx.JSON(common.ErrorFormat(iris.StatusBadRequest, "Invalid JSON, error:%s", err.Error()))
+	//if err := filter.ValidateRequest(ctx, &l); err != nil {
+	//	ctx.JSON(common.ErrorFormat(iris.StatusBadRequest, "Invalid JSON, error:%s", err.Error()))
+	//	return
+	//}
+
+	data, err := h.service.QueryUserPage(l, 0, "", "", "", 0)
+	if err != nil {
+		//h.logger.Debug("login failed", zap.Error(err))
+		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "UserPage, error：%s", err.Error()))
 		return
 	}
-
-	//h.service.QueryUserInfoByUserId()
-
-	ctx.JSON(common.Success(""))
+	ctx.JSON(common.Success(data))
 }
