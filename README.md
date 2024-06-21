@@ -11,7 +11,7 @@
 
 后端 [GitHub地址](https://github.com/Kun-GitHub/RuoYi-Go)    
 
-后端 [Gitee地址](https://gitee.com/Kun-GitHub/RuoYi-Go)
+后端 [Gitee地址](https://gitee.com/gitee_kun/RuoYi-Go)
 
 <br>
 
@@ -173,6 +173,7 @@
 </tr>
 </tbody>
 </table>
+功能模块对应的开源库，还有很多我未知的(基于个人认知局限)，以上只列了一部分，大佬有其他更好的欢迎提issue一起分享试用  
 
 <br>
 

@@ -26,3 +26,10 @@ func Error(code int, message string) Response {
 func ErrorFormat(code int, format string, a ...any) Response {
 	return Response{Code: code, Message: fmt.Sprintf(format, a...)}
 }
+
+type PageResponse[T any] struct {
+	Total    int           `json:"total"`
+	PageNum  int           `json:"pageNum"`
+	PageSize int           `json:"pageSize"`
+	Data     []interface{} `json:"data"`
+}

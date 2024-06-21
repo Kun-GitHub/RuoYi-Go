@@ -37,3 +37,7 @@ func (this *SysUserRepository) QueryUserInfoByUserId(userId string) (*model.SysU
 	}
 	return structEntity, nil
 }
+
+func (this *SysUserRepository) QueryUserPage(userId int64, username string, phone string, status string, deptId int64) ([]*model.UserList, error) {
+	return make([]*model.UserList, 0), nil
+}

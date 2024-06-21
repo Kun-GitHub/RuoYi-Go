@@ -119,15 +119,6 @@ func (ds *DatabaseStruct) Find(tableName string, ids []string, structEntity any)
 
 	if ds.db != nil {
 		if ids != nil && len(ids) != 0 {
-			//// 尝试从缓存中获取
-			//userBytes, err := cache.Get([]byte(fmt.Sprintf("user:%d", id)))
-			//if err == nil {
-			//	// 缓存命中
-			//	var user User
-			//	json.Unmarshal(userBytes, &user)
-			//	return &user, nil
-			//}
-
 			return ds.db.Table(tableName).Where("id IN ?", ids).Find(structEntity).Error
 		} else {
 			return ds.db.Table(tableName).Find(structEntity).Error
@@ -203,3 +194,27 @@ func (ds *DatabaseStruct) CustomQuery(query string, args []interface{}, processR
 
 	return nil
 }
+
+// 泛型居然在我的电脑不支持
+//func (ds *DatabaseStruct) paginate(pageReq common.PageRequest) (*common.PageResponse[interface{}], error) {
+//	var total int64
+//	ds.db.Model(&T{}).Count(&total)
+//
+//	if pageReq.PageSize == 0 {
+//		pageReq.PageSize = 10 // 默认每页显示10条数据
+//	}
+//
+//	if pageReq.PageNum < 1 {
+//		pageReq.PageNum = 1 // 默认第一页
+//	}
+//
+//	var data []interface{}
+//	ds.db.Offset((pageReq.PageNum - 1) * pageReq.PageSize).Limit(pageReq.PageSize).Find(&data)
+//
+//	return &common.PageResponse[T]{
+//		Total:    int(total),
+//		PageNum:  pageReq.PageNum,
+//		PageSize: pageReq.PageSize,
+//		Data:     data,
+//	}, nil
+//}

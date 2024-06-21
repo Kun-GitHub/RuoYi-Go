@@ -21,3 +21,4 @@ logs/app.log
 config/config.yaml
 
 .vscode/
+vendor/
