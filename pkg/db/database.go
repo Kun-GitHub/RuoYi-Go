@@ -223,24 +223,17 @@ func (ds *DatabaseStruct) CustomQuery(query string, args []interface{}, processR
 //	}, nil
 //}
 
-func (ds *DatabaseStruct) PageQuery(txFunc func(*gorm.DB) *gorm.DB, pageReq common.PageRequest, results any) (*common.PageResponse, error) {
+func (ds *DatabaseStruct) PageQuery(txFunc func(*gorm.DB) *gorm.DB, pageReq common.PageRequest, results any) (int64, error) {
 	var total int64
 	err := txFunc(ds.db).Count(&total).Error
 	if err != nil {
-		return nil, err
+		return 0, err
 	}
 
-	err = txFunc(ds.db).Limit(pageReq.PageSize).Offset((pageReq.PageNum - 1) * pageReq.PageSize).Scan(&results).Error
+	err = txFunc(ds.db).Limit(pageReq.PageSize).Offset((pageReq.PageNum - 1) * pageReq.PageSize).Scan(results).Error
 	if err != nil {
-		return nil, err
+		return total, err
 	}
 
-	pageResp := &common.PageResponse{
-		Total:    int(total),
-		PageNum:  pageReq.PageNum,
-		PageSize: pageReq.PageSize,
-		Data:     results,
-	}
-
-	return pageResp, nil
+	return total, nil
 }

@@ -7,9 +7,9 @@ package model
 
 type LoginUserStruct struct {
 	*SysUser
-	Admin bool       `json:"admin"`
-	Roles []*SysRole `json:"roles"`
-	Dept  *SysDept   `json:"dept"`
+	Admin bool       `gorm:"-" json:"admin"`
+	Roles []*SysRole `gorm:"-" json:"roles"`
+	Dept  *SysDept   `gorm:"-" json:"dept"`
 }
 
 type LoginSuccess struct {

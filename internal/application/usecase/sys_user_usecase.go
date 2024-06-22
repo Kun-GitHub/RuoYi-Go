@@ -17,9 +17,15 @@ import (
 )
 
 type SysUserService struct {
-	repo   output.SysUserRepository
-	cache  *cache.FreeCacheClient
-	logger *zap.Logger
+	repo     output.SysUserRepository
+	roleRepo output.SysRoleRepository
+	deptRepo output.SysDeptRepository
+	cache    *cache.FreeCacheClient
+	logger   *zap.Logger
+}
+
+func NewPageSysUserService(repo output.SysUserRepository, roleRepo output.SysRoleRepository, deptRepo output.SysDeptRepository, cache *cache.FreeCacheClient, logger *zap.Logger) input.SysUserService {
+	return &SysUserService{repo: repo, roleRepo: roleRepo, deptRepo: deptRepo, cache: cache, logger: logger}
 }
 
 func NewSysUserService(repo output.SysUserRepository, cache *cache.FreeCacheClient, logger *zap.Logger) input.SysUserService {
@@ -88,10 +94,36 @@ func (this *SysUserService) QueryUserInfoByUserId(userId string) (*model.SysUser
 }
 
 func (this *SysUserService) QueryUserPage(pageReq common.PageRequest, userId int64, username string, phone string, status string, deptId int64) (*common.PageResponse, error) {
-	data, err := this.repo.QueryUserPage(pageReq, userId, username, phone, status, deptId)
+	data, total, err := this.repo.QueryUserPage(pageReq, userId, username, phone, status, deptId)
 	if err != nil {
 		this.logger.Error("查询用户分页信息失败", zap.Error(err))
 		return nil, err
 	}
-	return data, nil
+
+	userList := make([]*model.LoginUserStruct, 0)
+	for _, user := range data {
+		if user.UserID == common.ADMINID {
+			user.Admin = true
+		}
+
+		roles, err := this.roleRepo.QueryRolesByUserId(user.UserID)
+		if err != nil {
+			this.logger.Error("QueryRolesByUserId error,", zap.Error(err))
+			return nil, fmt.Errorf("getInfo error", zap.Error(err))
+		}
+		user.Roles = roles
+
+		dept, err := this.deptRepo.QueryRolesByDeptId(user.DeptID)
+		if err != nil {
+			this.logger.Error("QueryRolesByDeptId error,", zap.Error(err))
+			return nil, fmt.Errorf("getInfo error", zap.Error(err))
+		}
+		user.Dept = dept
+		userList = append(userList, user)
+	}
+
+	return &common.PageResponse{
+		Total: total,
+		Rows:  userList,
+	}, nil
 }

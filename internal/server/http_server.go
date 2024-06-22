@@ -60,3 +60,12 @@ func ResolveSysUserHandler(db *rydb.DatabaseStruct, logger *zap.Logger, cache *c
 	sysUserService := usecase.NewSysUserService(sysUserRepo, cache, logger)
 	return handler.NewSysUserHandler(sysUserService)
 }
+
+func ResolvePageSysUserHandler(db *rydb.DatabaseStruct, logger *zap.Logger, cache *cache.FreeCacheClient) *handler.SysUserHandler {
+	sysRoleRepo := persistence.NewSysRoleRepository(db)
+	sysDeptRepo := persistence.NewSysDeptRepository(db)
+
+	sysUserRepo := persistence.NewSysUserRepository(db)
+	sysUserService := usecase.NewPageSysUserService(sysUserRepo, sysRoleRepo, sysDeptRepo, cache, logger)
+	return handler.NewSysUserHandler(sysUserService)
+}

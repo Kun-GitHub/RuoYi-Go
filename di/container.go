@@ -73,8 +73,8 @@ func NewContainer(c config.AppConfig) (*Container, error) {
 	sysMenuHandler := ryserver.ResolveSysMenuHandler(db, log, freeCache)
 	app.Get("/getRouters", sysMenuHandler.GetRouters)
 
-	sysUserHandler := ryserver.ResolveSysUserHandler(db, log, freeCache)
-	app.Get("/system/user/list", sysUserHandler.UserPage)
+	pageSysUserHandler := ryserver.ResolvePageSysUserHandler(db, log, freeCache)
+	app.Get("/system/user/list", pageSysUserHandler.UserPage)
 
 	//app.Get("/system/user/list", ms.PermissionMiddleware("system:user:list"), sysMenuHandler.GetRouters)
 

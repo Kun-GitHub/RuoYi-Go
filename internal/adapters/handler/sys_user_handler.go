@@ -40,17 +40,19 @@ func (h *SysUserHandler) UserPage(ctx iris.Context) {
 		pageNum,
 		pageSize,
 	}
-	// Attempt to read and bind the JSON request body to the 'user' variable
-	//if err := filter.ValidateRequest(ctx, &l); err != nil {
-	//	ctx.JSON(common.ErrorFormat(iris.StatusBadRequest, "Invalid JSON, error:%s", err.Error()))
-	//	return
-	//}
-
 	data, err := h.service.QueryUserPage(l, 0, "", "", "", 0)
 	if err != nil {
 		//h.logger.Debug("login failed", zap.Error(err))
 		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "UserPage, error：%s", err.Error()))
 		return
 	}
-	ctx.JSON(common.Success(data))
+
+	data = &common.PageResponse{
+		Rows:    data.Rows,
+		Total:   data.Total,
+		Message: "操作成功",
+		Code:    iris.StatusOK,
+	}
+
+	ctx.JSON(data)
 }

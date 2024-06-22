@@ -28,8 +28,8 @@ func ErrorFormat(code int, format string, a ...any) Response {
 }
 
 type PageResponse struct {
-	Total    int `json:"total"`
-	PageNum  int `json:"pageNum"`
-	PageSize int `json:"pageSize"`
-	Data     any `json:"data"`
+	Total   int64  `json:"total"`
+	Code    int    `json:"code"`
+	Message string `json:"msg"`
+	Rows    any    `json:"rows"`
 }
