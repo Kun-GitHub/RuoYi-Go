@@ -53,7 +53,7 @@ func (h *AuthHandler) Logout(ctx iris.Context) {
 
 	loginUser := ctx.Values().Get(common.LOGINUSER)
 	// 类型断言
-	_, ok := loginUser.(*model.LoginUserStruct)
+	_, ok := loginUser.(*model.UserInfoStruct)
 	if ok {
 		ctx.Values().Remove(common.LOGINUSER)
 	}
@@ -67,7 +67,7 @@ func (h *AuthHandler) Logout(ctx iris.Context) {
 func (h *AuthHandler) GetInfo(ctx iris.Context) {
 	user := ctx.Values().Get(common.LOGINUSER)
 	// 类型断言
-	loginUser, ok := user.(*model.LoginUserStruct)
+	loginUser, ok := user.(*model.UserInfoStruct)
 	if !ok {
 		ctx.JSON(common.Error(iris.StatusUnauthorized, "请重新登录"))
 		return

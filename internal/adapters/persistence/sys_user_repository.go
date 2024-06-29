@@ -40,8 +40,8 @@ func (this *SysUserRepository) QueryUserInfoByUserId(userId string) (*model.SysU
 	return structEntity, nil
 }
 
-func (this *SysUserRepository) QueryUserPage(pageReq common.PageRequest, userId int64, username string, phone string, status string, deptId int64) ([]*model.LoginUserStruct, int64, error) {
-	structEntity := make([]*model.LoginUserStruct, 0)
+func (this *SysUserRepository) QueryUserPage(pageReq common.PageRequest, userId int64, username string, phone string, status string, deptId int64) ([]*model.UserInfoStruct, int64, error) {
+	structEntity := make([]*model.UserInfoStruct, 0)
 
 	total, err := this.db.PageQuery(func(db *gorm.DB) *gorm.DB {
 		return db.Table(model.TableNameSysUser).Where("status = '0' and del_flag = '0'")

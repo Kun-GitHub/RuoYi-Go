@@ -20,7 +20,7 @@ import (
 	"strings"
 )
 
-var loginUser = &model.LoginUserStruct{}
+var loginUser = &model.UserInfoStruct{}
 
 type ServerMiddleware struct {
 	redis       *cache.RedisClient
@@ -80,7 +80,7 @@ func (this *ServerMiddleware) MiddlewareHandler(ctx iris.Context) {
 	ctx.Values().Set(common.TOKEN, token)
 
 	if loginUser == nil {
-		loginUser = &model.LoginUserStruct{}
+		loginUser = &model.UserInfoStruct{}
 	}
 	loginUser.SysUser = sysUser
 	if sysUser.UserID == common.ADMINID {

@@ -5,7 +5,7 @@
 
 package model
 
-type LoginUserStruct struct {
+type UserInfoStruct struct {
 	*SysUser
 	Admin bool       `gorm:"-" json:"admin"`
 	Roles []*SysRole `gorm:"-" json:"roles"`
@@ -26,9 +26,9 @@ type LoginRequest struct {
 }
 
 type GetInfoSuccess struct {
-	Code        int              `json:"code"`
-	Message     string           `json:"msg"`
-	Permissions []string         `json:"permissions"`
-	User        *LoginUserStruct `json:"user"`
-	Roles       []string         `json:"roles"`
+	Code        int             `json:"code"`
+	Message     string          `json:"msg"`
+	Permissions []string        `json:"permissions"`
+	User        *UserInfoStruct `json:"user"`
+	Roles       []string        `json:"roles"`
 }

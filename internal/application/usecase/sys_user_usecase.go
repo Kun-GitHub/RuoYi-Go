@@ -100,7 +100,7 @@ func (this *SysUserService) QueryUserPage(pageReq common.PageRequest, userId int
 		return nil, err
 	}
 
-	userList := make([]*model.LoginUserStruct, 0)
+	userList := make([]*model.UserInfoStruct, 0)
 	for _, user := range data {
 		if user.UserID == common.ADMINID {
 			user.Admin = true

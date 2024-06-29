@@ -26,7 +26,7 @@ func NewSysMenuHandler(service input.SysMenuService) *SysMenuHandler {
 func (h *SysMenuHandler) GetRouters(ctx iris.Context) {
 	user := ctx.Values().Get(common.LOGINUSER)
 	// 类型断言
-	loginUser, ok := user.(*model.LoginUserStruct)
+	loginUser, ok := user.(*model.UserInfoStruct)
 	if !ok {
 		ctx.JSON(common.Error(iris.StatusUnauthorized, "请重新登录"))
 		return

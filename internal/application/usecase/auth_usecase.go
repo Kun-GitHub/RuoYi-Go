@@ -79,7 +79,7 @@ func (this *AuthService) Logout(token string) error {
 	return nil
 }
 
-func (this *AuthService) GetInfo(loginUser *model.LoginUserStruct) (*model.GetInfoSuccess, error) {
+func (this *AuthService) GetInfo(loginUser *model.UserInfoStruct) (*model.GetInfoSuccess, error) {
 	var p []string
 	if loginUser.UserID == common.ADMINID {
 		p = append(p, "*:*:*")
