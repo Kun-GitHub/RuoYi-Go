@@ -10,6 +10,7 @@ import (
 	"gorm.io/driver/postgres"
 	"gorm.io/gen"
 	"gorm.io/gorm"
+	"strings"
 )
 
 var db *gorm.DB
@@ -22,11 +23,30 @@ func init() {
 	db, _ = gorm.Open(postgres.Open(dsn))
 }
 
+func toCamelCase(s string) string {
+	parts := strings.Split(s, "_")
+	for i := range parts {
+		if i == 0 {
+			parts[i] = strings.ToLower(parts[i])
+		} else {
+			parts[i] = strings.Title(parts[i])
+		}
+	}
+	return strings.Join(parts, "")
+}
+
 func main() {
 	if db != nil {
-		g := gen.NewGenerator(gen.Config{
-			OutPath: "./",
+		config := gen.Config{
+			OutPath:      "./dao",
+			ModelPkgPath: "./model",
+			Mode:         gen.WithDefaultQuery,
+		}
+		config.WithJSONTagNameStrategy(func(columnName string) string {
+			return toCamelCase(columnName)
 		})
+
+		g := gen.NewGenerator(config)
 
 		g.UseDB(db)
 

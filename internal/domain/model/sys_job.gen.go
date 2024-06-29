@@ -12,19 +12,19 @@ const TableNameSysJob = "sys_job"
 
 // SysJob mapped from table <sys_job>
 type SysJob struct {
-	JobID          int64     `gorm:"column:job_id;primaryKey;comment:任务ID" json:"job_id"`                             // 任务ID
-	JobName        string    `gorm:"column:job_name;primaryKey;comment:任务名称" json:"job_name"`                         // 任务名称
-	JobGroup       string    `gorm:"column:job_group;primaryKey;comment:任务组名" json:"job_group"`                       // 任务组名
-	InvokeTarget   string    `gorm:"column:invoke_target;not null;comment:调用目标字符串" json:"invoke_target"`              // 调用目标字符串
-	CronExpression string    `gorm:"column:cron_expression;comment:cron执行表达式" json:"cron_expression"`                 // cron执行表达式
-	MisfirePolicy  string    `gorm:"column:misfire_policy;comment:计划执行错误策略（1立即执行 2执行一次 3放弃执行）" json:"misfire_policy"` // 计划执行错误策略（1立即执行 2执行一次 3放弃执行）
-	Concurrent     string    `gorm:"column:concurrent;comment:是否并发执行（0允许 1禁止）" json:"concurrent"`                     // 是否并发执行（0允许 1禁止）
-	Status         string    `gorm:"column:status;comment:状态（0正常 1暂停）" json:"status"`                                 // 状态（0正常 1暂停）
-	CreateBy       string    `gorm:"column:create_by;comment:创建者" json:"create_by"`                                   // 创建者
-	CreateTime     time.Time `gorm:"column:create_time;comment:创建时间" json:"create_time"`                              // 创建时间
-	UpdateBy       string    `gorm:"column:update_by;comment:更新者" json:"update_by"`                                   // 更新者
-	UpdateTime     time.Time `gorm:"column:update_time;comment:更新时间" json:"update_time"`                              // 更新时间
-	Remark         string    `gorm:"column:remark;comment:备注信息" json:"remark"`                                        // 备注信息
+	JobID          int64     `gorm:"column:job_id;primaryKey;comment:任务ID" json:"jobId"`                             // 任务ID
+	JobName        string    `gorm:"column:job_name;primaryKey;comment:任务名称" json:"jobName"`                         // 任务名称
+	JobGroup       string    `gorm:"column:job_group;primaryKey;comment:任务组名" json:"jobGroup"`                       // 任务组名
+	InvokeTarget   string    `gorm:"column:invoke_target;not null;comment:调用目标字符串" json:"invokeTarget"`              // 调用目标字符串
+	CronExpression string    `gorm:"column:cron_expression;comment:cron执行表达式" json:"cronExpression"`                 // cron执行表达式
+	MisfirePolicy  string    `gorm:"column:misfire_policy;comment:计划执行错误策略（1立即执行 2执行一次 3放弃执行）" json:"misfirePolicy"` // 计划执行错误策略（1立即执行 2执行一次 3放弃执行）
+	Concurrent     string    `gorm:"column:concurrent;comment:是否并发执行（0允许 1禁止）" json:"concurrent"`                    // 是否并发执行（0允许 1禁止）
+	Status         string    `gorm:"column:status;comment:状态（0正常 1暂停）" json:"status"`                                // 状态（0正常 1暂停）
+	CreateBy       string    `gorm:"column:create_by;comment:创建者" json:"createBy"`                                   // 创建者
+	CreateTime     time.Time `gorm:"column:create_time;comment:创建时间" json:"createTime"`                              // 创建时间
+	UpdateBy       string    `gorm:"column:update_by;comment:更新者" json:"updateBy"`                                   // 更新者
+	UpdateTime     time.Time `gorm:"column:update_time;comment:更新时间" json:"updateTime"`                              // 更新时间
+	Remark         string    `gorm:"column:remark;comment:备注信息" json:"remark"`                                       // 备注信息
 }
 
 // TableName SysJob's table name

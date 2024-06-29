@@ -12,14 +12,14 @@ const TableNameSysJobLog = "sys_job_log"
 
 // SysJobLog mapped from table <sys_job_log>
 type SysJobLog struct {
-	JobLogID      int64     `gorm:"column:job_log_id;primaryKey;comment:任务日志ID" json:"job_log_id"`      // 任务日志ID
-	JobName       string    `gorm:"column:job_name;not null;comment:任务名称" json:"job_name"`              // 任务名称
-	JobGroup      string    `gorm:"column:job_group;not null;comment:任务组名" json:"job_group"`            // 任务组名
-	InvokeTarget  string    `gorm:"column:invoke_target;not null;comment:调用目标字符串" json:"invoke_target"` // 调用目标字符串
-	JobMessage    string    `gorm:"column:job_message;comment:日志信息" json:"job_message"`                 // 日志信息
-	Status        string    `gorm:"column:status;comment:执行状态（0正常 1失败）" json:"status"`                  // 执行状态（0正常 1失败）
-	ExceptionInfo string    `gorm:"column:exception_info;comment:异常信息" json:"exception_info"`           // 异常信息
-	CreateTime    time.Time `gorm:"column:create_time;comment:创建时间" json:"create_time"`                 // 创建时间
+	JobLogID      int64     `gorm:"column:job_log_id;primaryKey;comment:任务日志ID" json:"jobLogId"`       // 任务日志ID
+	JobName       string    `gorm:"column:job_name;not null;comment:任务名称" json:"jobName"`              // 任务名称
+	JobGroup      string    `gorm:"column:job_group;not null;comment:任务组名" json:"jobGroup"`            // 任务组名
+	InvokeTarget  string    `gorm:"column:invoke_target;not null;comment:调用目标字符串" json:"invokeTarget"` // 调用目标字符串
+	JobMessage    string    `gorm:"column:job_message;comment:日志信息" json:"jobMessage"`                 // 日志信息
+	Status        string    `gorm:"column:status;comment:执行状态（0正常 1失败）" json:"status"`                 // 执行状态（0正常 1失败）
+	ExceptionInfo string    `gorm:"column:exception_info;comment:异常信息" json:"exceptionInfo"`           // 异常信息
+	CreateTime    time.Time `gorm:"column:create_time;comment:创建时间" json:"createTime"`                 // 创建时间
 }
 
 // TableName SysJobLog's table name

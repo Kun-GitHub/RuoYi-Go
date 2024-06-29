@@ -8,8 +8,8 @@ const TableNameSysUserPost = "sys_user_post"
 
 // SysUserPost mapped from table <sys_user_post>
 type SysUserPost struct {
-	UserID int64 `gorm:"column:user_id;primaryKey;comment:用户ID" json:"user_id"` // 用户ID
-	PostID int64 `gorm:"column:post_id;primaryKey;comment:岗位ID" json:"post_id"` // 岗位ID
+	UserID int64 `gorm:"column:user_id;primaryKey;comment:用户ID" json:"userId"` // 用户ID
+	PostID int64 `gorm:"column:post_id;primaryKey;comment:岗位ID" json:"postId"` // 岗位ID
 }
 
 // TableName SysUserPost's table name

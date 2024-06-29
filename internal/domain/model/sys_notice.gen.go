@@ -12,16 +12,16 @@ const TableNameSysNotice = "sys_notice"
 
 // SysNotice mapped from table <sys_notice>
 type SysNotice struct {
-	NoticeID      int32     `gorm:"column:notice_id;primaryKey;comment:公告ID" json:"notice_id"`            // 公告ID
-	NoticeTitle   string    `gorm:"column:notice_title;not null;comment:公告标题" json:"notice_title"`        // 公告标题
-	NoticeType    string    `gorm:"column:notice_type;not null;comment:公告类型（1通知 2公告）" json:"notice_type"` // 公告类型（1通知 2公告）
-	NoticeContent []uint8   `gorm:"column:notice_content;comment:公告内容" json:"notice_content"`             // 公告内容
-	Status        string    `gorm:"column:status;comment:公告状态（0正常 1关闭）" json:"status"`                    // 公告状态（0正常 1关闭）
-	CreateBy      string    `gorm:"column:create_by;comment:创建者" json:"create_by"`                        // 创建者
-	CreateTime    time.Time `gorm:"column:create_time;comment:创建时间" json:"create_time"`                   // 创建时间
-	UpdateBy      string    `gorm:"column:update_by;comment:更新者" json:"update_by"`                        // 更新者
-	UpdateTime    time.Time `gorm:"column:update_time;comment:更新时间" json:"update_time"`                   // 更新时间
-	Remark        string    `gorm:"column:remark;comment:备注" json:"remark"`                               // 备注
+	NoticeID      int32     `gorm:"column:notice_id;primaryKey;comment:公告ID" json:"noticeId"`            // 公告ID
+	NoticeTitle   string    `gorm:"column:notice_title;not null;comment:公告标题" json:"noticeTitle"`        // 公告标题
+	NoticeType    string    `gorm:"column:notice_type;not null;comment:公告类型（1通知 2公告）" json:"noticeType"` // 公告类型（1通知 2公告）
+	NoticeContent []uint8   `gorm:"column:notice_content;comment:公告内容" json:"noticeContent"`             // 公告内容
+	Status        string    `gorm:"column:status;comment:公告状态（0正常 1关闭）" json:"status"`                   // 公告状态（0正常 1关闭）
+	CreateBy      string    `gorm:"column:create_by;comment:创建者" json:"createBy"`                        // 创建者
+	CreateTime    time.Time `gorm:"column:create_time;comment:创建时间" json:"createTime"`                   // 创建时间
+	UpdateBy      string    `gorm:"column:update_by;comment:更新者" json:"updateBy"`                        // 更新者
+	UpdateTime    time.Time `gorm:"column:update_time;comment:更新时间" json:"updateTime"`                   // 更新时间
+	Remark        string    `gorm:"column:remark;comment:备注" json:"remark"`                              // 备注
 }
 
 // TableName SysNotice's table name
