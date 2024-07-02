@@ -74,9 +74,10 @@ func NewContainer(c config.AppConfig) (*Container, error) {
 	app.Get("/getRouters", sysMenuHandler.GetRouters)
 
 	pageSysUserHandler := ryserver.ResolvePageSysUserHandler(db, log, freeCache)
-	app.Get("/system/user/list", pageSysUserHandler.UserPage)
+	app.Get("/system/user/list", ms.PermissionMiddleware("system:user:list"), pageSysUserHandler.UserPage)
 
-	//app.Get("/system/user/list", ms.PermissionMiddleware("system:user:list"), sysMenuHandler.GetRouters)
+	sysDictDataHandler := ryserver.ResolveSysDictDataHandler(db, log, freeCache)
+	app.Get("/system/dict/data/type/{dictType:string}", sysDictDataHandler.DictType)
 
 	ryws.StartWebSocket(app, log)
 
