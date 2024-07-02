@@ -15,48 +15,6 @@ import (
 	"gorm.io/plugin/dbresolver"
 )
 
-var (
-	Q             = new(Query)
-	SysConfig     *sysConfig
-	SysDept       *sysDept
-	SysDictDatum  *sysDictDatum
-	SysDictType   *sysDictType
-	SysJob        *sysJob
-	SysJobLog     *sysJobLog
-	SysLogininfor *sysLogininfor
-	SysMenu       *sysMenu
-	SysNotice     *sysNotice
-	SysOperLog    *sysOperLog
-	SysPost       *sysPost
-	SysRole       *sysRole
-	SysRoleDept   *sysRoleDept
-	SysRoleMenu   *sysRoleMenu
-	SysUser       *sysUser
-	SysUserPost   *sysUserPost
-	SysUserRole   *sysUserRole
-)
-
-func SetDefault(db *gorm.DB, opts ...gen.DOOption) {
-	*Q = *Use(db, opts...)
-	SysConfig = &Q.SysConfig
-	SysDept = &Q.SysDept
-	SysDictDatum = &Q.SysDictDatum
-	SysDictType = &Q.SysDictType
-	SysJob = &Q.SysJob
-	SysJobLog = &Q.SysJobLog
-	SysLogininfor = &Q.SysLogininfor
-	SysMenu = &Q.SysMenu
-	SysNotice = &Q.SysNotice
-	SysOperLog = &Q.SysOperLog
-	SysPost = &Q.SysPost
-	SysRole = &Q.SysRole
-	SysRoleDept = &Q.SysRoleDept
-	SysRoleMenu = &Q.SysRoleMenu
-	SysUser = &Q.SysUser
-	SysUserPost = &Q.SysUserPost
-	SysUserRole = &Q.SysUserRole
-}
-
 func Use(db *gorm.DB, opts ...gen.DOOption) *Query {
 	return &Query{
 		db:            db,

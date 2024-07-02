@@ -6,16 +6,16 @@
 package persistence
 
 import (
+	"RuoYi-Go/internal/adapters/dao"
 	"RuoYi-Go/internal/domain/model"
-	"RuoYi-Go/pkg/db"
 	"gorm.io/gorm"
 )
 
 type SysRoleRepository struct {
-	db *rydb.DatabaseStruct
+	db *dao.DatabaseStruct
 }
 
-func NewSysRoleRepository(db *rydb.DatabaseStruct) *SysRoleRepository {
+func NewSysRoleRepository(db *dao.DatabaseStruct) *SysRoleRepository {
 	return &SysRoleRepository{db: db}
 }
 

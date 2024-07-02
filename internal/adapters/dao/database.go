@@ -3,7 +3,7 @@
 // Author: K. See：https://github.com/Kun-GitHub/RuoYi-Go
 // Email: hot_kun@hotmail.com or BusinessCallKun@gmail.com
 
-package rydb
+package dao
 
 import (
 	"RuoYi-Go/config"
@@ -18,10 +18,16 @@ import (
 	"time"
 )
 
+type IDatabase interface {
+	// 定义所有数据库操作的公共方法签名
+	// ...
+}
+
 type DatabaseStruct struct {
 	db *gorm.DB
-
 	mu sync.Mutex
+
+	Gen *Query
 }
 
 func OpenDB(cfg config.AppConfig) (*DatabaseStruct, error) {
@@ -70,8 +76,12 @@ func OpenDB(cfg config.AppConfig) (*DatabaseStruct, error) {
 	//	log.Fatalf("Failed to apply migrations: %v", err)
 	//}
 
+	// 初始化自动生成的组件
+	g := Use(db)
+
 	return &DatabaseStruct{
-		db: db,
+		db:  db,
+		Gen: g,
 	}, nil
 }
 

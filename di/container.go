@@ -7,10 +7,10 @@ package di
 
 import (
 	"RuoYi-Go/config"
+	"RuoYi-Go/internal/adapters/dao"
 	"RuoYi-Go/internal/server"
 	"RuoYi-Go/internal/websocket"
 	"RuoYi-Go/pkg/cache"
-	"RuoYi-Go/pkg/db"
 	"RuoYi-Go/pkg/i18n"
 	"RuoYi-Go/pkg/logger"
 	"context"
@@ -26,7 +26,7 @@ type Container struct {
 	logger    *zap.Logger
 	redis     *cache.RedisClient
 	localizer *i18n.Localizer
-	gormDB    *rydb.DatabaseStruct
+	gormDB    *dao.DatabaseStruct
 	app       *iris.Application
 	freeCache *cache.FreeCacheClient
 }
@@ -46,7 +46,7 @@ func NewContainer(c config.AppConfig) (*Container, error) {
 	l := ryi18n.LoadLocalizer(c.Language) // 假设配置中指定了Language
 
 	// 创建DatabaseStruct实例
-	db, err := rydb.OpenDB(c)
+	db, err := dao.OpenDB(c)
 	if err != nil {
 		log.Error("failed to initialize database", zap.Error(err))
 		return nil, fmt.Errorf("failed to initialize database: %w", err)

@@ -6,17 +6,17 @@
 package persistence
 
 import (
+	"RuoYi-Go/internal/adapters/dao"
 	"RuoYi-Go/internal/common"
 	"RuoYi-Go/internal/domain/model"
-	"RuoYi-Go/pkg/db"
 	"gorm.io/gorm"
 )
 
 type SysMenuRepository struct {
-	db *rydb.DatabaseStruct
+	db *dao.DatabaseStruct
 }
 
-func NewSysMenuRepository(db *rydb.DatabaseStruct) *SysMenuRepository {
+func NewSysMenuRepository(db *dao.DatabaseStruct) *SysMenuRepository {
 	return &SysMenuRepository{db: db}
 }
 

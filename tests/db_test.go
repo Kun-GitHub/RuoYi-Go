@@ -20,7 +20,7 @@ type User struct {
 func TestSqlite(t *testing.T) {
 
 	//// 创建sqliteStruct实例
-	//sqliteService := &rydb.DatabaseStruct{}
+	//sqliteService := &dao.DatabaseStruct{}
 	//
 	//// 打开数据库并执行自动迁移（假设User结构体是你的模型）
 	//err := sqliteService.OpenSqlite()

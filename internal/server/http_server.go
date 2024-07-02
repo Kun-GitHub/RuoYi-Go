@@ -7,12 +7,12 @@ package ryserver
 
 import (
 	"RuoYi-Go/config"
+	"RuoYi-Go/internal/adapters/dao"
 	"RuoYi-Go/internal/adapters/handler"
 	"RuoYi-Go/internal/adapters/persistence"
 	"RuoYi-Go/internal/application/usecase"
 	"RuoYi-Go/internal/filter"
 	"RuoYi-Go/pkg/cache"
-	rydb "RuoYi-Go/pkg/db"
 	"go.uber.org/zap"
 )
 
@@ -22,7 +22,7 @@ import (
 //		return handler.NewDemoHandler(demoService, logger)
 //	}
 
-func ResolveServerMiddleware(db *rydb.DatabaseStruct, redis *cache.RedisClient, logger *zap.Logger, cache *cache.FreeCacheClient, appConfig config.AppConfig) *filter.ServerMiddleware {
+func ResolveServerMiddleware(db *dao.DatabaseStruct, redis *cache.RedisClient, logger *zap.Logger, cache *cache.FreeCacheClient, appConfig config.AppConfig) *filter.ServerMiddleware {
 	sysUserRepo := persistence.NewSysUserRepository(db)
 	sysUserService := usecase.NewSysUserService(sysUserRepo, cache, logger)
 	sysMenuRepo := persistence.NewSysMenuRepository(db)
@@ -35,7 +35,7 @@ func ResolveCaptchaHandler(redis *cache.RedisClient, logger *zap.Logger) *handle
 	return handler.NewCaptchaHandler(demoService)
 }
 
-func ResolveAuthHandler(db *rydb.DatabaseStruct, redis *cache.RedisClient, logger *zap.Logger, cache *cache.FreeCacheClient) *handler.AuthHandler {
+func ResolveAuthHandler(db *dao.DatabaseStruct, redis *cache.RedisClient, logger *zap.Logger, cache *cache.FreeCacheClient) *handler.AuthHandler {
 	sysUserRepo := persistence.NewSysUserRepository(db)
 	sysUserService := usecase.NewSysUserService(sysUserRepo, cache, logger)
 
@@ -49,19 +49,19 @@ func ResolveAuthHandler(db *rydb.DatabaseStruct, redis *cache.RedisClient, logge
 	return handler.NewAuthHandler(authService, logger)
 }
 
-func ResolveSysMenuHandler(db *rydb.DatabaseStruct, logger *zap.Logger, cache *cache.FreeCacheClient) *handler.SysMenuHandler {
+func ResolveSysMenuHandler(db *dao.DatabaseStruct, logger *zap.Logger, cache *cache.FreeCacheClient) *handler.SysMenuHandler {
 	sysMenuRepo := persistence.NewSysMenuRepository(db)
 	sysMenuService := usecase.NewSysMenuService(sysMenuRepo, cache, logger)
 	return handler.NewSysMenuHandler(sysMenuService)
 }
 
-func ResolveSysUserHandler(db *rydb.DatabaseStruct, logger *zap.Logger, cache *cache.FreeCacheClient) *handler.SysUserHandler {
+func ResolveSysUserHandler(db *dao.DatabaseStruct, logger *zap.Logger, cache *cache.FreeCacheClient) *handler.SysUserHandler {
 	sysUserRepo := persistence.NewSysUserRepository(db)
 	sysUserService := usecase.NewSysUserService(sysUserRepo, cache, logger)
 	return handler.NewSysUserHandler(sysUserService)
 }
 
-func ResolvePageSysUserHandler(db *rydb.DatabaseStruct, logger *zap.Logger, cache *cache.FreeCacheClient) *handler.SysUserHandler {
+func ResolvePageSysUserHandler(db *dao.DatabaseStruct, logger *zap.Logger, cache *cache.FreeCacheClient) *handler.SysUserHandler {
 	sysRoleRepo := persistence.NewSysRoleRepository(db)
 	sysDeptRepo := persistence.NewSysDeptRepository(db)
 
