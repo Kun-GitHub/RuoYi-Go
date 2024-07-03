@@ -35,13 +35,15 @@ func (this *SysDeptRepository) QueryDeptList(dept *model.SysDept) ([]*model.SysD
 	structEntity := make([]*model.SysDept, 0)
 
 	var status field.Expr
-	if dept.Status != "" {
-		status = this.db.Gen.SysDept.Status.Eq(dept.Status)
-	}
-
 	var deptName field.Expr
-	if dept.DeptName != "" {
-		deptName = this.db.Gen.SysDept.DeptName.Like("%" + dept.DeptName + "%")
+	if dept != nil {
+		if dept.Status != "" {
+			status = this.db.Gen.SysDept.Status.Eq(dept.Status)
+		}
+
+		if dept.DeptName != "" {
+			deptName = this.db.Gen.SysDept.DeptName.Like("%" + dept.DeptName + "%")
+		}
 	}
 
 	structEntity, err := this.db.Gen.SysDept.WithContext(context.Background()).

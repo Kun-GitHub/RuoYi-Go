@@ -7,29 +7,24 @@ package handler
 
 import (
 	"RuoYi-Go/internal/common"
+	"RuoYi-Go/internal/domain/model"
 	"RuoYi-Go/internal/ports/input"
 	"github.com/kataras/iris/v12"
 	"strconv"
 )
 
 type SysUserHandler struct {
-	service input.SysUserService
+	service     input.SysUserService
+	deptService input.SysDeptService
 }
 
-func NewSysUserHandler(service input.SysUserService) *SysUserHandler {
-	return &SysUserHandler{service: service}
+func NewSysUserHandler(service input.SysUserService, deptService input.SysDeptService) *SysUserHandler {
+	return &SysUserHandler{service: service,
+		deptService: deptService}
 }
 
 // GenerateCaptchaImage
 func (h *SysUserHandler) UserPage(ctx iris.Context) {
-	//user := ctx.Values().Get(common.LOGINUSER)
-	//// 类型断言
-	//loginUser, ok := user.(*model.LoginUserStruct)
-	//if !ok {
-	//	ctx.JSON(common.Error(iris.StatusUnauthorized, "请重新登录"))
-	//	return
-	//}
-
 	pageNumStr := ctx.URLParam("pageNum")
 	pageSizeStr := ctx.URLParam("pageSize")
 
@@ -55,4 +50,47 @@ func (h *SysUserHandler) UserPage(ctx iris.Context) {
 	}
 
 	ctx.JSON(data)
+}
+
+func (h *SysUserHandler) DeptTree(ctx iris.Context) {
+	data, err := h.deptService.QueryDeptList(nil)
+	if err != nil {
+		//h.logger.Debug("login failed", zap.Error(err))
+		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "DeptTree, error：%s", err.Error()))
+		return
+	}
+
+	data = buildDeptTree(data)
+	ctx.JSON(common.Success(data))
+}
+
+// buildDeptTree constructs a tree of departments from a flat list.
+func buildDeptTree(depts []*model.SysDept) []*model.SysDept {
+	// Create a map to store the department by its ID.
+	idToDept := make(map[int64]*model.SysDept)
+	for _, dept := range depts {
+		idToDept[dept.DeptID] = dept
+	}
+
+	// Create a slice to hold the root departments.
+	var rootDepts []*model.SysDept
+
+	// Iterate over the departments and set up the parent-child relationships.
+	for _, dept := range depts {
+		if parentId, exists := idToDept[dept.ParentID]; exists {
+			// If the parent department exists, add the current department as its child.
+			dept.ID = dept.DeptID
+			dept.Label = dept.DeptName
+
+			parentId.Children = append(parentId.Children, dept)
+		} else {
+			dept.ID = dept.DeptID
+			dept.Label = dept.DeptName
+			// If the parent department does not exist, it's a root department.
+			rootDepts = append(rootDepts, dept)
+		}
+	}
+
+	// Return the root departments.
+	return rootDepts
 }

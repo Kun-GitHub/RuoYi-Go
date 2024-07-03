@@ -55,19 +55,21 @@ func ResolveSysMenuHandler(db *dao.DatabaseStruct, logger *zap.Logger, cache *ca
 	return handler.NewSysMenuHandler(sysMenuService)
 }
 
-func ResolveSysUserHandler(db *dao.DatabaseStruct, logger *zap.Logger, cache *cache.FreeCacheClient) *handler.SysUserHandler {
-	sysUserRepo := persistence.NewSysUserRepository(db)
-	sysUserService := usecase.NewSysUserService(sysUserRepo, cache, logger)
-	return handler.NewSysUserHandler(sysUserService)
-}
+//func ResolveSysUserHandler(db *dao.DatabaseStruct, logger *zap.Logger, cache *cache.FreeCacheClient) *handler.SysUserHandler {
+//	sysUserRepo := persistence.NewSysUserRepository(db)
+//	sysUserService := usecase.NewSysUserService(sysUserRepo, cache, logger)
+//	return handler.NewSysUserHandler(sysUserService)
+//}
 
 func ResolvePageSysUserHandler(db *dao.DatabaseStruct, logger *zap.Logger, cache *cache.FreeCacheClient) *handler.SysUserHandler {
 	sysRoleRepo := persistence.NewSysRoleRepository(db)
+
 	sysDeptRepo := persistence.NewSysDeptRepository(db)
+	sysDeptService := usecase.NewSysDeptService(sysDeptRepo, cache, logger)
 
 	sysUserRepo := persistence.NewSysUserRepository(db)
 	sysUserService := usecase.NewPageSysUserService(sysUserRepo, sysRoleRepo, sysDeptRepo, cache, logger)
-	return handler.NewSysUserHandler(sysUserService)
+	return handler.NewSysUserHandler(sysUserService, sysDeptService)
 }
 
 func ResolveSysDictDataHandler(db *dao.DatabaseStruct, logger *zap.Logger, cache *cache.FreeCacheClient) *handler.SysDictDataHandler {

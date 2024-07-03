@@ -75,6 +75,7 @@ func NewContainer(c config.AppConfig) (*Container, error) {
 
 	pageSysUserHandler := ryserver.ResolvePageSysUserHandler(db, log, freeCache)
 	app.Get("/system/user/list", ms.PermissionMiddleware("system:user:list"), pageSysUserHandler.UserPage)
+	app.Get("/system/user/deptTree", ms.PermissionMiddleware("system:user:list"), pageSysUserHandler.DeptTree)
 
 	sysDictDataHandler := ryserver.ResolveSysDictDataHandler(db, log, freeCache)
 	app.Get("/system/dict/data/type/{dictType:string}", sysDictDataHandler.DictType)

@@ -59,7 +59,7 @@ func (this *SysDeptService) QueryRolesByDeptId(deptId int64) (*model.SysDept, er
 func (this *SysDeptService) QueryDeptList(dept *model.SysDept) ([]*model.SysDept, error) {
 	structEntity := make([]*model.SysDept, 0)
 
-	structEntity, err := this.repo.QueryDepts(dept)
+	structEntity, err := this.repo.QueryDeptList(dept)
 	if err != nil {
 		this.logger.Error("查询信息失败", zap.Error(err))
 		return nil, err

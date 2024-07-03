@@ -26,6 +26,10 @@ type SysDept struct {
 	CreateTime time.Time `gorm:"column:create_time;comment:创建时间" json:"createTime"`        // 创建时间
 	UpdateBy   string    `gorm:"column:update_by;comment:更新者" json:"updateBy"`             // 更新者
 	UpdateTime time.Time `gorm:"column:update_time;comment:更新时间" json:"updateTime"`        // 更新时间
+
+	ID       int64      `gorm:"-" json:"id"`       // 部门id
+	Label    string     `gorm:"-" json:"label"`    // 部门名称
+	Children []*SysDept `gorm:"-" json:"children"` // 更新时间
 }
 
 // TableName SysDept's table name
