@@ -93,8 +93,8 @@ func (this *SysUserService) QueryUserInfoByUserId(userId string) (*model.SysUser
 	return nil, fmt.Errorf("查询用户信息失败", zap.Error(err))
 }
 
-func (this *SysUserService) QueryUserPage(pageReq common.PageRequest, userId int64, username string, phone string, status string, deptId int64) (*common.PageResponse, error) {
-	data, total, err := this.repo.QueryUserPage(pageReq, userId, username, phone, status, deptId)
+func (this *SysUserService) QueryUserPage(pageReq common.PageRequest, u *model.SysUser) (*common.PageResponse, error) {
+	data, total, err := this.repo.QueryUserPage(pageReq, u)
 	if err != nil {
 		this.logger.Error("查询用户分页信息失败", zap.Error(err))
 		return nil, err
@@ -102,8 +102,10 @@ func (this *SysUserService) QueryUserPage(pageReq common.PageRequest, userId int
 
 	userList := make([]*model.UserInfoStruct, 0)
 	for _, user := range data {
+		userInfo := &model.UserInfoStruct{}
+		userInfo.SysUser = user
 		if user.UserID == common.ADMINID {
-			user.Admin = true
+			userInfo.Admin = true
 		}
 
 		roles, err := this.roleRepo.QueryRolesByUserId(user.UserID)
@@ -111,19 +113,23 @@ func (this *SysUserService) QueryUserPage(pageReq common.PageRequest, userId int
 			this.logger.Error("QueryRolesByUserId error,", zap.Error(err))
 			return nil, fmt.Errorf("getInfo error", zap.Error(err))
 		}
-		user.Roles = roles
+		userInfo.Roles = roles
 
 		dept, err := this.deptRepo.QueryRolesByDeptId(user.DeptID)
 		if err != nil {
 			this.logger.Error("QueryRolesByDeptId error,", zap.Error(err))
 			return nil, fmt.Errorf("getInfo error", zap.Error(err))
 		}
-		user.Dept = dept
-		userList = append(userList, user)
+		userInfo.Dept = dept
+		userList = append(userList, userInfo)
 	}
 
 	return &common.PageResponse{
 		Total: total,
 		Rows:  userList,
 	}, nil
+}
+
+func (this *SysUserService) QueryUserList(user *model.SysUser) ([]*model.UserInfoStruct, error) {
+	return nil, nil
 }

@@ -35,7 +35,27 @@ func (h *SysUserHandler) UserPage(ctx iris.Context) {
 		pageNum,
 		pageSize,
 	}
-	data, err := h.service.QueryUserPage(l, 0, "", "", "", 0)
+
+	status := ctx.URLParam("status")
+	deptIdStr := ctx.URLParam("deptId")
+	var deptId int64
+	userName := ctx.URLParam("userName")
+	phonenumber := ctx.URLParam("phonenumber")
+	//params := ctx.URLParam("params")
+	//fmt.Println(params)
+
+	if deptIdStr != "" {
+		deptId, _ = strconv.ParseInt(deptIdStr, 10, 64)
+	}
+
+	u := &model.SysUser{
+		Status:      status,
+		DeptID:      deptId,
+		UserName:    userName,
+		Phonenumber: phonenumber,
+	}
+
+	data, err := h.service.QueryUserPage(l, u)
 	if err != nil {
 		//h.logger.Debug("login failed", zap.Error(err))
 		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "UserPage, error：%s", err.Error()))

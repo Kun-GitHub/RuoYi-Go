@@ -9,7 +9,8 @@ import (
 	"RuoYi-Go/internal/adapters/dao"
 	"RuoYi-Go/internal/common"
 	"RuoYi-Go/internal/domain/model"
-	"gorm.io/gorm"
+	"context"
+	"gorm.io/gen/field"
 )
 
 type SysUserRepository struct {
@@ -40,15 +41,47 @@ func (this *SysUserRepository) QueryUserInfoByUserId(userId string) (*model.SysU
 	return structEntity, nil
 }
 
-func (this *SysUserRepository) QueryUserPage(pageReq common.PageRequest, userId int64, username string, phone string, status string, deptId int64) ([]*model.UserInfoStruct, int64, error) {
-	structEntity := make([]*model.UserInfoStruct, 0)
+func (this *SysUserRepository) QueryUserPage(pageReq common.PageRequest, user *model.SysUser) ([]*model.SysUser, int64, error) {
+	structEntity := make([]*model.SysUser, 0)
 
-	total, err := this.db.PageQuery(func(db *gorm.DB) *gorm.DB {
-		return db.Table(model.TableNameSysUser).Where("status = '0' and del_flag = '0'")
-	}, pageReq, &structEntity)
+	//total, err := this.db.PageQuery(func(db *gorm.DB) *gorm.DB {
+	//	return db.Table(model.TableNameSysUser).Where("status = '0' and del_flag = '0'")
+	//}, pageReq, &structEntity)
+
+	var status field.Expr
+	var deptID field.Expr
+	var phonenumber field.Expr
+	var userName field.Expr
+	if user != nil {
+		if user.Status != "" {
+			status = this.db.Gen.SysUser.Status.Eq(user.Status)
+		}
+
+		if user.Phonenumber != "" {
+			phonenumber = this.db.Gen.SysUser.Phonenumber.Like("%" + user.Phonenumber + "%")
+		}
+
+		if user.UserName != "" {
+			userName = this.db.Gen.SysUser.UserName.Like("%" + user.UserName + "%")
+		}
+
+		if user.DeptID != 0 {
+			deptID = this.db.Gen.SysUser.DeptID.Eq(user.DeptID)
+		}
+	}
+
+	structEntity, err := this.db.Gen.SysUser.WithContext(context.Background()).
+		Where(deptID, status, phonenumber, userName).Find()
+
+	total, err := this.db.Gen.SysUser.WithContext(context.Background()).
+		Where(deptID, status, phonenumber, userName).Count()
 
 	if err != nil {
 		return nil, 0, err
 	}
 	return structEntity, total, err
+}
+
+func (this *SysUserRepository) QueryUserList(user *model.SysUser) ([]*model.UserInfoStruct, error) {
+	return nil, nil
 }
