@@ -23,8 +23,7 @@ func NewSysDictDataHandler(service input.SysDictDataService) *SysDictDataHandler
 func (h *SysDictDataHandler) DictType(ctx iris.Context) {
 	dictType := ctx.Params().GetString("dictType")
 	if dictType == "" {
-		ctx.StatusCode(iris.StatusBadRequest)
-		ctx.JSON(iris.Map{"error": "invalid ID"})
+		ctx.JSON(common.ErrorFormat(iris.StatusBadRequest, "Invalid dictType"))
 		return
 	}
 

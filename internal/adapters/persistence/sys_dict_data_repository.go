@@ -23,7 +23,8 @@ func (this *SysDictDataRepository) QueryDictDatasByType(typeStr string) ([]*mode
 	structEntity := make([]*model.SysDictDatum, 0)
 
 	structEntity, err := this.db.Gen.SysDictDatum.WithContext(context.Background()).
-		Where(this.db.Gen.SysDictDatum.DictType.Eq(typeStr)).Find()
+		Where(this.db.Gen.SysDictDatum.DictType.Eq(typeStr),
+			this.db.Gen.SysDictDatum.Status.Eq("0")).Find()
 	if err != nil {
 		return nil, err
 	}

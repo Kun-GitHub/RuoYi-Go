@@ -29,17 +29,12 @@ func (this *SysDictDataService) QueryDictDatasByType(typeStr string) ([]*model.S
 
 	structEntity, err := this.repo.QueryDictDatasByType(typeStr)
 	if err != nil {
-		this.logger.Error("查询用户部门信息失败", zap.Error(err))
+		this.logger.Error("查询信息失败", zap.Error(err))
 		return nil, err
 	} else {
-		//// 序列化用户对象并存入缓存
-		//userBytes, err = json.Marshal(structEntity)
-		//if err == nil && structEntity.DeptID != 0 {
-		//	this.cache.Set([]byte(fmt.Sprintf("DeptID:%d", structEntity.DeptID)), userBytes, common.EXPIRESECONDS) // 第三个参数是过期时间，0表示永不过期
 		return structEntity, nil
-		//}
 	}
 
-	this.logger.Debug("查询用户部门信息失败", zap.Error(err))
-	return nil, fmt.Errorf("查询用户部门信息失败", zap.Error(err))
+	this.logger.Debug("查询信息失败", zap.Error(err))
+	return nil, fmt.Errorf("查询信息失败", zap.Error(err))
 }
