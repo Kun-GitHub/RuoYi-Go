@@ -7,9 +7,9 @@ package handler
 
 import (
 	"RuoYi-Go/internal/common"
+	"RuoYi-Go/internal/domain/model"
 	"RuoYi-Go/internal/ports/input"
 	"github.com/kataras/iris/v12"
-	"strconv"
 )
 
 type SysDeptHandler struct {
@@ -21,38 +21,19 @@ func NewSysDeptHandler(service input.SysDeptService) *SysDeptHandler {
 }
 
 // GenerateCaptchaImage
-func (h *SysUserHandler) DeptPage(ctx iris.Context) {
-	//user := ctx.Values().Get(common.LOGINUSER)
-	//// 类型断言
-	//loginUser, ok := user.(*model.LoginUserStruct)
-	//if !ok {
-	//	ctx.JSON(common.Error(iris.StatusUnauthorized, "请重新登录"))
-	//	return
-	//}
+func (h *SysDeptHandler) DeptList(ctx iris.Context) {
+	deptName := ctx.URLParam("deptName")
+	status := ctx.URLParam("status")
 
-	pageNumStr := ctx.URLParam("pageNum")
-	pageSizeStr := ctx.URLParam("pageSize")
-
-	pageNum, _ := strconv.Atoi(pageNumStr)
-	pageSize, _ := strconv.Atoi(pageSizeStr)
-
-	l := common.PageRequest{
-		pageNum,
-		pageSize,
+	sysDept := &model.SysDept{
+		DeptName: deptName,
+		Status:   status,
 	}
-	data, err := h.service.QueryUserPage(l, 0, "", "", "", 0)
+
+	s, err := h.service.QueryDeptList(sysDept)
 	if err != nil {
-		//h.logger.Debug("login failed", zap.Error(err))
-		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "UserPage, error：%s", err.Error()))
+		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "DeptList failed, error：%s", err.Error()))
 		return
 	}
-
-	data = &common.PageResponse{
-		Rows:    data.Rows,
-		Total:   data.Total,
-		Message: "操作成功",
-		Code:    iris.StatusOK,
-	}
-
-	ctx.JSON(data)
+	ctx.JSON(common.Success(s))
 }

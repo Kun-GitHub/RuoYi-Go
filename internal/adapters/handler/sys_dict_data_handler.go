@@ -27,6 +27,10 @@ func (h *SysDictDataHandler) DictType(ctx iris.Context) {
 		return
 	}
 
-	s, _ := h.service.QueryDictDatasByType(dictType)
+	s, err := h.service.QueryDictDatasByType(dictType)
+	if err != nil {
+		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "DictType failed, error：%s", err.Error()))
+		return
+	}
 	ctx.JSON(common.Success(s))
 }

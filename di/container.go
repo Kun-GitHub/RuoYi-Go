@@ -79,8 +79,12 @@ func NewContainer(c config.AppConfig) (*Container, error) {
 	sysDictDataHandler := ryserver.ResolveSysDictDataHandler(db, log, freeCache)
 	app.Get("/system/dict/data/type/{dictType:string}", sysDictDataHandler.DictType)
 
+	sysDeptHandler := ryserver.ResolveSysDeptHandler(db, log, freeCache)
+	app.Get("/system/dept/list", ms.PermissionMiddleware("system:dept:list"), sysDeptHandler.DeptList)
+
 	ryws.StartWebSocket(app, log)
 
+	log.Info("http server started", zap.Int("port", c.Server.Port))
 	err = app.Run(iris.Addr(fmt.Sprintf(":%d", c.Server.Port)))
 	if err != nil {
 		log.Error("failed to run http server", zap.Error(err))

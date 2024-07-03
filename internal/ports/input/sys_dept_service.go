@@ -12,4 +12,5 @@ import (
 // SysDeptService 输入端口接口
 type SysDeptService interface {
 	QueryRolesByDeptId(deptId int64) (*model.SysDept, error)
+	QueryDeptList(dept *model.SysDept) ([]*model.SysDept, error)
 }

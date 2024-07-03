@@ -55,3 +55,18 @@ func (this *SysDeptService) QueryRolesByDeptId(deptId int64) (*model.SysDept, er
 	this.logger.Debug("查询用户部门信息失败", zap.Error(err))
 	return nil, fmt.Errorf("查询用户部门信息失败", zap.Error(err))
 }
+
+func (this *SysDeptService) QueryDeptList(dept *model.SysDept) ([]*model.SysDept, error) {
+	structEntity := make([]*model.SysDept, 0)
+
+	structEntity, err := this.repo.QueryDepts(dept)
+	if err != nil {
+		this.logger.Error("查询信息失败", zap.Error(err))
+		return nil, err
+	} else {
+		return structEntity, nil
+	}
+
+	this.logger.Debug("查询信息失败", zap.Error(err))
+	return nil, fmt.Errorf("查询信息失败", zap.Error(err))
+}

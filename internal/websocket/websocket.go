@@ -20,6 +20,7 @@ var (
 func StartWebSocket(ws *iris.Application, l *zap.Logger) {
 	logger = l
 
+	logger.Info("websocket start")
 	ws.Get("/ws", websocket.Handler(handlerWebsocket()))
 }
 

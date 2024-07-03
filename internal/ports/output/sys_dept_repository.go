@@ -11,4 +11,5 @@ import (
 
 type SysDeptRepository interface {
 	QueryRolesByDeptId(deptId int64) (*model.SysDept, error)
+	QueryDeptList(dept *model.SysDept) ([]*model.SysDept, error)
 }
