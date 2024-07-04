@@ -13,7 +13,7 @@ import (
 // SysUserService 输入端口接口
 type SysUserService interface {
 	QueryUserInfoByUserName(username string) (*model.SysUser, error)
-	QueryUserInfoByUserId(userId string) (*model.SysUser, error)
-	QueryUserPage(pageReq common.PageRequest, user *model.SysUser) (*common.PageResponse, error)
-	QueryUserList(user *model.SysUser) ([]*model.UserInfoStruct, error)
+	QueryUserInfoByUserId(userId int64) (*model.SysUser, error)
+	QueryUserPage(pageReq common.PageRequest, user *model.SysUser) ([]*model.UserInfoStruct, int64, error)
+	QueryUserList(user *model.SysUser) ([]*model.SysUser, error)
 }

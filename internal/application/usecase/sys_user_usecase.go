@@ -63,10 +63,10 @@ func (this *SysUserService) QueryUserInfoByUserName(username string) (*model.Sys
 	return nil, fmt.Errorf("查询用户信息失败", zap.Error(err))
 }
 
-func (this *SysUserService) QueryUserInfoByUserId(userId string) (*model.SysUser, error) {
+func (this *SysUserService) QueryUserInfoByUserId(userId int64) (*model.SysUser, error) {
 	structEntity := &model.SysUser{}
 	// 尝试从缓存中获取
-	userBytes, err := this.cache.Get([]byte(fmt.Sprintf("UserID:%v", userId)))
+	userBytes, err := this.cache.Get([]byte(fmt.Sprintf("UserID:%d", userId)))
 	if err == nil {
 		// 缓存命中
 		err = json.Unmarshal(userBytes, &structEntity)
@@ -93,11 +93,11 @@ func (this *SysUserService) QueryUserInfoByUserId(userId string) (*model.SysUser
 	return nil, fmt.Errorf("查询用户信息失败", zap.Error(err))
 }
 
-func (this *SysUserService) QueryUserPage(pageReq common.PageRequest, u *model.SysUser) (*common.PageResponse, error) {
+func (this *SysUserService) QueryUserPage(pageReq common.PageRequest, u *model.SysUser) ([]*model.UserInfoStruct, int64, error) {
 	data, total, err := this.repo.QueryUserPage(pageReq, u)
 	if err != nil {
 		this.logger.Error("查询用户分页信息失败", zap.Error(err))
-		return nil, err
+		return nil, 0, err
 	}
 
 	userList := make([]*model.UserInfoStruct, 0)
@@ -111,25 +111,27 @@ func (this *SysUserService) QueryUserPage(pageReq common.PageRequest, u *model.S
 		roles, err := this.roleRepo.QueryRolesByUserId(user.UserID)
 		if err != nil {
 			this.logger.Error("QueryRolesByUserId error,", zap.Error(err))
-			return nil, fmt.Errorf("getInfo error", zap.Error(err))
+			return nil, 0, fmt.Errorf("getInfo error", zap.Error(err))
 		}
 		userInfo.Roles = roles
 
 		dept, err := this.deptRepo.QueryRolesByDeptId(user.DeptID)
 		if err != nil {
 			this.logger.Error("QueryRolesByDeptId error,", zap.Error(err))
-			return nil, fmt.Errorf("getInfo error", zap.Error(err))
+			return nil, 0, fmt.Errorf("getInfo error", zap.Error(err))
 		}
 		userInfo.Dept = dept
 		userList = append(userList, userInfo)
 	}
 
-	return &common.PageResponse{
-		Total: total,
-		Rows:  userList,
-	}, nil
+	return userList, total, nil
 }
 
-func (this *SysUserService) QueryUserList(user *model.SysUser) ([]*model.UserInfoStruct, error) {
-	return nil, nil
+func (this *SysUserService) QueryUserList(u *model.SysUser) ([]*model.SysUser, error) {
+	data, err := this.repo.QueryUserList(u)
+	if err != nil {
+		this.logger.Error("查询用户列表信息失败", zap.Error(err))
+		return nil, err
+	}
+	return data, nil
 }

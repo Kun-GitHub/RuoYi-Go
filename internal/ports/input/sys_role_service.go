@@ -6,10 +6,12 @@
 package input
 
 import (
+	"RuoYi-Go/internal/common"
 	"RuoYi-Go/internal/domain/model"
 )
 
 // SysRoleService 输入端口接口
 type SysRoleService interface {
 	QueryRolesByUserId(userId int64) ([]*model.SysRole, error)
+	QueryRolePage(pageReq common.PageRequest, r *model.SysRole) ([]*model.SysRole, int64, error)
 }

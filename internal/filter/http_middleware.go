@@ -17,6 +17,7 @@ import (
 	"go.uber.org/zap"
 	"net/http"
 	"regexp"
+	"strconv"
 	"strings"
 )
 
@@ -70,7 +71,13 @@ func (this *ServerMiddleware) MiddlewareHandler(ctx iris.Context) {
 		return
 	}
 
-	sysUser, err := this.service.QueryUserInfoByUserId(jwt_id)
+	jwtId, err := strconv.ParseInt(jwt_id, 10, 64)
+	if err != nil {
+		ctx.JSON(common.Error(iris.StatusUnauthorized, "请重新登录"))
+		return
+	}
+
+	sysUser, err := this.service.QueryUserInfoByUserId(jwtId)
 	if err != nil {
 		ctx.JSON(common.Error(iris.StatusUnauthorized, "请重新登录"))
 		return

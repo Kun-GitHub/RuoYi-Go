@@ -31,7 +31,7 @@ func (this *SysUserRepository) QueryUserInfoByUserName(username string) (*model.
 	return structEntity, nil
 }
 
-func (this *SysUserRepository) QueryUserInfoByUserId(userId string) (*model.SysUser, error) {
+func (this *SysUserRepository) QueryUserInfoByUserId(userId int64) (*model.SysUser, error) {
 	structEntity := &model.SysUser{}
 	err := this.db.FindColumns(model.TableNameSysUser, structEntity,
 		"user_id = ? and status = '0' and del_flag = '0'", userId)
@@ -56,15 +56,45 @@ func (this *SysUserRepository) QueryUserPage(pageReq common.PageRequest, user *m
 		if user.Status != "" {
 			status = this.db.Gen.SysUser.Status.Eq(user.Status)
 		}
-
 		if user.Phonenumber != "" {
 			phonenumber = this.db.Gen.SysUser.Phonenumber.Like("%" + user.Phonenumber + "%")
 		}
-
 		if user.UserName != "" {
 			userName = this.db.Gen.SysUser.UserName.Like("%" + user.UserName + "%")
 		}
+		if user.DeptID != 0 {
+			deptID = this.db.Gen.SysUser.DeptID.Eq(user.DeptID)
+		}
+	}
 
+	structEntity, err := this.db.Gen.SysUser.WithContext(context.Background()).
+		Where(deptID, status, phonenumber, userName).Limit(pageReq.PageSize).Offset((pageReq.PageNum - 1) * pageReq.PageSize).Find()
+	total, err := this.db.Gen.SysUser.WithContext(context.Background()).
+		Where(deptID, status, phonenumber, userName).Limit(pageReq.PageSize).Offset((pageReq.PageNum - 1) * pageReq.PageSize).Count()
+
+	if err != nil {
+		return nil, 0, err
+	}
+	return structEntity, total, err
+}
+
+func (this *SysUserRepository) QueryUserList(user *model.SysUser) ([]*model.SysUser, error) {
+	structEntity := make([]*model.SysUser, 0)
+
+	var status field.Expr
+	var deptID field.Expr
+	var phonenumber field.Expr
+	var userName field.Expr
+	if user != nil {
+		if user.Status != "" {
+			status = this.db.Gen.SysUser.Status.Eq(user.Status)
+		}
+		if user.Phonenumber != "" {
+			phonenumber = this.db.Gen.SysUser.Phonenumber.Like("%" + user.Phonenumber + "%")
+		}
+		if user.UserName != "" {
+			userName = this.db.Gen.SysUser.UserName.Like("%" + user.UserName + "%")
+		}
 		if user.DeptID != 0 {
 			deptID = this.db.Gen.SysUser.DeptID.Eq(user.DeptID)
 		}
@@ -73,15 +103,8 @@ func (this *SysUserRepository) QueryUserPage(pageReq common.PageRequest, user *m
 	structEntity, err := this.db.Gen.SysUser.WithContext(context.Background()).
 		Where(deptID, status, phonenumber, userName).Find()
 
-	total, err := this.db.Gen.SysUser.WithContext(context.Background()).
-		Where(deptID, status, phonenumber, userName).Count()
-
 	if err != nil {
-		return nil, 0, err
+		return nil, err
 	}
-	return structEntity, total, err
-}
-
-func (this *SysUserRepository) QueryUserList(user *model.SysUser) ([]*model.UserInfoStruct, error) {
-	return nil, nil
+	return structEntity, err
 }

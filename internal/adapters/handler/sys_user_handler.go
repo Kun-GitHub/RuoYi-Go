@@ -55,16 +55,16 @@ func (h *SysUserHandler) UserPage(ctx iris.Context) {
 		Phonenumber: phonenumber,
 	}
 
-	data, err := h.service.QueryUserPage(l, u)
+	d, t, err := h.service.QueryUserPage(l, u)
 	if err != nil {
 		//h.logger.Debug("login failed", zap.Error(err))
 		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "UserPage, error：%s", err.Error()))
 		return
 	}
 
-	data = &common.PageResponse{
-		Rows:    data.Rows,
-		Total:   data.Total,
+	data := &common.PageResponse{
+		Rows:    d,
+		Total:   t,
 		Message: "操作成功",
 		Code:    iris.StatusOK,
 	}
@@ -113,4 +113,27 @@ func buildDeptTree(depts []*model.SysDept) []*model.SysDept {
 
 	// Return the root departments.
 	return rootDepts
+}
+
+func (h *SysUserHandler) UserInfo(ctx iris.Context) {
+	userIdStr := ctx.Params().GetString("userId")
+	if userIdStr == "" {
+		ctx.JSON(common.ErrorFormat(iris.StatusBadRequest, "Invalid userIdStr"))
+		return
+	}
+
+	userId, err := strconv.ParseInt(userIdStr, 10, 64)
+	if err != nil {
+		//h.logger.Debug("login failed", zap.Error(err))
+		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "ParseInt error：%s", err.Error()))
+		return
+	}
+
+	data, err := h.service.QueryUserInfoByUserId(userId)
+	if err != nil {
+		//h.logger.Debug("login failed", zap.Error(err))
+		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "QueryUserInfoByUserId, error：%s", err.Error()))
+		return
+	}
+	ctx.JSON(common.Success(data))
 }

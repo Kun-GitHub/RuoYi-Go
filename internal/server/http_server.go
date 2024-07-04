@@ -83,3 +83,9 @@ func ResolveSysDeptHandler(db *dao.DatabaseStruct, logger *zap.Logger, cache *ca
 	sysDeptService := usecase.NewSysDeptService(sysDeptRepo, cache, logger)
 	return handler.NewSysDeptHandler(sysDeptService)
 }
+
+func ResolveSysRoleHandler(db *dao.DatabaseStruct, logger *zap.Logger, cache *cache.FreeCacheClient) *handler.SysRoleHandler {
+	sysRoleRepo := persistence.NewSysRoleRepository(db)
+	sysRoleService := usecase.NewSysRoleService(sysRoleRepo, cache, logger)
+	return handler.NewSysRoleHandler(sysRoleService)
+}

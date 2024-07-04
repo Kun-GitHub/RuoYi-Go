@@ -6,9 +6,11 @@
 package output
 
 import (
+	"RuoYi-Go/internal/common"
 	"RuoYi-Go/internal/domain/model"
 )
 
 type SysRoleRepository interface {
 	QueryRolesByUserId(userId int64) ([]*model.SysRole, error)
+	QueryRolePage(pageReq common.PageRequest, user *model.SysRole) ([]*model.SysRole, int64, error)
 }

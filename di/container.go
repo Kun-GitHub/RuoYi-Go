@@ -76,12 +76,16 @@ func NewContainer(c config.AppConfig) (*Container, error) {
 	pageSysUserHandler := ryserver.ResolvePageSysUserHandler(db, log, freeCache)
 	app.Get("/system/user/list", ms.PermissionMiddleware("system:user:list"), pageSysUserHandler.UserPage)
 	app.Get("/system/user/deptTree", ms.PermissionMiddleware("system:user:list"), pageSysUserHandler.DeptTree)
+	app.Get("/system/user/{userId:uint}", ms.PermissionMiddleware("system:user:query"), pageSysUserHandler.UserInfo)
 
 	sysDictDataHandler := ryserver.ResolveSysDictDataHandler(db, log, freeCache)
 	app.Get("/system/dict/data/type/{dictType:string}", sysDictDataHandler.DictType)
 
 	sysDeptHandler := ryserver.ResolveSysDeptHandler(db, log, freeCache)
 	app.Get("/system/dept/list", ms.PermissionMiddleware("system:dept:list"), sysDeptHandler.DeptList)
+
+	sysRoleHandler := ryserver.ResolveSysRoleHandler(db, log, freeCache)
+	app.Get("/system/role/list", ms.PermissionMiddleware("system:role:list"), sysRoleHandler.RolePage)
 
 	ryws.StartWebSocket(app, log)
 

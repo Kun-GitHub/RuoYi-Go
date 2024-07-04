@@ -12,7 +12,7 @@ import (
 
 type SysUserRepository interface {
 	QueryUserInfoByUserName(username string) (*model.SysUser, error)
-	QueryUserInfoByUserId(userId string) (*model.SysUser, error)
+	QueryUserInfoByUserId(userId int64) (*model.SysUser, error)
 	QueryUserPage(pageReq common.PageRequest, user *model.SysUser) ([]*model.SysUser, int64, error)
-	QueryUserList(user *model.SysUser) ([]*model.UserInfoStruct, error)
+	QueryUserList(user *model.SysUser) ([]*model.SysUser, error)
 }

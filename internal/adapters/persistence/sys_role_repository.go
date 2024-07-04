@@ -7,7 +7,10 @@ package persistence
 
 import (
 	"RuoYi-Go/internal/adapters/dao"
+	"RuoYi-Go/internal/common"
 	"RuoYi-Go/internal/domain/model"
+	"context"
+	"gorm.io/gen/field"
 	"gorm.io/gorm"
 )
 
@@ -32,4 +35,33 @@ func (this *SysRoleRepository) QueryRolesByUserId(userId int64) ([]*model.SysRol
 		return nil, err
 	}
 	return roles, nil
+}
+
+func (this *SysRoleRepository) QueryRolePage(pageReq common.PageRequest, user *model.SysRole) ([]*model.SysRole, int64, error) {
+	structEntity := make([]*model.SysRole, 0)
+
+	var status field.Expr
+	var roleName field.Expr
+	var roleKey field.Expr
+	if user != nil {
+		if user.Status != "" {
+			status = this.db.Gen.SysRole.Status.Eq(user.Status)
+		}
+		if user.RoleName != "" {
+			roleName = this.db.Gen.SysRole.RoleName.Like("%" + user.RoleName + "%")
+		}
+		if user.RoleKey != "" {
+			roleKey = this.db.Gen.SysRole.RoleKey.Like("%" + user.RoleKey + "%")
+		}
+	}
+
+	structEntity, err := this.db.Gen.SysRole.WithContext(context.Background()).
+		Where(status, roleName, roleKey).Limit(pageReq.PageSize).Offset((pageReq.PageNum - 1) * pageReq.PageSize).Find()
+	total, err := this.db.Gen.SysRole.WithContext(context.Background()).
+		Where(status, roleName, roleKey).Limit(pageReq.PageSize).Offset((pageReq.PageNum - 1) * pageReq.PageSize).Count()
+
+	if err != nil {
+		return nil, 0, err
+	}
+	return structEntity, total, err
 }
