@@ -16,15 +16,16 @@ import (
 type SysUserHandler struct {
 	service     input.SysUserService
 	deptService input.SysDeptService
+	roleService input.SysRoleService
 }
 
-func NewSysUserHandler(service input.SysUserService, deptService input.SysDeptService) *SysUserHandler {
+func NewSysUserHandler(service input.SysUserService, deptService input.SysDeptService, roleService input.SysRoleService) *SysUserHandler {
 	return &SysUserHandler{service: service,
-		deptService: deptService}
+		deptService: deptService, roleService: roleService}
 }
 
 // GenerateCaptchaImage
-func (h *SysUserHandler) UserPage(ctx iris.Context) {
+func (this *SysUserHandler) UserPage(ctx iris.Context) {
 	pageNumStr := ctx.URLParam("pageNum")
 	pageSizeStr := ctx.URLParam("pageSize")
 
@@ -55,9 +56,9 @@ func (h *SysUserHandler) UserPage(ctx iris.Context) {
 		Phonenumber: phonenumber,
 	}
 
-	d, t, err := h.service.QueryUserPage(l, u)
+	d, t, err := this.service.QueryUserPage(l, u)
 	if err != nil {
-		//h.logger.Debug("login failed", zap.Error(err))
+		//this.logger.Debug("login failed", zap.Error(err))
 		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "UserPage, error：%s", err.Error()))
 		return
 	}
@@ -72,10 +73,10 @@ func (h *SysUserHandler) UserPage(ctx iris.Context) {
 	ctx.JSON(data)
 }
 
-func (h *SysUserHandler) DeptTree(ctx iris.Context) {
-	data, err := h.deptService.QueryDeptList(nil)
+func (this *SysUserHandler) DeptTree(ctx iris.Context) {
+	data, err := this.deptService.QueryDeptList(nil)
 	if err != nil {
-		//h.logger.Debug("login failed", zap.Error(err))
+		//this.logger.Debug("login failed", zap.Error(err))
 		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "DeptTree, error：%s", err.Error()))
 		return
 	}
@@ -115,7 +116,7 @@ func buildDeptTree(depts []*model.SysDept) []*model.SysDept {
 	return rootDepts
 }
 
-func (h *SysUserHandler) UserInfo(ctx iris.Context) {
+func (this *SysUserHandler) UserInfo(ctx iris.Context) {
 	userIdStr := ctx.Params().GetString("userId")
 	if userIdStr == "" {
 		ctx.JSON(common.ErrorFormat(iris.StatusBadRequest, "Invalid userIdStr"))
@@ -124,16 +125,38 @@ func (h *SysUserHandler) UserInfo(ctx iris.Context) {
 
 	userId, err := strconv.ParseInt(userIdStr, 10, 64)
 	if err != nil {
-		//h.logger.Debug("login failed", zap.Error(err))
+		//this.logger.Debug("login failed", zap.Error(err))
 		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "ParseInt error：%s", err.Error()))
 		return
 	}
 
-	data, err := h.service.QueryUserInfoByUserId(userId)
+	user, err := this.service.QueryUserInfoByUserId(userId)
 	if err != nil {
-		//h.logger.Debug("login failed", zap.Error(err))
+		//this.logger.Debug("login failed", zap.Error(err))
 		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "QueryUserInfoByUserId, error：%s", err.Error()))
 		return
 	}
-	ctx.JSON(common.Success(data))
+
+	userInfo := &model.UserInfoStruct{}
+	userInfo.SysUser = user
+
+	if user.UserID == common.ADMINID {
+		userInfo.Admin = true
+	}
+
+	roles, err := this.roleService.QueryRolesByUserId(user.UserID)
+	if err != nil {
+		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "QueryRolesByUserId, error：%s", err.Error()))
+		return
+	}
+	userInfo.Roles = roles
+
+	dept, err := this.deptService.QueryRolesByDeptId(user.DeptID)
+	if err != nil {
+		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "QueryRolesByDeptId, error：%s", err.Error()))
+		return
+	}
+	userInfo.Dept = dept
+
+	ctx.JSON(common.Success(userInfo))
 }

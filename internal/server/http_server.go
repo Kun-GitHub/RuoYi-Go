@@ -63,13 +63,14 @@ func ResolveSysMenuHandler(db *dao.DatabaseStruct, logger *zap.Logger, cache *ca
 
 func ResolvePageSysUserHandler(db *dao.DatabaseStruct, logger *zap.Logger, cache *cache.FreeCacheClient) *handler.SysUserHandler {
 	sysRoleRepo := persistence.NewSysRoleRepository(db)
+	sysRoleService := usecase.NewSysRoleService(sysRoleRepo, cache, logger)
 
 	sysDeptRepo := persistence.NewSysDeptRepository(db)
 	sysDeptService := usecase.NewSysDeptService(sysDeptRepo, cache, logger)
 
 	sysUserRepo := persistence.NewSysUserRepository(db)
 	sysUserService := usecase.NewPageSysUserService(sysUserRepo, sysRoleRepo, sysDeptRepo, cache, logger)
-	return handler.NewSysUserHandler(sysUserService, sysDeptService)
+	return handler.NewSysUserHandler(sysUserService, sysDeptService, sysRoleService)
 }
 
 func ResolveSysDictDataHandler(db *dao.DatabaseStruct, logger *zap.Logger, cache *cache.FreeCacheClient) *handler.SysDictDataHandler {
