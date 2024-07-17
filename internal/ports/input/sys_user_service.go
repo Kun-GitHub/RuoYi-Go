@@ -16,4 +16,5 @@ type SysUserService interface {
 	QueryUserInfoByUserId(userId int64) (*model.SysUser, error)
 	QueryUserPage(pageReq common.PageRequest, user *model.SysUser) ([]*model.UserInfoStruct, int64, error)
 	QueryUserList(user *model.SysUser) ([]*model.SysUser, error)
+	DeleteUserByUserId(userId int64) (int64, error)
 }

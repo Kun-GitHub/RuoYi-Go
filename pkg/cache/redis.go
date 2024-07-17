@@ -32,7 +32,7 @@ func NewRedisClient(cfg config.AppConfig, logger *zap.Logger) (*RedisClient, err
 	// Ping Redis to check connection
 	_, err := client.Ping(context.Background()).Result()
 	if err != nil {
-		logger.Error("failed to ping cache", zap.Error(err))
+		logger.Error("failed to ping redis", zap.Error(err))
 		return nil, err
 	}
 

@@ -68,9 +68,9 @@ func (this *SysUserRepository) QueryUserPage(pageReq common.PageRequest, user *m
 	}
 
 	structEntity, err := this.db.Gen.SysUser.WithContext(context.Background()).
-		Where(deptID, status, phonenumber, userName).Limit(pageReq.PageSize).Offset((pageReq.PageNum - 1) * pageReq.PageSize).Find()
+		Where(deptID, status, phonenumber, userName, this.db.Gen.SysUser.DelFlag.Eq("0")).Limit(pageReq.PageSize).Offset((pageReq.PageNum - 1) * pageReq.PageSize).Find()
 	total, err := this.db.Gen.SysUser.WithContext(context.Background()).
-		Where(deptID, status, phonenumber, userName).Limit(pageReq.PageSize).Offset((pageReq.PageNum - 1) * pageReq.PageSize).Count()
+		Where(deptID, status, phonenumber, userName, this.db.Gen.SysUser.DelFlag.Eq("0")).Limit(pageReq.PageSize).Offset((pageReq.PageNum - 1) * pageReq.PageSize).Count()
 
 	if err != nil {
 		return nil, 0, err
@@ -101,10 +101,16 @@ func (this *SysUserRepository) QueryUserList(user *model.SysUser) ([]*model.SysU
 	}
 
 	structEntity, err := this.db.Gen.SysUser.WithContext(context.Background()).
-		Where(deptID, status, phonenumber, userName).Find()
+		Where(deptID, status, phonenumber, userName, this.db.Gen.SysUser.DelFlag.Eq("0")).Find()
 
 	if err != nil {
 		return nil, err
 	}
 	return structEntity, err
+}
+
+func (this *SysUserRepository) DeleteUserByUserId(userId int64) (int64, error) {
+	r, err := this.db.Gen.SysUser.WithContext(context.Background()).
+		Where(this.db.Gen.SysUser.UserID.Eq(userId)).Update(this.db.Gen.SysUser.DelFlag, "2")
+	return r.RowsAffected, err
 }

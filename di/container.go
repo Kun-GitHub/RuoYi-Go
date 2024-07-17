@@ -77,6 +77,7 @@ func NewContainer(c config.AppConfig) (*Container, error) {
 	app.Get("/system/user/list", ms.PermissionMiddleware("system:user:list"), pageSysUserHandler.UserPage)
 	app.Get("/system/user/deptTree", ms.PermissionMiddleware("system:user:list"), pageSysUserHandler.DeptTree)
 	app.Get("/system/user/{userId:uint}", ms.PermissionMiddleware("system:user:query"), pageSysUserHandler.UserInfo)
+	app.Delete("/system/user/*userId", ms.PermissionMiddleware("system:user:remove"), pageSysUserHandler.DeleteUser)
 
 	sysDictDataHandler := ryserver.ResolveSysDictDataHandler(db, log, freeCache)
 	app.Get("/system/dict/data/type/{dictType:string}", sysDictDataHandler.DictType)

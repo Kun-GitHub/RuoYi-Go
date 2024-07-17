@@ -135,3 +135,12 @@ func (this *SysUserService) QueryUserList(u *model.SysUser) ([]*model.SysUser, e
 	}
 	return data, nil
 }
+
+func (this *SysUserService) DeleteUserByUserId(userId int64) (int64, error) {
+	result, err := this.repo.DeleteUserByUserId(userId)
+	if err != nil {
+		this.logger.Error("删除用户信息失败", zap.Error(err))
+		return 0, err
+	}
+	return result, nil
+}

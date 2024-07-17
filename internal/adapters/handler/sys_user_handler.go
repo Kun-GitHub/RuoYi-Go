@@ -11,6 +11,7 @@ import (
 	"RuoYi-Go/internal/ports/input"
 	"github.com/kataras/iris/v12"
 	"strconv"
+	"strings"
 )
 
 type SysUserHandler struct {
@@ -159,4 +160,29 @@ func (this *SysUserHandler) UserInfo(ctx iris.Context) {
 	userInfo.Dept = dept
 
 	ctx.JSON(common.Success(userInfo))
+}
+
+func (this *SysUserHandler) DeleteUser(ctx iris.Context) {
+	userIdStr := ctx.Params().GetString("userId")
+	if userIdStr == "" {
+		ctx.JSON(common.ErrorFormat(iris.StatusBadRequest, "Invalid userIdStr"))
+		return
+	}
+
+	parts := strings.Split(userIdStr, ",")
+	for _, part := range parts {
+		userId, err := strconv.ParseInt(part, 10, 64)
+		if err != nil {
+			ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "ParseInt error：%s", err.Error()))
+			return
+		}
+
+		_, err = this.service.DeleteUserByUserId(userId)
+		if err != nil {
+			ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "DeleteUserByUserId error：%s", err.Error()))
+			return
+		}
+	}
+
+	ctx.JSON(common.Success(nil))
 }
