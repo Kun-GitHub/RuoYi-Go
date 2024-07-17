@@ -8,6 +8,7 @@ package handler
 import (
 	"RuoYi-Go/internal/common"
 	"RuoYi-Go/internal/domain/model"
+	"RuoYi-Go/internal/filter"
 	"RuoYi-Go/internal/ports/input"
 	"github.com/kataras/iris/v12"
 	"strconv"
@@ -160,6 +161,38 @@ func (this *SysUserHandler) UserInfo(ctx iris.Context) {
 	userInfo.Dept = dept
 
 	ctx.JSON(common.Success(userInfo))
+}
+
+func (this *SysUserHandler) ChangeUserStatus(ctx iris.Context) {
+	var u model.ChangeUserStatusRequest
+	// Attempt to read and bind the JSON request body to the 'user' variable
+	if err := filter.ValidateRequest(ctx, &u); err != nil {
+		ctx.JSON(common.ErrorFormat(iris.StatusBadRequest, "Invalid JSON, error:%s", err.Error()))
+		return
+	}
+
+	_, err := this.service.ChangeUserStatus(u)
+	if err != nil {
+		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "ChangeUserStatus error：%s", err.Error()))
+		return
+	}
+	ctx.JSON(common.Success(nil))
+}
+
+func (this *SysUserHandler) ResetUserPwd(ctx iris.Context) {
+	var u model.ResetUserPwdRequest
+	// Attempt to read and bind the JSON request body to the 'user' variable
+	if err := filter.ValidateRequest(ctx, &u); err != nil {
+		ctx.JSON(common.ErrorFormat(iris.StatusBadRequest, "Invalid JSON, error:%s", err.Error()))
+		return
+	}
+
+	_, err := this.service.ResetUserPwd(u)
+	if err != nil {
+		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "ResetUserPwd error：%s", err.Error()))
+		return
+	}
+	ctx.JSON(common.Success(nil))
 }
 
 func (this *SysUserHandler) DeleteUser(ctx iris.Context) {

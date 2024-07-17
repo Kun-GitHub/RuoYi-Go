@@ -93,6 +93,7 @@ func (this *ServerMiddleware) MiddlewareHandler(ctx iris.Context) {
 	if sysUser.UserID == common.ADMINID {
 		loginUser.Admin = true
 	}
+	loginUser.Password = ""
 	ctx.Values().Set(common.LOGINUSER, loginUser)
 
 	// 继续执行下一个中间件或处理函数

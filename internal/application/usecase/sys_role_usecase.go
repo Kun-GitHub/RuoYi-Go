@@ -43,13 +43,13 @@ func (this *SysRoleService) QueryRolesByUserId(userId int64) ([]*model.SysRole, 
 	if err != nil {
 		this.logger.Error("查询用户角色信息失败", zap.Error(err))
 		return nil, err
-	} else {
+	} else if len(roles) != 0 {
 		// 序列化用户对象并存入缓存
 		userBytes, err = json.Marshal(roles)
 		if err == nil && len(roles) != 0 {
 			this.cache.Set([]byte(fmt.Sprintf("UserRoles:%d", userId)), userBytes, common.EXPIRESECONDS) // 第三个参数是过期时间，0表示永不过期
-			return roles, nil
 		}
+		return roles, nil
 	}
 
 	this.logger.Debug("查询用户角色信息失败", zap.Error(err))

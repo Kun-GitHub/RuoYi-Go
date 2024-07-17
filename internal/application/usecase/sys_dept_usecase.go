@@ -41,19 +41,19 @@ func (this *SysDeptService) QueryRolesByDeptId(deptId int64) (*model.SysDept, er
 
 	structEntity, err = this.repo.QueryRolesByDeptId(deptId)
 	if err != nil {
-		this.logger.Error("查询用户部门信息失败", zap.Error(err))
+		this.logger.Error("查询部门信息失败", zap.Error(err))
 		return nil, err
-	} else {
+	} else if structEntity.DeptID != 0 {
 		// 序列化用户对象并存入缓存
 		userBytes, err = json.Marshal(structEntity)
-		if err == nil && structEntity.DeptID != 0 {
+		if err == nil {
 			this.cache.Set([]byte(fmt.Sprintf("DeptID:%d", structEntity.DeptID)), userBytes, common.EXPIRESECONDS) // 第三个参数是过期时间，0表示永不过期
-			return structEntity, nil
 		}
+		return structEntity, nil
 	}
 
-	this.logger.Debug("查询用户部门信息失败", zap.Error(err))
-	return nil, fmt.Errorf("查询用户部门信息失败", zap.Error(err))
+	this.logger.Debug("查询部门信息失败", zap.Error(err))
+	return nil, fmt.Errorf("查询部门信息失败", zap.Error(err))
 }
 
 func (this *SysDeptService) QueryDeptList(dept *model.SysDept) ([]*model.SysDept, error) {
@@ -66,7 +66,4 @@ func (this *SysDeptService) QueryDeptList(dept *model.SysDept) ([]*model.SysDept
 	} else {
 		return structEntity, nil
 	}
-
-	this.logger.Debug("查询信息失败", zap.Error(err))
-	return nil, fmt.Errorf("查询信息失败", zap.Error(err))
 }

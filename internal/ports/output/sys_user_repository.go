@@ -16,4 +16,6 @@ type SysUserRepository interface {
 	QueryUserPage(pageReq common.PageRequest, user *model.SysUser) ([]*model.SysUser, int64, error)
 	QueryUserList(user *model.SysUser) ([]*model.SysUser, error)
 	DeleteUserByUserId(userId int64) (int64, error)
+	ChangeUserStatus(user model.ChangeUserStatusRequest) (int64, error)
+	ResetUserPwd(user model.ResetUserPwdRequest) (int64, error)
 }

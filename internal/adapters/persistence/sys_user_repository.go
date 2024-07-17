@@ -10,6 +10,7 @@ import (
 	"RuoYi-Go/internal/common"
 	"RuoYi-Go/internal/domain/model"
 	"context"
+	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gen/field"
 )
 
@@ -24,7 +25,7 @@ func NewSysUserRepository(db *dao.DatabaseStruct) *SysUserRepository {
 func (this *SysUserRepository) QueryUserInfoByUserName(username string) (*model.SysUser, error) {
 	structEntity := &model.SysUser{}
 	err := this.db.FindColumns(model.TableNameSysUser, structEntity,
-		"user_name = ? and status = '0' and del_flag = '0'", username)
+		"user_name = ? and del_flag = '0'", username)
 	if err != nil {
 		return nil, err
 	}
@@ -34,7 +35,7 @@ func (this *SysUserRepository) QueryUserInfoByUserName(username string) (*model.
 func (this *SysUserRepository) QueryUserInfoByUserId(userId int64) (*model.SysUser, error) {
 	structEntity := &model.SysUser{}
 	err := this.db.FindColumns(model.TableNameSysUser, structEntity,
-		"user_id = ? and status = '0' and del_flag = '0'", userId)
+		"user_id = ? and del_flag = '0'", userId)
 	if err != nil {
 		return nil, err
 	}
@@ -68,9 +69,11 @@ func (this *SysUserRepository) QueryUserPage(pageReq common.PageRequest, user *m
 	}
 
 	structEntity, err := this.db.Gen.SysUser.WithContext(context.Background()).
-		Where(deptID, status, phonenumber, userName, this.db.Gen.SysUser.DelFlag.Eq("0")).Limit(pageReq.PageSize).Offset((pageReq.PageNum - 1) * pageReq.PageSize).Find()
+		Where(deptID, status, phonenumber, userName, this.db.Gen.SysUser.DelFlag.Eq("0")).
+		Order(this.db.Gen.SysUser.UserID).Limit(pageReq.PageSize).Offset((pageReq.PageNum - 1) * pageReq.PageSize).Find()
 	total, err := this.db.Gen.SysUser.WithContext(context.Background()).
-		Where(deptID, status, phonenumber, userName, this.db.Gen.SysUser.DelFlag.Eq("0")).Limit(pageReq.PageSize).Offset((pageReq.PageNum - 1) * pageReq.PageSize).Count()
+		Where(deptID, status, phonenumber, userName, this.db.Gen.SysUser.DelFlag.Eq("0")).
+		Order(this.db.Gen.SysUser.UserID).Limit(pageReq.PageSize).Offset((pageReq.PageNum - 1) * pageReq.PageSize).Count()
 
 	if err != nil {
 		return nil, 0, err
@@ -101,7 +104,8 @@ func (this *SysUserRepository) QueryUserList(user *model.SysUser) ([]*model.SysU
 	}
 
 	structEntity, err := this.db.Gen.SysUser.WithContext(context.Background()).
-		Where(deptID, status, phonenumber, userName, this.db.Gen.SysUser.DelFlag.Eq("0")).Find()
+		Where(deptID, status, phonenumber, userName, this.db.Gen.SysUser.DelFlag.Eq("0")).
+		Order(this.db.Gen.SysUser.UserID).Find()
 
 	if err != nil {
 		return nil, err
@@ -112,5 +116,22 @@ func (this *SysUserRepository) QueryUserList(user *model.SysUser) ([]*model.SysU
 func (this *SysUserRepository) DeleteUserByUserId(userId int64) (int64, error) {
 	r, err := this.db.Gen.SysUser.WithContext(context.Background()).
 		Where(this.db.Gen.SysUser.UserID.Eq(userId)).Update(this.db.Gen.SysUser.DelFlag, "2")
+	return r.RowsAffected, err
+}
+
+func (this *SysUserRepository) ChangeUserStatus(user model.ChangeUserStatusRequest) (int64, error) {
+	r, err := this.db.Gen.SysUser.WithContext(context.Background()).
+		Where(this.db.Gen.SysUser.UserID.Eq(user.UserID)).Update(this.db.Gen.SysUser.Status, user.Status)
+	return r.RowsAffected, err
+}
+
+func (this *SysUserRepository) ResetUserPwd(user model.ResetUserPwdRequest) (int64, error) {
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
+	if err != nil {
+		return 0, err
+	}
+
+	r, err := this.db.Gen.SysUser.WithContext(context.Background()).
+		Where(this.db.Gen.SysUser.UserID.Eq(user.UserID)).Update(this.db.Gen.SysUser.Password, string(hashedPassword))
 	return r.RowsAffected, err
 }

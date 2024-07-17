@@ -49,14 +49,14 @@ func (this *SysUserService) QueryUserInfoByUserName(username string) (*model.Sys
 	if err != nil {
 		this.logger.Error("查询用户信息失败", zap.Error(err))
 		return nil, err
-	} else {
+	} else if structEntity.UserID != 0 {
 		// 序列化用户对象并存入缓存
 		userBytes, err = json.Marshal(structEntity)
-		if err == nil && structEntity.UserID != 0 {
+		if err == nil {
 			this.cache.Set([]byte(fmt.Sprintf("UserName:%s", username)), userBytes, common.EXPIRESECONDS)          // 第三个参数是过期时间，0表示永不过期
 			this.cache.Set([]byte(fmt.Sprintf("UserID:%d", structEntity.UserID)), userBytes, common.EXPIRESECONDS) // 第三个参数是过期时间，0表示永不过期
-			return structEntity, nil
 		}
+		return structEntity, nil
 	}
 
 	this.logger.Debug("查询用户信息失败", zap.Error(err))
@@ -80,13 +80,13 @@ func (this *SysUserService) QueryUserInfoByUserId(userId int64) (*model.SysUser,
 	if err != nil {
 		this.logger.Error("查询用户信息失败", zap.Error(err))
 		return nil, err
-	} else {
+	} else if structEntity.UserID != 0 {
 		// 序列化用户对象并存入缓存
 		userBytes, err = json.Marshal(structEntity)
-		if err == nil && structEntity.UserID != 0 {
+		if err == nil {
 			this.cache.Set([]byte(fmt.Sprintf("UserID:%d", structEntity.UserID)), userBytes, common.EXPIRESECONDS) // 第三个参数是过期时间，0表示永不过期
-			return structEntity, nil
 		}
+		return structEntity, nil
 	}
 
 	this.logger.Debug("查询用户信息失败", zap.Error(err))
@@ -140,6 +140,45 @@ func (this *SysUserService) DeleteUserByUserId(userId int64) (int64, error) {
 	result, err := this.repo.DeleteUserByUserId(userId)
 	if err != nil {
 		this.logger.Error("删除用户信息失败", zap.Error(err))
+		return 0, err
+	}
+	if result == 1 {
+		// 尝试从缓存中获取
+		_, err := this.cache.Get([]byte(fmt.Sprintf("UserID:%d", userId)))
+		if err == nil {
+			this.cache.Del(fmt.Sprintf("UserID:%d", userId))
+		}
+	}
+	return result, nil
+}
+
+func (this *SysUserService) ChangeUserStatus(user model.ChangeUserStatusRequest) (int64, error) {
+	result, err := this.repo.ChangeUserStatus(user)
+	if err != nil {
+		this.logger.Error("修改用户状态失败", zap.Error(err))
+		return 0, err
+	}
+	if result == 1 {
+		structEntity, err := this.repo.QueryUserInfoByUserId(user.UserID)
+		if err != nil {
+			this.logger.Error("查询用户信息失败", zap.Error(err))
+			return 0, err
+		} else if structEntity.UserID != 0 {
+			// 序列化用户对象并存入缓存
+			userBytes, err := json.Marshal(structEntity)
+			if err == nil {
+				this.cache.Set([]byte(fmt.Sprintf("UserID:%d", structEntity.UserID)), userBytes, common.EXPIRESECONDS) // 第三个参数是过期时间，0表示永不过期
+			}
+			return result, nil
+		}
+	}
+	return result, nil
+}
+
+func (this *SysUserService) ResetUserPwd(user model.ResetUserPwdRequest) (int64, error) {
+	result, err := this.repo.ResetUserPwd(user)
+	if err != nil {
+		this.logger.Error("修改用户状态失败", zap.Error(err))
 		return 0, err
 	}
 	return result, nil

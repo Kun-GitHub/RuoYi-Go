@@ -10,7 +10,6 @@ import (
 	"RuoYi-Go/internal/ports/input"
 	"RuoYi-Go/internal/ports/output"
 	"RuoYi-Go/pkg/cache"
-	"fmt"
 	"go.uber.org/zap"
 )
 
@@ -34,7 +33,4 @@ func (this *SysDictDataService) QueryDictDatasByType(typeStr string) ([]*model.S
 	} else {
 		return structEntity, nil
 	}
-
-	this.logger.Debug("查询信息失败", zap.Error(err))
-	return nil, fmt.Errorf("查询信息失败", zap.Error(err))
 }

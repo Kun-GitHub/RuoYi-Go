@@ -42,3 +42,13 @@ type SysUser struct {
 func (*SysUser) TableName() string {
 	return TableNameSysUser
 }
+
+type ChangeUserStatusRequest struct {
+	UserID int64  `json:"userId" validate:"required"`
+	Status string `json:"status" validate:"required"`
+}
+
+type ResetUserPwdRequest struct {
+	UserID   int64  `json:"userId" validate:"required"`
+	Password string `json:"password" validate:"required"`
+}
