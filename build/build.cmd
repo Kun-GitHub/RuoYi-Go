@@ -10,7 +10,7 @@ cd ..
 SET ROOT=%CD%
 
 echo Building %SERVER%
-cd %ROOT%\cmd
+cd %ROOT%\cmd\api
 go build -o %BLDIR%\%SERVER%.exe .
 
 echo Build done
