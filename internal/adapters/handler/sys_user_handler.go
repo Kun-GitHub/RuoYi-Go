@@ -28,8 +28,9 @@ func NewSysUserHandler(service input.SysUserService, deptService input.SysDeptSe
 
 // GenerateCaptchaImage
 func (this *SysUserHandler) UserPage(ctx iris.Context) {
-	pageNumStr := ctx.URLParam("pageNum")
-	pageSizeStr := ctx.URLParam("pageSize")
+	// 获取查询参数
+	pageNumStr := ctx.URLParamDefault("pageNum", "1")
+	pageSizeStr := ctx.URLParamDefault("pageSize", "10")
 
 	pageNum, _ := strconv.Atoi(pageNumStr)
 	pageSize, _ := strconv.Atoi(pageSizeStr)

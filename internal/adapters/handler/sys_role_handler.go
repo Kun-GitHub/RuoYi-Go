@@ -23,8 +23,27 @@ func NewSysRoleHandler(service input.SysRoleService) *SysRoleHandler {
 
 // GenerateCaptchaImage
 func (h *SysRoleHandler) RolePage(ctx iris.Context) {
-	pageNumStr := ctx.URLParam("pageNum")
-	pageSizeStr := ctx.URLParam("pageSize")
+	// 获取查询参数
+	pageNumStr := ctx.URLParamDefault("pageNum", "1")
+	pageSizeStr := ctx.URLParamDefault("pageSize", "10")
+
+	//// 使用 Query() 方法获取所有的查询参数
+	//allParams := ctx.Request().URL.Query()
+	//
+	//// 从 url.Values 结构体中获取参数
+	//beginTimeList, _ := allParams["params[beginTime]"]
+	//endTimeList, _ := allParams["params[endTime]"]
+	//
+	//// 假设我们只关心第一个值，我们可以这样获取：
+	//beginTime := ""
+	//if len(beginTimeList) > 0 {
+	//	beginTime = beginTimeList[0]
+	//}
+	//
+	//endTime := ""
+	//if len(endTimeList) > 0 {
+	//	endTime = endTimeList[0]
+	//}
 
 	pageNum, _ := strconv.Atoi(pageNumStr)
 	pageSize, _ := strconv.Atoi(pageSizeStr)
@@ -43,7 +62,7 @@ func (h *SysRoleHandler) RolePage(ctx iris.Context) {
 		RoleKey:  roleKey,
 	}
 
-	d, t, err := h.service.QueryRolePage(l, u)
+	datas, total, err := h.service.QueryRolePage(l, u)
 	if err != nil {
 		//h.logger.Debug("login failed", zap.Error(err))
 		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "UserPage, error：%s", err.Error()))
@@ -51,8 +70,8 @@ func (h *SysRoleHandler) RolePage(ctx iris.Context) {
 	}
 
 	data := &common.PageResponse{
-		Rows:    d,
-		Total:   t,
+		Rows:    datas,
+		Total:   total,
 		Message: "操作成功",
 		Code:    iris.StatusOK,
 	}
