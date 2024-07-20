@@ -43,6 +43,12 @@ func (*SysUser) TableName() string {
 	return TableNameSysUser
 }
 
+// SysUser mapped from table <sys_user>
+type SysUserRequest struct {
+	*SysUser
+	Status string `json:"status"`
+}
+
 type ChangeUserStatusRequest struct {
 	UserID int64  `json:"userId" validate:"required"`
 	Status string `json:"status" validate:"required"`

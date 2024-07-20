@@ -33,6 +33,14 @@ type SysRole struct {
 	Remark            string    `gorm:"column:remark;comment:备注" json:"remark"`                                                    // 备注
 }
 
+type SysRoleRequest struct {
+	Status    string `json:"status"`   // 角色状态（0正常 1停用）
+	RoleName  string `json:"roleName"` // 角色名称
+	RoleKey   string `json:"roleKey"`  // 角色权限字符串
+	BeginTime string `json:"beginTime"`
+	EndTime   string `json:"endTime"`
+}
+
 // TableName SysRole's table name
 func (*SysRole) TableName() string {
 	return TableNameSysRole

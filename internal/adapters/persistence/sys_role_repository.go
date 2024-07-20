@@ -12,6 +12,7 @@ import (
 	"context"
 	"gorm.io/gen/field"
 	"gorm.io/gorm"
+	"time"
 )
 
 type SysRoleRepository struct {
@@ -37,12 +38,13 @@ func (this *SysRoleRepository) QueryRolesByUserId(userId int64) ([]*model.SysRol
 	return roles, nil
 }
 
-func (this *SysRoleRepository) QueryRolePage(pageReq common.PageRequest, user *model.SysRole) ([]*model.SysRole, int64, error) {
+func (this *SysRoleRepository) QueryRolePage(pageReq common.PageRequest, user *model.SysRoleRequest) ([]*model.SysRole, int64, error) {
 	structEntity := make([]*model.SysRole, 0)
 
 	var status field.Expr
 	var roleName field.Expr
 	var roleKey field.Expr
+	var timeField field.Expr
 	if user != nil {
 		if user.Status != "" {
 			status = this.db.Gen.SysRole.Status.Eq(user.Status)
@@ -53,12 +55,25 @@ func (this *SysRoleRepository) QueryRolePage(pageReq common.PageRequest, user *m
 		if user.RoleKey != "" {
 			roleKey = this.db.Gen.SysRole.RoleKey.Like("%" + user.RoleKey + "%")
 		}
+		if user.BeginTime != "" && user.EndTime != "" {
+			// 解析日期字符串
+			t1, err1 := time.Parse("2006-01-02", user.BeginTime)
+			t2, err2 := time.Parse("2006-01-02", user.EndTime)
+			if err1 == nil && err2 == nil {
+				// 设置一天的开始时间
+				startOfDay := time.Date(t1.Year(), t1.Month(), t1.Day(), 0, 0, 0, 0, t1.Location())
+				// 设置一天的开始时间
+				endOfDay := time.Date(t2.Year(), t2.Month(), t2.Day(), 23, 59, 59, 0, t2.Location())
+
+				timeField = this.db.Gen.SysRole.CreateTime.Between(startOfDay, endOfDay)
+			}
+		}
 	}
 
 	structEntity, err := this.db.Gen.SysRole.WithContext(context.Background()).
-		Where(status, roleName, roleKey).Limit(pageReq.PageSize).Offset((pageReq.PageNum - 1) * pageReq.PageSize).Find()
+		Where(status, roleName, roleKey, timeField).Limit(pageReq.PageSize).Offset((pageReq.PageNum - 1) * pageReq.PageSize).Find()
 	total, err := this.db.Gen.SysRole.WithContext(context.Background()).
-		Where(status, roleName, roleKey).Limit(pageReq.PageSize).Offset((pageReq.PageNum - 1) * pageReq.PageSize).Count()
+		Where(status, roleName, roleKey, timeField).Limit(pageReq.PageSize).Offset((pageReq.PageNum - 1) * pageReq.PageSize).Count()
 
 	if err != nil {
 		return nil, 0, err

@@ -56,7 +56,7 @@ func (this *SysRoleService) QueryRolesByUserId(userId int64) ([]*model.SysRole, 
 	return nil, fmt.Errorf("查询用户角色信息失败", zap.Error(err))
 }
 
-func (this *SysRoleService) QueryRolePage(pageReq common.PageRequest, u *model.SysRole) ([]*model.SysRole, int64, error) {
+func (this *SysRoleService) QueryRolePage(pageReq common.PageRequest, u *model.SysRoleRequest) ([]*model.SysRole, int64, error) {
 	data, total, err := this.repo.QueryRolePage(pageReq, u)
 	if err != nil {
 		this.logger.Error("查询角色分页信息失败", zap.Error(err))
