@@ -33,3 +33,9 @@ type SysPost struct {
 func (*SysPost) TableName() string {
 	return TableNameSysPost
 }
+
+type SysPostRequest struct {
+	Status   string `json:"status"`   // 角色状态（0正常 1停用）
+	PostCode string `json:"postCode"` // 岗位编码
+	PostName string `json:"postName"` // 岗位名称
+}

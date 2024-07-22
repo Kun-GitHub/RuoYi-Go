@@ -90,6 +90,10 @@ func NewContainer(c config.AppConfig) (*Container, error) {
 	sysRoleHandler := ryserver.ResolveSysRoleHandler(db, log, freeCache)
 	app.Get("/system/role/list", ms.PermissionMiddleware("system:role:list"), sysRoleHandler.RolePage)
 
+	sysPostHandler := ryserver.ResolveSysPostHandler(db, log, freeCache)
+	app.Get("/system/post/list", ms.PermissionMiddleware("system:post:list"), sysPostHandler.PostPage)
+	app.Get("/system/post/{postId:uint}", ms.PermissionMiddleware("system:post:query"), sysPostHandler.PostInfo)
+
 	ryws.StartWebSocket(app, log)
 
 	log.Info("http server started", zap.Int("port", c.Server.Port))
