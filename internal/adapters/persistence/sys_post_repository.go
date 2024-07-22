@@ -32,6 +32,19 @@ func (this *SysPostRepository) QueryPostByPostId(postId int64) (*model.SysPost, 
 	return structEntity, nil
 }
 
+func (this *SysPostRepository) QueryPostByUserId(userId int64) ([]*model.SysPost, error) {
+	structEntity := make([]*model.SysPost, 0)
+
+	structEntity, err := this.db.Gen.SysPost.WithContext(context.Background()).Select(this.db.Gen.SysPost.ALL).
+		LeftJoin(this.db.Gen.SysUserPost, this.db.Gen.SysUserPost.PostID.EqCol(this.db.Gen.SysPost.PostID)).
+		Where(this.db.Gen.SysUserPost.UserID.Eq(userId)).Find()
+
+	if err != nil {
+		return nil, err
+	}
+	return structEntity, nil
+}
+
 func (this *SysPostRepository) QueryPostList(post *model.SysPost) ([]*model.SysPost, error) {
 	structEntity := make([]*model.SysPost, 0)
 

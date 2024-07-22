@@ -19,11 +19,12 @@ type SysUserHandler struct {
 	service     input.SysUserService
 	deptService input.SysDeptService
 	roleService input.SysRoleService
+	postService input.SysPostService
 }
 
-func NewSysUserHandler(service input.SysUserService, deptService input.SysDeptService, roleService input.SysRoleService) *SysUserHandler {
+func NewSysUserHandler(service input.SysUserService, deptService input.SysDeptService, roleService input.SysRoleService, postService input.SysPostService) *SysUserHandler {
 	return &SysUserHandler{service: service,
-		deptService: deptService, roleService: roleService}
+		deptService: deptService, roleService: roleService, postService: postService}
 }
 
 // GenerateCaptchaImage
@@ -180,12 +181,30 @@ func (this *SysUserHandler) UserInfo(ctx iris.Context) {
 		roleIds = append(roleIds, role.RoleID)
 	}
 
+	postList, err := this.postService.QueryPostList(nil)
+	if err != nil {
+		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "QueryPostList, error：%s", err.Error()))
+		return
+	}
+
+	posts, err := this.postService.QueryPostByUserId(user.UserID)
+	if err != nil {
+		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "QueryPostByUserId, error：%s", err.Error()))
+		return
+	}
+	var postIds []int64
+	for _, post := range posts {
+		postIds = append(postIds, post.PostID)
+	}
+
 	infoSuccess := &model.GetUserInfoSuccess{
 		Code:    common.SUCCESS,
 		User:    userInfo,
 		Message: "操作成功",
 		RoleIds: roleIds,
 		Roles:   roles,
+		Posts:   postList,
+		PostIds: postIds,
 	}
 
 	ctx.JSON(infoSuccess)

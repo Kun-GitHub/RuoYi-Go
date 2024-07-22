@@ -12,6 +12,7 @@ import (
 
 type SysPostRepository interface {
 	QueryPostByPostId(postId int64) (*model.SysPost, error)
+	QueryPostByUserId(userId int64) ([]*model.SysPost, error)
 	QueryPostList(post *model.SysPost) ([]*model.SysPost, error)
 	QueryPostPage(pageReq common.PageRequest, r *model.SysPostRequest) ([]*model.SysPost, int64, error)
 }

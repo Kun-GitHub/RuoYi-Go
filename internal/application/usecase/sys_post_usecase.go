@@ -26,6 +26,17 @@ func NewSysPostService(repo output.SysPostRepository, cache *cache.FreeCacheClie
 	return &SysPostService{repo: repo, cache: cache, logger: logger}
 }
 
+func (this *SysPostService) QueryPostByUserId(userId int64) ([]*model.SysPost, error) {
+	//TODO 看这里是否要加缓存
+	data, err := this.repo.QueryPostByUserId(userId)
+	if err != nil {
+		this.logger.Error("QueryPostByUserId", zap.Error(err))
+		return nil, err
+	}
+
+	return data, nil
+}
+
 func (this *SysPostService) QueryPostByPostId(postId int64) (*model.SysPost, error) {
 	structEntity := &model.SysPost{}
 	// 尝试从缓存中获取

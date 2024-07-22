@@ -10,6 +10,7 @@ import (
 	"RuoYi-Go/internal/common"
 	"database/sql"
 	"fmt"
+	"go.uber.org/zap"
 	"gorm.io/driver/mysql"
 	"gorm.io/driver/postgres"
 	"gorm.io/driver/sqlite"
@@ -24,15 +25,27 @@ type IDatabase interface {
 }
 
 type DatabaseStruct struct {
-	db *gorm.DB
-	mu sync.Mutex
+	db     *gorm.DB
+	mu     sync.Mutex
+	logger *zap.Logger
 
 	Gen *Query
 }
 
-func OpenDB(cfg config.AppConfig) (*DatabaseStruct, error) {
+func OpenDB(cfg config.AppConfig, logger *zap.Logger) (*DatabaseStruct, error) {
 	var err error = nil
 	var dialector gorm.Dialector = nil
+
+	//// 创建一个默认的日志器实例，并设置输出级别为 logger.Info
+	//newLogger := logger.New(
+	//	log.New(os.Stdout, "\r\n", log.LstdFlags), // io writer（日志输出的目标，前缀和日志包含的内容——译者注）
+	//	logger.Config{
+	//		SlowThreshold:             time.Second, // 慢 SQL 阈值
+	//		LogLevel:                  logger.Info, // 日志级别
+	//		IgnoreRecordNotFoundError: true,        // 忽略ErrRecordNotFound（记录未找到）错误
+	//		Colorful:                  false,       // 禁用彩色打印
+	//	},
+	//)
 
 	switch cfg.Database.DBtype {
 	case "postgresql":
@@ -48,7 +61,9 @@ func OpenDB(cfg config.AppConfig) (*DatabaseStruct, error) {
 			cfg.Database.Password, cfg.Database.Host, cfg.Database.Port, cfg.Database.DBName)
 		dialector = mysql.Open(dsn)
 	}
-	db, err := gorm.Open(dialector, &gorm.Config{})
+	db, err := gorm.Open(dialector, &gorm.Config{
+		Logger: logger,
+	})
 	if err != nil {
 		return nil, err
 	}
