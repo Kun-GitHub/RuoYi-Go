@@ -93,7 +93,7 @@ func (this *SysUserService) QueryUserInfoByUserId(userId int64) (*model.SysUser,
 	return nil, fmt.Errorf("查询用户信息失败", zap.Error(err))
 }
 
-func (this *SysUserService) QueryUserPage(pageReq common.PageRequest, u *model.SysUser) ([]*model.UserInfoStruct, int64, error) {
+func (this *SysUserService) QueryUserPage(pageReq common.PageRequest, u *model.SysUserRequest) ([]*model.UserInfoStruct, int64, error) {
 	data, total, err := this.repo.QueryUserPage(pageReq, u)
 	if err != nil {
 		this.logger.Error("查询用户分页信息失败", zap.Error(err))
@@ -127,7 +127,7 @@ func (this *SysUserService) QueryUserPage(pageReq common.PageRequest, u *model.S
 	return userList, total, nil
 }
 
-func (this *SysUserService) QueryUserList(u *model.SysUser) ([]*model.SysUser, error) {
+func (this *SysUserService) QueryUserList(u *model.SysUserRequest) ([]*model.SysUser, error) {
 	data, err := this.repo.QueryUserList(u)
 	if err != nil {
 		this.logger.Error("查询用户列表信息失败", zap.Error(err))

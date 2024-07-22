@@ -12,6 +12,7 @@ import (
 	"context"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gen/field"
+	"time"
 )
 
 type SysUserRepository struct {
@@ -42,7 +43,7 @@ func (this *SysUserRepository) QueryUserInfoByUserId(userId int64) (*model.SysUs
 	return structEntity, nil
 }
 
-func (this *SysUserRepository) QueryUserPage(pageReq common.PageRequest, user *model.SysUser) ([]*model.SysUser, int64, error) {
+func (this *SysUserRepository) QueryUserPage(pageReq common.PageRequest, user *model.SysUserRequest) ([]*model.SysUser, int64, error) {
 	structEntity := make([]*model.SysUser, 0)
 
 	//total, err := this.db.PageQuery(func(db *gorm.DB) *gorm.DB {
@@ -53,6 +54,7 @@ func (this *SysUserRepository) QueryUserPage(pageReq common.PageRequest, user *m
 	var deptID field.Expr
 	var phonenumber field.Expr
 	var userName field.Expr
+	var timeField field.Expr
 	if user != nil {
 		if user.Status != "" {
 			status = this.db.Gen.SysUser.Status.Eq(user.Status)
@@ -66,13 +68,26 @@ func (this *SysUserRepository) QueryUserPage(pageReq common.PageRequest, user *m
 		if user.DeptID != 0 {
 			deptID = this.db.Gen.SysUser.DeptID.Eq(user.DeptID)
 		}
+		if user.BeginTime != "" && user.EndTime != "" {
+			// 解析日期字符串
+			t1, err1 := time.Parse("2006-01-02", user.BeginTime)
+			t2, err2 := time.Parse("2006-01-02", user.EndTime)
+			if err1 == nil && err2 == nil {
+				// 设置一天的开始时间
+				startOfDay := time.Date(t1.Year(), t1.Month(), t1.Day(), 0, 0, 0, 0, t1.Location())
+				// 设置一天的开始时间
+				endOfDay := time.Date(t2.Year(), t2.Month(), t2.Day(), 23, 59, 59, 0, t2.Location())
+
+				timeField = this.db.Gen.SysUser.CreateTime.Between(startOfDay, endOfDay)
+			}
+		}
 	}
 
 	structEntity, err := this.db.Gen.SysUser.WithContext(context.Background()).
-		Where(deptID, status, phonenumber, userName, this.db.Gen.SysUser.DelFlag.Eq("0")).
+		Where(deptID, status, phonenumber, userName, timeField, this.db.Gen.SysUser.DelFlag.Eq("0")).
 		Order(this.db.Gen.SysUser.UserID).Limit(pageReq.PageSize).Offset((pageReq.PageNum - 1) * pageReq.PageSize).Find()
 	total, err := this.db.Gen.SysUser.WithContext(context.Background()).
-		Where(deptID, status, phonenumber, userName, this.db.Gen.SysUser.DelFlag.Eq("0")).
+		Where(deptID, status, phonenumber, userName, timeField, this.db.Gen.SysUser.DelFlag.Eq("0")).
 		Order(this.db.Gen.SysUser.UserID).Limit(pageReq.PageSize).Offset((pageReq.PageNum - 1) * pageReq.PageSize).Count()
 
 	if err != nil {
@@ -81,13 +96,14 @@ func (this *SysUserRepository) QueryUserPage(pageReq common.PageRequest, user *m
 	return structEntity, total, err
 }
 
-func (this *SysUserRepository) QueryUserList(user *model.SysUser) ([]*model.SysUser, error) {
+func (this *SysUserRepository) QueryUserList(user *model.SysUserRequest) ([]*model.SysUser, error) {
 	structEntity := make([]*model.SysUser, 0)
 
 	var status field.Expr
 	var deptID field.Expr
 	var phonenumber field.Expr
 	var userName field.Expr
+	var timeField field.Expr
 	if user != nil {
 		if user.Status != "" {
 			status = this.db.Gen.SysUser.Status.Eq(user.Status)
@@ -101,10 +117,23 @@ func (this *SysUserRepository) QueryUserList(user *model.SysUser) ([]*model.SysU
 		if user.DeptID != 0 {
 			deptID = this.db.Gen.SysUser.DeptID.Eq(user.DeptID)
 		}
+		if user.BeginTime != "" && user.EndTime != "" {
+			// 解析日期字符串
+			t1, err1 := time.Parse("2006-01-02", user.BeginTime)
+			t2, err2 := time.Parse("2006-01-02", user.EndTime)
+			if err1 == nil && err2 == nil {
+				// 设置一天的开始时间
+				startOfDay := time.Date(t1.Year(), t1.Month(), t1.Day(), 0, 0, 0, 0, t1.Location())
+				// 设置一天的开始时间
+				endOfDay := time.Date(t2.Year(), t2.Month(), t2.Day(), 23, 59, 59, 0, t2.Location())
+
+				timeField = this.db.Gen.SysUser.CreateTime.Between(startOfDay, endOfDay)
+			}
+		}
 	}
 
 	structEntity, err := this.db.Gen.SysUser.WithContext(context.Background()).
-		Where(deptID, status, phonenumber, userName, this.db.Gen.SysUser.DelFlag.Eq("0")).
+		Where(deptID, status, phonenumber, userName, timeField, this.db.Gen.SysUser.DelFlag.Eq("0")).
 		Order(this.db.Gen.SysUser.UserID).Find()
 
 	if err != nil {

@@ -32,9 +32,23 @@ func (this *SysUserHandler) UserPage(ctx iris.Context) {
 	pageNumStr := ctx.URLParamDefault("pageNum", "1")
 	pageSizeStr := ctx.URLParamDefault("pageSize", "10")
 
+	// 使用 Query() 方法获取所有的查询参数
+	allParams := ctx.Request().URL.Query()
+	// 从 url.Values 结构体中获取参数
+	beginTimeList, _ := allParams["params[beginTime]"]
+	endTimeList, _ := allParams["params[endTime]"]
+	// 假设我们只关心第一个值，我们可以这样获取：
+	beginTime := ""
+	if len(beginTimeList) > 0 {
+		beginTime = beginTimeList[0]
+	}
+	endTime := ""
+	if len(endTimeList) > 0 {
+		endTime = endTimeList[0]
+	}
+
 	pageNum, _ := strconv.Atoi(pageNumStr)
 	pageSize, _ := strconv.Atoi(pageSizeStr)
-
 	l := common.PageRequest{
 		pageNum,
 		pageSize,
@@ -45,18 +59,18 @@ func (this *SysUserHandler) UserPage(ctx iris.Context) {
 	var deptId int64
 	userName := ctx.URLParam("userName")
 	phonenumber := ctx.URLParam("phonenumber")
-	//params := ctx.URLParam("params")
-	//fmt.Println(params)
 
 	if deptIdStr != "" {
 		deptId, _ = strconv.ParseInt(deptIdStr, 10, 64)
 	}
 
-	u := &model.SysUser{
+	u := &model.SysUserRequest{
 		Status:      status,
 		DeptID:      deptId,
 		UserName:    userName,
 		Phonenumber: phonenumber,
+		BeginTime:   beginTime,
+		EndTime:     endTime,
 	}
 
 	d, t, err := this.service.QueryUserPage(l, u)
@@ -161,7 +175,20 @@ func (this *SysUserHandler) UserInfo(ctx iris.Context) {
 	}
 	userInfo.Dept = dept
 
-	ctx.JSON(common.Success(userInfo))
+	var roleIds []int64
+	for _, role := range roles {
+		roleIds = append(roleIds, role.RoleID)
+	}
+
+	infoSuccess := &model.GetUserInfoSuccess{
+		Code:    common.SUCCESS,
+		User:    userInfo,
+		Message: "操作成功",
+		RoleIds: roleIds,
+		Roles:   roles,
+	}
+
+	ctx.JSON(infoSuccess)
 }
 
 func (this *SysUserHandler) ChangeUserStatus(ctx iris.Context) {

@@ -38,27 +38,27 @@ func (this *SysRoleRepository) QueryRolesByUserId(userId int64) ([]*model.SysRol
 	return roles, nil
 }
 
-func (this *SysRoleRepository) QueryRolePage(pageReq common.PageRequest, user *model.SysRoleRequest) ([]*model.SysRole, int64, error) {
+func (this *SysRoleRepository) QueryRolePage(pageReq common.PageRequest, request *model.SysRoleRequest) ([]*model.SysRole, int64, error) {
 	structEntity := make([]*model.SysRole, 0)
 
 	var status field.Expr
 	var roleName field.Expr
 	var roleKey field.Expr
 	var timeField field.Expr
-	if user != nil {
-		if user.Status != "" {
-			status = this.db.Gen.SysRole.Status.Eq(user.Status)
+	if request != nil {
+		if request.Status != "" {
+			status = this.db.Gen.SysRole.Status.Eq(request.Status)
 		}
-		if user.RoleName != "" {
-			roleName = this.db.Gen.SysRole.RoleName.Like("%" + user.RoleName + "%")
+		if request.RoleName != "" {
+			roleName = this.db.Gen.SysRole.RoleName.Like("%" + request.RoleName + "%")
 		}
-		if user.RoleKey != "" {
-			roleKey = this.db.Gen.SysRole.RoleKey.Like("%" + user.RoleKey + "%")
+		if request.RoleKey != "" {
+			roleKey = this.db.Gen.SysRole.RoleKey.Like("%" + request.RoleKey + "%")
 		}
-		if user.BeginTime != "" && user.EndTime != "" {
+		if request.BeginTime != "" && request.EndTime != "" {
 			// 解析日期字符串
-			t1, err1 := time.Parse("2006-01-02", user.BeginTime)
-			t2, err2 := time.Parse("2006-01-02", user.EndTime)
+			t1, err1 := time.Parse("2006-01-02", request.BeginTime)
+			t2, err2 := time.Parse("2006-01-02", request.EndTime)
 			if err1 == nil && err2 == nil {
 				// 设置一天的开始时间
 				startOfDay := time.Date(t1.Year(), t1.Month(), t1.Day(), 0, 0, 0, 0, t1.Location())

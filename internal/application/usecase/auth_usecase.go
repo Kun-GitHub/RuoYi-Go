@@ -79,7 +79,7 @@ func (this *AuthService) Logout(token string) error {
 	return nil
 }
 
-func (this *AuthService) GetInfo(loginUser *model.UserInfoStruct) (*model.GetInfoSuccess, error) {
+func (this *AuthService) GetInfo(loginUser *model.UserInfoStruct) (*model.UserInfoStruct, []string, []string, error) {
 	var p []string
 	if loginUser.UserID == common.ADMINID {
 		p = append(p, "*:*:*")
@@ -89,7 +89,7 @@ func (this *AuthService) GetInfo(loginUser *model.UserInfoStruct) (*model.GetInf
 	roles, err := this.roleService.QueryRolesByUserId(loginUser.UserID)
 	if err != nil {
 		this.logger.Error("QueryRolesByUserId error,", zap.Error(err))
-		return nil, fmt.Errorf("getInfo error", zap.Error(err))
+		return nil, p, nil, fmt.Errorf("getInfo error", zap.Error(err))
 	}
 
 	loginUser.Roles = roles
@@ -101,16 +101,9 @@ func (this *AuthService) GetInfo(loginUser *model.UserInfoStruct) (*model.GetInf
 	dept, err := this.deptService.QueryRolesByDeptId(loginUser.DeptID)
 	if err != nil {
 		this.logger.Error("QueryRolesByDeptId error,", zap.Error(err))
-		return nil, fmt.Errorf("getInfo error", zap.Error(err))
+		return nil, p, roleNames, fmt.Errorf("getInfo error", zap.Error(err))
 	}
 	loginUser.Dept = dept
 
-	infoSuccess := &model.GetInfoSuccess{
-		Code:        common.SUCCESS,
-		User:        loginUser,
-		Permissions: p,
-		Roles:       roleNames,
-		Message:     "操作成功",
-	}
-	return infoSuccess, nil
+	return loginUser, p, roleNames, nil
 }

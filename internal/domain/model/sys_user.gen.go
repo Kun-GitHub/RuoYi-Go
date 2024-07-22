@@ -45,8 +45,12 @@ func (*SysUser) TableName() string {
 
 // SysUser mapped from table <sys_user>
 type SysUserRequest struct {
-	*SysUser
-	Status string `json:"status"`
+	Status      string `json:"status"`
+	DeptID      int64  `json:"deptId"`
+	Phonenumber string `json:"phonenumber"`
+	UserName    string `json:"userName"`
+	BeginTime   string `json:"beginTime"`
+	EndTime     string `json:"endTime"`
 }
 
 type ChangeUserStatusRequest struct {
@@ -57,4 +61,14 @@ type ChangeUserStatusRequest struct {
 type ResetUserPwdRequest struct {
 	UserID   int64  `json:"userId" validate:"required"`
 	Password string `json:"password" validate:"required"`
+}
+
+type GetUserInfoSuccess struct {
+	Code    int             `json:"code"`
+	Message string          `json:"msg"`
+	User    *UserInfoStruct `json:"data"`
+	RoleIds []int64         `gorm:"-" json:"roleIds,omitempty"`
+	PostIds []int64         `gorm:"-" json:"postIds,omitempty"`
+	Roles   []*SysRole      `gorm:"-" json:"roles,omitempty"`
+	Posts   []*SysPost      `gorm:"-" json:"posts,omitempty"`
 }

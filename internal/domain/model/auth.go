@@ -8,8 +8,8 @@ package model
 type UserInfoStruct struct {
 	*SysUser
 	Admin bool       `gorm:"-" json:"admin"`
-	Roles []*SysRole `gorm:"-" json:"roles"`
-	Dept  *SysDept   `gorm:"-" json:"dept"`
+	Roles []*SysRole `gorm:"-" json:"roles,omitempty"`
+	Dept  *SysDept   `gorm:"-" json:"dept,omitempty"`
 }
 
 type LoginSuccess struct {

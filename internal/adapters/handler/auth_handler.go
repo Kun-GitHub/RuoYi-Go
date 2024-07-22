@@ -73,11 +73,20 @@ func (h *AuthHandler) GetInfo(ctx iris.Context) {
 		return
 	}
 
-	info, err := h.service.GetInfo(loginUser)
+	info, p, roleNames, err := h.service.GetInfo(loginUser)
 	if err != nil {
 		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "getInfo failed, error：%s", err.Error()))
 		return
 	}
+
+	infoSuccess := &model.GetInfoSuccess{
+		Code:        common.SUCCESS,
+		User:        info,
+		Permissions: p,
+		Roles:       roleNames,
+		Message:     "操作成功",
+	}
+
 	// 使用 ctx.JSON 自动将user序列化为JSON并写入响应体
-	ctx.JSON(info)
+	ctx.JSON(infoSuccess)
 }

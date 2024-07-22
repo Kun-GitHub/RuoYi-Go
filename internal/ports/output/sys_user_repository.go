@@ -13,8 +13,8 @@ import (
 type SysUserRepository interface {
 	QueryUserInfoByUserName(username string) (*model.SysUser, error)
 	QueryUserInfoByUserId(userId int64) (*model.SysUser, error)
-	QueryUserPage(pageReq common.PageRequest, user *model.SysUser) ([]*model.SysUser, int64, error)
-	QueryUserList(user *model.SysUser) ([]*model.SysUser, error)
+	QueryUserPage(pageReq common.PageRequest, user *model.SysUserRequest) ([]*model.SysUser, int64, error)
+	QueryUserList(user *model.SysUserRequest) ([]*model.SysUser, error)
 	DeleteUserByUserId(userId int64) (int64, error)
 	ChangeUserStatus(user model.ChangeUserStatusRequest) (int64, error)
 	ResetUserPwd(user model.ResetUserPwdRequest) (int64, error)

@@ -13,5 +13,5 @@ import (
 type AuthService interface {
 	Login(l model.LoginRequest) (*model.LoginSuccess, error)
 	Logout(token string) error
-	GetInfo(loginUser *model.UserInfoStruct) (*model.GetInfoSuccess, error)
+	GetInfo(loginUser *model.UserInfoStruct) (*model.UserInfoStruct, []string, []string, error)
 }
