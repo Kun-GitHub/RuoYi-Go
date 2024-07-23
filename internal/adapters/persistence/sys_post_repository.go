@@ -46,7 +46,7 @@ func (this *SysPostRepository) QueryPostByUserId(userId int64) ([]*model.SysPost
 	return structEntity, nil
 }
 
-func (this *SysPostRepository) QueryPostList(post *model.SysPost) ([]*model.SysPost, error) {
+func (this *SysPostRepository) QueryPostList(post *model.SysPostRequest) ([]*model.SysPost, error) {
 	structEntity := make([]*model.SysPost, 0)
 
 	var status field.Expr

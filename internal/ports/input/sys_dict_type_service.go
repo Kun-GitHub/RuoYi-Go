@@ -10,10 +10,9 @@ import (
 	"RuoYi-Go/internal/domain/model"
 )
 
-// SysPostService 输入端口接口
-type SysPostService interface {
-	QueryPostByPostId(postId int64) (*model.SysPost, error)
-	QueryPostByUserId(userId int64) ([]*model.SysPost, error)
-	QueryPostList(post *model.SysPostRequest) ([]*model.SysPost, error)
-	QueryPostPage(pageReq common.PageRequest, r *model.SysPostRequest) ([]*model.SysPost, int64, error)
+// SysDictTypeService 输入端口接口
+type SysDictTypeService interface {
+	QueryDictTypeByDictID(postId int64) (*model.SysDictType, error)
+	QueryDictTypeList(post *model.SysDictTypeRequest) ([]*model.SysDictType, error)
+	QueryDictTypePage(pageReq common.PageRequest, r *model.SysDictTypeRequest) ([]*model.SysDictType, int64, error)
 }

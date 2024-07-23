@@ -3,17 +3,15 @@
 // Author: K. See：https://github.com/Kun-GitHub/RuoYi-Go or https://gitee.com/gitee_kun/RuoYi-Go
 // Email: hot_kun@hotmail.com or 867917691@qq.com
 
-package input
+package output
 
 import (
 	"RuoYi-Go/internal/common"
 	"RuoYi-Go/internal/domain/model"
 )
 
-// SysPostService 输入端口接口
-type SysPostService interface {
-	QueryPostByPostId(postId int64) (*model.SysPost, error)
-	QueryPostByUserId(userId int64) ([]*model.SysPost, error)
-	QueryPostList(post *model.SysPostRequest) ([]*model.SysPost, error)
-	QueryPostPage(pageReq common.PageRequest, r *model.SysPostRequest) ([]*model.SysPost, int64, error)
+type SysDictTypeRepository interface {
+	QueryDictTypeByDictID(postId int64) (*model.SysDictType, error)
+	QueryDictTypeList(post *model.SysDictTypeRequest) ([]*model.SysDictType, error)
+	QueryDictTypePage(pageReq common.PageRequest, r *model.SysDictTypeRequest) ([]*model.SysDictType, int64, error)
 }

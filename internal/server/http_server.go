@@ -99,3 +99,9 @@ func ResolveSysPostHandler(db *dao.DatabaseStruct, logger *zap.Logger, cache *ca
 	sysPostService := usecase.NewSysPostService(sysPostRepo, cache, logger)
 	return handler.NewSysPostHandler(sysPostService)
 }
+
+func ResolveSysDictTypeHandler(db *dao.DatabaseStruct, logger *zap.Logger, cache *cache.FreeCacheClient) *handler.SysDictTypeHandler {
+	sysPostRepo := persistence.NewSysDictTypeRepository(db)
+	sysPostService := usecase.NewSysDictTypeService(sysPostRepo, cache, logger)
+	return handler.NewSysDictTypeHandler(sysPostService)
+}

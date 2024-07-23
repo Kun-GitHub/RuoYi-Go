@@ -32,3 +32,12 @@ type SysDictType struct {
 func (*SysDictType) TableName() string {
 	return TableNameSysDictType
 }
+
+// SysUser mapped from table <sys_user>
+type SysDictTypeRequest struct {
+	Status    string `json:"status"`
+	DictName  string `json:"dictName"`
+	DictType  string `json:"dictType"`
+	BeginTime string `json:"beginTime"`
+	EndTime   string `json:"endTime"`
+}

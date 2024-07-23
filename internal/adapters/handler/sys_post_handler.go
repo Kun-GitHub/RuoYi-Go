@@ -46,7 +46,7 @@ func (h *SysPostHandler) PostPage(ctx iris.Context) {
 	datas, total, err := h.service.QueryPostPage(l, u)
 	if err != nil {
 		//h.logger.Debug("login failed", zap.Error(err))
-		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "UserPage, error：%s", err.Error()))
+		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "QueryPostPage, error：%s", err.Error()))
 		return
 	}
 
@@ -77,7 +77,7 @@ func (this *SysPostHandler) PostInfo(ctx iris.Context) {
 	info, err := this.service.QueryPostByPostId(postId)
 	if err != nil {
 		//this.logger.Debug("login failed", zap.Error(err))
-		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "QueryUserInfoByUserId, error：%s", err.Error()))
+		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "QueryPostByPostId, error：%s", err.Error()))
 		return
 	}
 
