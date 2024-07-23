@@ -33,3 +33,12 @@ type SysConfig struct {
 func (*SysConfig) TableName() string {
 	return TableNameSysConfig
 }
+
+// SysConfigRequest mapped from table <SysConfigRequest>
+type SysConfigRequest struct {
+	ConfigType string `json:"configType"`
+	ConfigName string `json:"configName"`
+	ConfigKey  string `json:"configKey"`
+	BeginTime  string `json:"beginTime"`
+	EndTime    string `json:"endTime"`
+}

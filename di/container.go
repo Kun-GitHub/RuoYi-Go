@@ -99,6 +99,10 @@ func NewContainer(c config.AppConfig) (*Container, error) {
 	app.Get("/system/dict/type/list", ms.PermissionMiddleware("system:dict:type:list"), sysDictTypeHandler.DictTypePage)
 	app.Get("/system/dict/type/{dictId:uint}", ms.PermissionMiddleware("system:dict:type:query"), sysDictTypeHandler.DictTypeInfo)
 
+	sysConfigHandler := ryserver.ResolveSysConfigHandler(db, log, freeCache)
+	app.Get("/system/config/list", ms.PermissionMiddleware("system:config:list"), sysConfigHandler.ConfigPage)
+	app.Get("/system/config/{configId:uint}", ms.PermissionMiddleware("system:config:query"), sysConfigHandler.ConfigInfo)
+
 	ryws.StartWebSocket(app, log)
 
 	log.Info("http server started", zap.Int("port", c.Server.Port))
