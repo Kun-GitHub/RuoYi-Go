@@ -65,6 +65,10 @@ func (this *SysUserService) QueryUserInfoByUserName(username string) (*model.Sys
 
 func (this *SysUserService) QueryUserInfoByUserId(userId int64) (*model.SysUser, error) {
 	structEntity := &model.SysUser{}
+	if userId == 0 {
+		return structEntity, nil
+	}
+
 	// 尝试从缓存中获取
 	userBytes, err := this.cache.Get([]byte(fmt.Sprintf("UserID:%d", userId)))
 	if err == nil {

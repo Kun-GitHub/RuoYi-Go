@@ -14,4 +14,5 @@ import (
 type SysRoleService interface {
 	QueryRolesByUserId(userId int64) ([]*model.SysRole, error)
 	QueryRolePage(pageReq common.PageRequest, r *model.SysRoleRequest) ([]*model.SysRole, int64, error)
+	QueryRoleList(r *model.SysRoleRequest) ([]*model.SysRole, error)
 }

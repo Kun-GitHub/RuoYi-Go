@@ -22,9 +22,9 @@ func NewSysDeptRepository(db *dao.DatabaseStruct) *SysDeptRepository {
 
 func (this *SysDeptRepository) QueryRolesByDeptId(deptId int64) (*model.SysDept, error) {
 	structEntity := &model.SysDept{}
-
-	err := this.db.FindColumns(model.TableNameSysDept, structEntity,
-		"dept_id = ? and status = '0' and del_flag = '0'", deptId)
+	err := this.db.Gen.SysDept.WithContext(context.Background()).
+		Where(this.db.Gen.SysDept.DeptID.Eq(deptId), this.db.Gen.SysDept.DelFlag.Eq("0"), this.db.Gen.SysDept.Status.Eq("0")).
+		Scan(structEntity)
 	if err != nil {
 		return nil, err
 	}

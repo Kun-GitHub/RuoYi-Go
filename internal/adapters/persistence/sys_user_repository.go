@@ -25,8 +25,9 @@ func NewSysUserRepository(db *dao.DatabaseStruct) *SysUserRepository {
 
 func (this *SysUserRepository) QueryUserInfoByUserName(username string) (*model.SysUser, error) {
 	structEntity := &model.SysUser{}
-	err := this.db.FindColumns(model.TableNameSysUser, structEntity,
-		"user_name = ? and del_flag = '0'", username)
+	err := this.db.Gen.SysUser.WithContext(context.Background()).
+		Where(this.db.Gen.SysUser.UserName.Eq(username), this.db.Gen.SysUser.DelFlag.Eq("0")).
+		Scan(structEntity)
 	if err != nil {
 		return nil, err
 	}
@@ -35,8 +36,9 @@ func (this *SysUserRepository) QueryUserInfoByUserName(username string) (*model.
 
 func (this *SysUserRepository) QueryUserInfoByUserId(userId int64) (*model.SysUser, error) {
 	structEntity := &model.SysUser{}
-	err := this.db.FindColumns(model.TableNameSysUser, structEntity,
-		"user_id = ? and del_flag = '0'", userId)
+	err := this.db.Gen.SysUser.WithContext(context.Background()).
+		Where(this.db.Gen.SysUser.UserID.Eq(userId), this.db.Gen.SysUser.DelFlag.Eq("0")).
+		Scan(structEntity)
 	if err != nil {
 		return nil, err
 	}
@@ -150,7 +152,8 @@ func (this *SysUserRepository) DeleteUserByUserId(userId int64) (int64, error) {
 
 func (this *SysUserRepository) ChangeUserStatus(user model.ChangeUserStatusRequest) (int64, error) {
 	r, err := this.db.Gen.SysUser.WithContext(context.Background()).
-		Where(this.db.Gen.SysUser.UserID.Eq(user.UserID)).Update(this.db.Gen.SysUser.Status, user.Status)
+		Where(this.db.Gen.SysUser.UserID.Eq(user.UserID), this.db.Gen.SysUser.DelFlag.Eq("0")).
+		Update(this.db.Gen.SysUser.Status, user.Status)
 	return r.RowsAffected, err
 }
 
@@ -161,6 +164,7 @@ func (this *SysUserRepository) ResetUserPwd(user model.ResetUserPwdRequest) (int
 	}
 
 	r, err := this.db.Gen.SysUser.WithContext(context.Background()).
-		Where(this.db.Gen.SysUser.UserID.Eq(user.UserID)).Update(this.db.Gen.SysUser.Password, string(hashedPassword))
+		Where(this.db.Gen.SysUser.UserID.Eq(user.UserID), this.db.Gen.SysUser.DelFlag.Eq("0")).
+		Update(this.db.Gen.SysUser.Password, string(hashedPassword))
 	return r.RowsAffected, err
 }

@@ -24,8 +24,9 @@ func NewSysPostRepository(db *dao.DatabaseStruct) *SysPostRepository {
 func (this *SysPostRepository) QueryPostByPostId(postId int64) (*model.SysPost, error) {
 	structEntity := &model.SysPost{}
 
-	err := this.db.FindColumns(model.TableNameSysPost, structEntity,
-		"post_id = ?", postId)
+	err := this.db.Gen.SysPost.WithContext(context.Background()).
+		Where(this.db.Gen.SysPost.PostID.Eq(postId)).Scan(structEntity)
+
 	if err != nil {
 		return nil, err
 	}

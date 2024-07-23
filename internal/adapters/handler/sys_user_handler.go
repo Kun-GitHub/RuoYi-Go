@@ -154,6 +154,7 @@ func (this *SysUserHandler) UserInfo(ctx iris.Context) {
 		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "QueryUserInfoByUserId, error：%s", err.Error()))
 		return
 	}
+	user.Password = ""
 
 	userInfo := &model.UserInfoStruct{}
 	userInfo.SysUser = user
@@ -197,7 +198,7 @@ func (this *SysUserHandler) UserInfo(ctx iris.Context) {
 		postIds = append(postIds, post.PostID)
 	}
 
-	infoSuccess := &model.GetUserInfoSuccess{
+	infoSuccess := &model.UserInfoSuccess{
 		Code:    common.SUCCESS,
 		User:    userInfo,
 		Message: "操作成功",
@@ -209,6 +210,29 @@ func (this *SysUserHandler) UserInfo(ctx iris.Context) {
 
 	ctx.JSON(infoSuccess)
 }
+
+//func (this *SysUserHandler) UserInfoByNoneUserId(ctx iris.Context) {
+//	roles, err := this.roleService.QueryRoleList(nil)
+//	if err != nil {
+//		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "QueryRolesByUserId, error：%s", err.Error()))
+//		return
+//	}
+//
+//	postList, err := this.postService.QueryPostList(nil)
+//	if err != nil {
+//		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "QueryPostList, error：%s", err.Error()))
+//		return
+//	}
+//
+//	infoSuccess := &model.UserInfoNoneUserIdSuccess{
+//		Code:    common.SUCCESS,
+//		Message: "操作成功",
+//		Roles:   roles,
+//		Posts:   postList,
+//	}
+//
+//	ctx.JSON(infoSuccess)
+//}
 
 func (this *SysUserHandler) ChangeUserStatus(ctx iris.Context) {
 	var u model.ChangeUserStatusRequest

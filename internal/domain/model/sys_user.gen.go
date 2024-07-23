@@ -63,7 +63,7 @@ type ResetUserPwdRequest struct {
 	Password string `json:"password" validate:"required"`
 }
 
-type GetUserInfoSuccess struct {
+type UserInfoSuccess struct {
 	Code    int             `json:"code"`
 	Message string          `json:"msg"`
 	User    *UserInfoStruct `json:"data"`
@@ -71,4 +71,11 @@ type GetUserInfoSuccess struct {
 	PostIds []int64         `gorm:"-" json:"postIds,omitempty"`
 	Roles   []*SysRole      `gorm:"-" json:"roles,omitempty"`
 	Posts   []*SysPost      `gorm:"-" json:"posts,omitempty"`
+}
+
+type UserInfoNoneUserIdSuccess struct {
+	Code    int        `json:"code"`
+	Message string     `json:"msg"`
+	Roles   []*SysRole `gorm:"-" json:"roles,omitempty"`
+	Posts   []*SysPost `gorm:"-" json:"posts,omitempty"`
 }

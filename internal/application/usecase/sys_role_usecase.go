@@ -65,3 +65,13 @@ func (this *SysRoleService) QueryRolePage(pageReq common.PageRequest, u *model.S
 
 	return data, total, nil
 }
+
+func (this *SysRoleService) QueryRoleList(u *model.SysRoleRequest) ([]*model.SysRole, error) {
+	data, err := this.repo.QueryRoleList(u)
+	if err != nil {
+		this.logger.Error("QueryRoleList", zap.Error(err))
+		return nil, err
+	}
+
+	return data, nil
+}

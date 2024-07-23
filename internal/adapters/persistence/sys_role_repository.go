@@ -26,10 +26,10 @@ func NewSysRoleRepository(db *dao.DatabaseStruct) *SysRoleRepository {
 func (this *SysRoleRepository) QueryRolesByUserId(userId int64) ([]*model.SysRole, error) {
 	roles := make([]*model.SysRole, 0)
 	err := this.db.Transactional(func(db *gorm.DB) error {
-		err := db.Table("sys_role sr").Select("sr.*").
-			Joins("LEFT JOIN sys_user_role sur ON sur.role_id = sr.role_id").
-			Where("sr.status = '0' and sr.del_flag = '0' and sur.user_id = ?", userId).
-			Find(&roles).Error
+		err := this.db.Gen.SysRole.WithContext(context.Background()).Select(this.db.Gen.SysRole.ALL).
+			LeftJoin(this.db.Gen.SysUserRole, this.db.Gen.SysUserRole.RoleID.EqCol(this.db.Gen.SysRole.RoleID)).
+			Where(this.db.Gen.SysUserRole.UserID.Eq(userId), this.db.Gen.SysRole.DelFlag.Eq("0"), this.db.Gen.SysRole.Status.Eq("0")).
+			Scan(&roles)
 		return err
 	})
 	if err != nil {
@@ -79,4 +79,45 @@ func (this *SysRoleRepository) QueryRolePage(pageReq common.PageRequest, request
 		return nil, 0, err
 	}
 	return structEntity, total, err
+}
+
+func (this *SysRoleRepository) QueryRoleList(request *model.SysRoleRequest) ([]*model.SysRole, error) {
+	structEntity := make([]*model.SysRole, 0)
+
+	var status field.Expr
+	var roleName field.Expr
+	var roleKey field.Expr
+	var timeField field.Expr
+	if request != nil {
+		if request.Status != "" {
+			status = this.db.Gen.SysRole.Status.Eq(request.Status)
+		}
+		if request.RoleName != "" {
+			roleName = this.db.Gen.SysRole.RoleName.Like("%" + request.RoleName + "%")
+		}
+		if request.RoleKey != "" {
+			roleKey = this.db.Gen.SysRole.RoleKey.Like("%" + request.RoleKey + "%")
+		}
+		if request.BeginTime != "" && request.EndTime != "" {
+			// 解析日期字符串
+			t1, err1 := time.Parse("2006-01-02", request.BeginTime)
+			t2, err2 := time.Parse("2006-01-02", request.EndTime)
+			if err1 == nil && err2 == nil {
+				// 设置一天的开始时间
+				startOfDay := time.Date(t1.Year(), t1.Month(), t1.Day(), 0, 0, 0, 0, t1.Location())
+				// 设置一天的开始时间
+				endOfDay := time.Date(t2.Year(), t2.Month(), t2.Day(), 23, 59, 59, 0, t2.Location())
+
+				timeField = this.db.Gen.SysRole.CreateTime.Between(startOfDay, endOfDay)
+			}
+		}
+	}
+
+	structEntity, err := this.db.Gen.SysRole.WithContext(context.Background()).
+		Where(status, roleName, roleKey, timeField).Find()
+
+	if err != nil {
+		return nil, err
+	}
+	return structEntity, err
 }
