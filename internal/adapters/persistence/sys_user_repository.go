@@ -34,6 +34,17 @@ func (this *SysUserRepository) QueryUserInfoByUserName(username string) (*model.
 	return structEntity, nil
 }
 
+func (this *SysUserRepository) QueryUserInfoLikeUserName(username string) ([]*model.SysUser, error) {
+	structEntity := make([]*model.SysUser, 0)
+	structEntity, err := this.db.Gen.SysUser.WithContext(context.Background()).
+		Where(this.db.Gen.SysUser.UserName.Like("%"+username+"%"), this.db.Gen.SysUser.DelFlag.Eq("0"),
+			this.db.Gen.SysUser.Status.Eq("0")).Find()
+	if err != nil {
+		return nil, err
+	}
+	return structEntity, nil
+}
+
 func (this *SysUserRepository) QueryUserInfoByUserId(userId int64) (*model.SysUser, error) {
 	structEntity := &model.SysUser{}
 	err := this.db.Gen.SysUser.WithContext(context.Background()).

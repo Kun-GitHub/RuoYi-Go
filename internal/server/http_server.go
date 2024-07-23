@@ -111,3 +111,12 @@ func ResolveSysConfigHandler(db *dao.DatabaseStruct, logger *zap.Logger, cache *
 	service := usecase.NewSysConfigService(repo, cache, logger)
 	return handler.NewSysConfigHandler(service)
 }
+
+func ResolveSysNoticeHandler(db *dao.DatabaseStruct, logger *zap.Logger, cache *cache.FreeCacheClient) *handler.SysNoticeHandler {
+	repo := persistence.NewSysNoticeRepository(db)
+	service := usecase.NewSysNoticeService(repo, cache, logger)
+
+	sysUserRepo := persistence.NewSysUserRepository(db)
+	sysUserService := usecase.NewSysUserService(sysUserRepo, cache, logger)
+	return handler.NewSysNoticeHandler(service, sysUserService)
+}

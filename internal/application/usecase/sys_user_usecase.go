@@ -63,6 +63,15 @@ func (this *SysUserService) QueryUserInfoByUserName(username string) (*model.Sys
 	return nil, fmt.Errorf("查询用户信息失败", zap.Error(err))
 }
 
+func (this *SysUserService) QueryUserInfoLikeUserName(username string) ([]*model.SysUser, error) {
+	structEntity, err := this.repo.QueryUserInfoLikeUserName(username)
+	if err != nil {
+		this.logger.Error("查询用户信息失败", zap.Error(err))
+		return nil, err
+	}
+	return structEntity, nil
+}
+
 func (this *SysUserService) QueryUserInfoByUserId(userId int64) (*model.SysUser, error) {
 	structEntity := &model.SysUser{}
 	if userId == 0 {

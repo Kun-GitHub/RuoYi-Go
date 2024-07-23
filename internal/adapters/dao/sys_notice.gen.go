@@ -32,7 +32,7 @@ func newSysNotice(db *gorm.DB, opts ...gen.DOOption) sysNotice {
 
 	tableName := _sysNotice.sysNoticeDo.TableName()
 	_sysNotice.ALL = field.NewAsterisk(tableName)
-	_sysNotice.NoticeID = field.NewInt32(tableName, "notice_id")
+	_sysNotice.NoticeID = field.NewInt64(tableName, "notice_id")
 	_sysNotice.NoticeTitle = field.NewString(tableName, "notice_title")
 	_sysNotice.NoticeType = field.NewString(tableName, "notice_type")
 	_sysNotice.NoticeContent = field.NewField(tableName, "notice_content")
@@ -52,7 +52,7 @@ type sysNotice struct {
 	sysNoticeDo sysNoticeDo
 
 	ALL           field.Asterisk
-	NoticeID      field.Int32  // 公告ID
+	NoticeID      field.Int64  // 公告ID
 	NoticeTitle   field.String // 公告标题
 	NoticeType    field.String // 公告类型（1通知 2公告）
 	NoticeContent field.Field  // 公告内容
@@ -78,7 +78,7 @@ func (s sysNotice) As(alias string) *sysNotice {
 
 func (s *sysNotice) updateTableName(table string) *sysNotice {
 	s.ALL = field.NewAsterisk(table)
-	s.NoticeID = field.NewInt32(table, "notice_id")
+	s.NoticeID = field.NewInt64(table, "notice_id")
 	s.NoticeTitle = field.NewString(table, "notice_title")
 	s.NoticeType = field.NewString(table, "notice_type")
 	s.NoticeContent = field.NewField(table, "notice_content")

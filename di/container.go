@@ -103,6 +103,10 @@ func NewContainer(c config.AppConfig) (*Container, error) {
 	app.Get("/system/config/list", ms.PermissionMiddleware("system:config:list"), sysConfigHandler.ConfigPage)
 	app.Get("/system/config/{configId:uint}", ms.PermissionMiddleware("system:config:query"), sysConfigHandler.ConfigInfo)
 
+	sysNoticeHandler := ryserver.ResolveSysNoticeHandler(db, log, freeCache)
+	app.Get("/system/notice/list", ms.PermissionMiddleware("system:notice:list"), sysNoticeHandler.NoticePage)
+	app.Get("/system/notice/{noticeId:uint}", ms.PermissionMiddleware("system:notice:query"), sysNoticeHandler.NoticeInfo)
+
 	ryws.StartWebSocket(app, log)
 
 	log.Info("http server started", zap.Int("port", c.Server.Port))
