@@ -11,7 +11,6 @@ import (
 	"RuoYi-Go/internal/domain/model"
 	"context"
 	"gorm.io/gen/field"
-	"strconv"
 )
 
 type SysNoticeRepository struct {
@@ -47,13 +46,8 @@ func (this *SysNoticeRepository) QueryNoticeList(request *model.SysNoticeRequest
 		if request.NoticeTitle != "" {
 			configName = this.db.Gen.SysNotice.NoticeTitle.Like("%" + request.NoticeTitle + "%")
 		}
-		if len(request.Ids) > 0 {
-			stringSlice := make([]string, len(request.Ids))
-			for i, num := range request.Ids {
-				stringSlice[i] = strconv.FormatInt(num, 10) // 将 int64 转换为字符串
-			}
-
-			configKey = this.db.Gen.SysNotice.CreateBy.In(stringSlice...)
+		if len(request.CreateBy) > 0 {
+			configKey = this.db.Gen.SysNotice.CreateBy.Like("%" + request.CreateBy + "%")
 		}
 	}
 
@@ -78,13 +72,8 @@ func (this *SysNoticeRepository) QueryNoticePage(pageReq common.PageRequest, req
 		if request.NoticeTitle != "" {
 			configName = this.db.Gen.SysNotice.NoticeTitle.Like("%" + request.NoticeTitle + "%")
 		}
-		if len(request.Ids) > 0 {
-			stringSlice := make([]string, len(request.Ids))
-			for i, num := range request.Ids {
-				stringSlice[i] = strconv.FormatInt(num, 10) // 将 int64 转换为字符串
-			}
-
-			configKey = this.db.Gen.SysNotice.CreateBy.In(stringSlice...)
+		if len(request.CreateBy) > 0 {
+			configKey = this.db.Gen.SysNotice.CreateBy.Like("%" + request.CreateBy + "%")
 		}
 	}
 

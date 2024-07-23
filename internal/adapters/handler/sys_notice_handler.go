@@ -14,31 +14,15 @@ import (
 )
 
 type SysNoticeHandler struct {
-	service     input.SysNoticeService
-	userService input.SysUserService
+	service input.SysNoticeService
 }
 
-func NewSysNoticeHandler(service input.SysNoticeService, userService input.SysUserService) *SysNoticeHandler {
-	return &SysNoticeHandler{service: service, userService: userService}
+func NewSysNoticeHandler(service input.SysNoticeService) *SysNoticeHandler {
+	return &SysNoticeHandler{service: service}
 }
 
 // GenerateCaptchaImage
 func (h *SysNoticeHandler) NoticePage(ctx iris.Context) {
-	var ids []int64
-	createBy := ctx.URLParam("createBy")
-	if createBy != "" {
-		userList, err := h.userService.QueryUserInfoLikeUserName(createBy)
-		if err != nil {
-			//h.logger.Debug("login failed", zap.Error(err))
-			ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "QueryUserInfoByUserName, error：%s", err.Error()))
-			return
-		}
-
-		for _, user := range userList {
-			ids = append(ids, user.UserID)
-		}
-	}
-
 	// 获取查询参数
 	pageNumStr := ctx.URLParamDefault("pageNum", "1")
 	pageSizeStr := ctx.URLParamDefault("pageSize", "10")
@@ -52,10 +36,11 @@ func (h *SysNoticeHandler) NoticePage(ctx iris.Context) {
 
 	noticeTitle := ctx.URLParam("noticeTitle")
 	noticeType := ctx.URLParam("noticeType")
+	createBy := ctx.URLParam("createBy")
 	u := &model.SysNoticeRequest{
 		NoticeTitle: noticeTitle,
 		NoticeType:  noticeType,
-		Ids:         ids,
+		CreateBy:    createBy,
 	}
 
 	datas, total, err := h.service.QueryNoticePage(l, u)

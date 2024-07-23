@@ -36,8 +36,7 @@ func (*SysNotice) TableName() string {
 
 // SysNoticeRequest mapped from table <SysNoticeRequest>
 type SysNoticeRequest struct {
-	NoticeTitle  string  `json:"noticeTitle"`
-	NoticeType   string  `json:"noticeType"`
-	CreateByName string  `json:"createBy"`
-	Ids          []int64 `json:"ids"`
+	NoticeTitle string `json:"noticeTitle"`
+	NoticeType  string `json:"noticeType"`
+	CreateBy    string `json:"createBy"`
 }
