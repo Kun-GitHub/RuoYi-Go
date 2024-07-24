@@ -131,3 +131,21 @@ func (this *SysPostService) DeletePostById(id int64) (int64, error) {
 	}
 	return result, nil
 }
+
+func (this *SysPostService) checkPostNameUnique(id int64, name string) (int64, error) {
+	result, err := this.repo.checkPostNameUnique(id, name)
+	if err != nil {
+		this.logger.Error("checkPostNameUnique", zap.Error(err))
+		return 0, err
+	}
+	return result, nil
+}
+
+func (this *SysPostService) checkPostCodeUnique(id int64, code string) (int64, error) {
+	result, err := this.repo.checkPostCodeUnique(id, code)
+	if err != nil {
+		this.logger.Error("checkPostCodeUnique", zap.Error(err))
+		return 0, err
+	}
+	return result, nil
+}
