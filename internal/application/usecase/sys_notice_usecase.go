@@ -77,3 +77,47 @@ func (this *SysNoticeService) QueryNoticePage(pageReq common.PageRequest, r *mod
 
 	return data, total, nil
 }
+
+func (this *SysNoticeService) AddNotice(post *model.SysNotice) (*model.SysNotice, error) {
+	data, err := this.repo.AddNotice(post)
+	if err != nil {
+		this.logger.Error("AddNotice", zap.Error(err))
+		return nil, err
+	}
+	if data != nil && data.NoticeID != 0 {
+		// 序列化用户对象并存入缓存
+		userBytes, err := json.Marshal(data)
+		if err == nil {
+			this.cache.Set([]byte(fmt.Sprintf("NoticeID:%d", data.NoticeID)), userBytes, common.EXPIRESECONDS) // 第三个参数是过期时间，0表示永不过期
+		}
+	}
+	return data, nil
+}
+
+func (this *SysNoticeService) EditNotice(post *model.SysNotice) (*model.SysNotice, int64, error) {
+	data, result, err := this.repo.EditNotice(post)
+	if err != nil {
+		this.logger.Error("EditNotice", zap.Error(err))
+		return nil, 0, err
+	}
+	if data != nil && data.NoticeID != 0 && result == 1 {
+		// 序列化用户对象并存入缓存
+		userBytes, err := json.Marshal(data)
+		if err == nil {
+			this.cache.Set([]byte(fmt.Sprintf("NoticeID:%d", data.NoticeID)), userBytes, common.EXPIRESECONDS) // 第三个参数是过期时间，0表示永不过期
+		}
+	}
+	return data, result, nil
+}
+
+func (this *SysNoticeService) DeleteNoticeById(id int64) (int64, error) {
+	result, err := this.repo.DeleteNoticeById(id)
+	if err != nil {
+		this.logger.Error("删除用户信息失败", zap.Error(err))
+		return 0, err
+	}
+	if result == 1 {
+		this.cache.Del(fmt.Sprintf("NoticeID:%d", id))
+	}
+	return result, nil
+}

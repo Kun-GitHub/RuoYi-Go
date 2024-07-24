@@ -17,16 +17,16 @@ const TableNameSysConfig = "sys_config"
 
 // SysConfig mapped from table <sys_config>
 type SysConfig struct {
-	ConfigID    int32     `gorm:"column:config_id;primaryKey;comment:参数主键" json:"configId"` // 参数主键
-	ConfigName  string    `gorm:"column:config_name;comment:参数名称" json:"configName"`        // 参数名称
-	ConfigKey   string    `gorm:"column:config_key;comment:参数键名" json:"configKey"`          // 参数键名
-	ConfigValue string    `gorm:"column:config_value;comment:参数键值" json:"configValue"`      // 参数键值
-	ConfigType  string    `gorm:"column:config_type;comment:系统内置（Y是 N否）" json:"configType"` // 系统内置（Y是 N否）
-	CreateBy    string    `gorm:"column:create_by;comment:创建者" json:"createBy"`             // 创建者
-	CreateTime  time.Time `gorm:"column:create_time;comment:创建时间" json:"createTime"`        // 创建时间
-	UpdateBy    string    `gorm:"column:update_by;comment:更新者" json:"updateBy"`             // 更新者
-	UpdateTime  time.Time `gorm:"column:update_time;comment:更新时间" json:"updateTime"`        // 更新时间
-	Remark      string    `gorm:"column:remark;comment:备注" json:"remark"`                   // 备注
+	ConfigID    int64     `gorm:"column:config_id;primaryKey;comment:参数主键" json:"configId"`                // 参数主键
+	ConfigName  string    `gorm:"column:config_name;comment:参数名称" json:"configName" validate:"required"`   // 参数名称
+	ConfigKey   string    `gorm:"column:config_key;comment:参数键名" json:"configKey" validate:"required"`     // 参数键名
+	ConfigValue string    `gorm:"column:config_value;comment:参数键值" json:"configValue" validate:"required"` // 参数键值
+	ConfigType  string    `gorm:"column:config_type;comment:系统内置（Y是 N否）" json:"configType"`                // 系统内置（Y是 N否）
+	CreateBy    string    `gorm:"column:create_by;comment:创建者" json:"createBy"`                            // 创建者
+	CreateTime  time.Time `gorm:"column:create_time;comment:创建时间" json:"createTime"`                       // 创建时间
+	UpdateBy    string    `gorm:"column:update_by;comment:更新者" json:"updateBy"`                            // 更新者
+	UpdateTime  time.Time `gorm:"column:update_time;comment:更新时间" json:"updateTime"`                       // 更新时间
+	Remark      string    `gorm:"column:remark;comment:备注" json:"remark"`                                  // 备注
 }
 
 // TableName SysConfig's table name

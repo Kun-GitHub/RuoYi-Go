@@ -35,7 +35,7 @@ func newSysNotice(db *gorm.DB, opts ...gen.DOOption) sysNotice {
 	_sysNotice.NoticeID = field.NewInt64(tableName, "notice_id")
 	_sysNotice.NoticeTitle = field.NewString(tableName, "notice_title")
 	_sysNotice.NoticeType = field.NewString(tableName, "notice_type")
-	_sysNotice.NoticeContent = field.NewField(tableName, "notice_content")
+	_sysNotice.NoticeContent = field.NewString(tableName, "notice_content")
 	_sysNotice.Status = field.NewString(tableName, "status")
 	_sysNotice.CreateBy = field.NewString(tableName, "create_by")
 	_sysNotice.CreateTime = field.NewTime(tableName, "create_time")
@@ -55,7 +55,7 @@ type sysNotice struct {
 	NoticeID      field.Int64  // 公告ID
 	NoticeTitle   field.String // 公告标题
 	NoticeType    field.String // 公告类型（1通知 2公告）
-	NoticeContent field.Field  // 公告内容
+	NoticeContent field.String // 公告内容
 	Status        field.String // 公告状态（0正常 1关闭）
 	CreateBy      field.String // 创建者
 	CreateTime    field.Time   // 创建时间
@@ -81,7 +81,7 @@ func (s *sysNotice) updateTableName(table string) *sysNotice {
 	s.NoticeID = field.NewInt64(table, "notice_id")
 	s.NoticeTitle = field.NewString(table, "notice_title")
 	s.NoticeType = field.NewString(table, "notice_type")
-	s.NoticeContent = field.NewField(table, "notice_content")
+	s.NoticeContent = field.NewString(table, "notice_content")
 	s.Status = field.NewString(table, "status")
 	s.CreateBy = field.NewString(table, "create_by")
 	s.CreateTime = field.NewTime(table, "create_time")

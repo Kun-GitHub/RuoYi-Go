@@ -8,9 +8,12 @@ package handler
 import (
 	"RuoYi-Go/internal/common"
 	"RuoYi-Go/internal/domain/model"
+	"RuoYi-Go/internal/filter"
 	"RuoYi-Go/internal/ports/input"
 	"github.com/kataras/iris/v12"
 	"strconv"
+	"strings"
+	"time"
 )
 
 type SysNoticeHandler struct {
@@ -82,4 +85,87 @@ func (this *SysNoticeHandler) NoticeInfo(ctx iris.Context) {
 	}
 
 	ctx.JSON(common.Success(info))
+}
+
+func (this *SysNoticeHandler) AddNoticeInfo(ctx iris.Context) {
+	post := &model.SysNotice{}
+	// Attempt to read and bind the JSON request body to the 'user' variable
+	if err := filter.ValidateRequest(ctx, post); err != nil {
+		//ctx.JSON(common.ErrorFormat(iris.StatusBadRequest, "Invalid JSON, error:%s", err.Error()))
+		return
+	}
+
+	user := ctx.Values().Get(common.LOGINUSER)
+	// 类型断言
+	loginUser, ok := user.(*model.UserInfoStruct)
+	if !ok {
+		ctx.JSON(common.Error(iris.StatusUnauthorized, "请重新登录"))
+		return
+	}
+	post.CreateTime = time.Now()
+	post.CreateBy = loginUser.UserName
+	post.UpdateTime = time.Now()
+	post.UpdateBy = loginUser.UserName
+
+	info, err := this.service.AddNotice(post)
+	if err != nil {
+		//this.logger.Debug("login failed", zap.Error(err))
+		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "AddNotice, error：%s", err.Error()))
+		return
+	}
+
+	ctx.JSON(common.Success(info))
+}
+
+func (this *SysNoticeHandler) EditNoticeInfo(ctx iris.Context) {
+	post := &model.SysNotice{}
+	// Attempt to read and bind the JSON request body to the 'user' variable
+	if err := filter.ValidateRequest(ctx, post); err != nil {
+		//ctx.JSON(common.ErrorFormat(iris.StatusBadRequest, "Invalid JSON, error:%s", err.Error()))
+		return
+	}
+
+	user := ctx.Values().Get(common.LOGINUSER)
+	// 类型断言
+	loginUser, ok := user.(*model.UserInfoStruct)
+	if !ok {
+		ctx.JSON(common.Error(iris.StatusUnauthorized, "请重新登录"))
+		return
+	}
+	post.UpdateTime = time.Now()
+	post.UpdateBy = loginUser.UserName
+
+	info, _, err := this.service.EditNotice(post)
+	if err != nil {
+		//this.logger.Debug("login failed", zap.Error(err))
+		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "EditNotice, error：%s", err.Error()))
+		return
+	}
+
+	ctx.JSON(common.Success(info))
+}
+
+func (this *SysNoticeHandler) DeleteNoticeInfo(ctx iris.Context) {
+	idStr := ctx.Params().GetString("noticeId")
+	if idStr == "" {
+		ctx.JSON(common.ErrorFormat(iris.StatusBadRequest, "Invalid idStr"))
+		return
+	}
+
+	parts := strings.Split(idStr, ",")
+	for _, part := range parts {
+		id, err := strconv.ParseInt(part, 10, 64)
+		if err != nil {
+			ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "ParseInt error：%s", err.Error()))
+			return
+		}
+
+		_, err = this.service.DeleteNoticeById(id)
+		if err != nil {
+			ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "DeleteNoticeById error：%s", err.Error()))
+			return
+		}
+	}
+
+	ctx.JSON(common.Success(nil))
 }

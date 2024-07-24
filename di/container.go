@@ -108,10 +108,16 @@ func NewContainer(c config.AppConfig) (*Container, error) {
 	sysConfigHandler := ryserver.ResolveSysConfigHandler(db, log, freeCache)
 	app.Get("/system/config/list", ms.PermissionMiddleware("system:config:list"), sysConfigHandler.ConfigPage)
 	app.Get("/system/config/{configId:uint}", ms.PermissionMiddleware("system:config:query"), sysConfigHandler.ConfigInfo)
+	app.Post("/system/config", ms.PermissionMiddleware("system:config:add"), sysConfigHandler.AddConfigInfo)
+	app.Put("/system/config", ms.PermissionMiddleware("system:config:edit"), sysConfigHandler.EditConfigInfo)
+	app.Delete("/system/config/*configId", ms.PermissionMiddleware("system:config:remove"), sysConfigHandler.DeleteConfigInfo)
 
 	sysNoticeHandler := ryserver.ResolveSysNoticeHandler(db, log, freeCache)
 	app.Get("/system/notice/list", ms.PermissionMiddleware("system:notice:list"), sysNoticeHandler.NoticePage)
 	app.Get("/system/notice/{noticeId:uint}", ms.PermissionMiddleware("system:notice:query"), sysNoticeHandler.NoticeInfo)
+	app.Post("/system/notice", ms.PermissionMiddleware("system:notice:add"), sysNoticeHandler.AddNoticeInfo)
+	app.Put("/system/notice", ms.PermissionMiddleware("system:notice:edit"), sysNoticeHandler.EditNoticeInfo)
+	app.Delete("/system/notice/*noticeId", ms.PermissionMiddleware("system:notice:remove"), sysNoticeHandler.DeleteNoticeInfo)
 
 	ryws.StartWebSocket(app, log)
 

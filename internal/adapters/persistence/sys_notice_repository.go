@@ -84,3 +84,22 @@ func (this *SysNoticeRepository) QueryNoticePage(pageReq common.PageRequest, req
 	}
 	return structEntity, total, err
 }
+
+func (this *SysNoticeRepository) AddNotice(post *model.SysNotice) (*model.SysNotice, error) {
+	err := this.db.Gen.SysNotice.WithContext(context.Background()).
+		Save(post)
+	return post, err
+}
+
+func (this *SysNoticeRepository) EditNotice(post *model.SysNotice) (*model.SysNotice, int64, error) {
+	r, err := this.db.Gen.SysNotice.WithContext(context.Background()).
+		Where(this.db.Gen.SysNotice.NoticeID.Eq(post.NoticeID)).
+		Updates(post)
+	return post, r.RowsAffected, err
+}
+
+func (this *SysNoticeRepository) DeleteNoticeById(id int64) (int64, error) {
+	r, err := this.db.Gen.SysNotice.WithContext(context.Background()).
+		Where(this.db.Gen.SysNotice.NoticeID.Eq(id)).Delete()
+	return r.RowsAffected, err
+}

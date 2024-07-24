@@ -113,3 +113,28 @@ func (this *SysConfigRepository) QueryConfigPage(pageReq common.PageRequest, req
 	}
 	return structEntity, total, err
 }
+
+func (this *SysConfigRepository) AddConfig(post *model.SysConfig) (*model.SysConfig, error) {
+	err := this.db.Gen.SysConfig.WithContext(context.Background()).
+		Save(post)
+	return post, err
+}
+
+func (this *SysConfigRepository) EditConfig(post *model.SysConfig) (*model.SysConfig, int64, error) {
+	r, err := this.db.Gen.SysConfig.WithContext(context.Background()).
+		Where(this.db.Gen.SysConfig.ConfigID.Eq(post.ConfigID)).
+		Updates(post)
+	return post, r.RowsAffected, err
+}
+
+func (this *SysConfigRepository) DeleteConfigById(id int64) (int64, error) {
+	r, err := this.db.Gen.SysConfig.WithContext(context.Background()).
+		Where(this.db.Gen.SysConfig.ConfigID.Eq(id)).Delete()
+	return r.RowsAffected, err
+}
+
+func (this *SysConfigRepository) CheckConfigNameUnique(id int64, name string) (int64, error) {
+	r, err := this.db.Gen.SysConfig.WithContext(context.Background()).
+		Where(this.db.Gen.SysConfig.ConfigName.Eq(name), this.db.Gen.SysConfig.ConfigID.Neq(id)).Count()
+	return r, err
+}

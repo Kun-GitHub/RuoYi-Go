@@ -15,4 +15,8 @@ type SysConfigService interface {
 	QueryConfigByID(postId int64) (*model.SysConfig, error)
 	QueryConfigList(post *model.SysConfigRequest) ([]*model.SysConfig, error)
 	QueryConfigPage(pageReq common.PageRequest, r *model.SysConfigRequest) ([]*model.SysConfig, int64, error)
+	AddConfig(post *model.SysConfig) (*model.SysConfig, error)
+	EditConfig(post *model.SysConfig) (*model.SysConfig, int64, error)
+	DeleteConfigById(id int64) (int64, error)
+	CheckConfigNameUnique(id int64, name string) (int64, error)
 }

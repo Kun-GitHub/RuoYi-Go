@@ -14,4 +14,7 @@ type SysNoticeRepository interface {
 	QueryNoticeByID(id int64) (*model.SysNotice, error)
 	QueryNoticeList(request *model.SysNoticeRequest) ([]*model.SysNotice, error)
 	QueryNoticePage(pageReq common.PageRequest, r *model.SysNoticeRequest) ([]*model.SysNotice, int64, error)
+	AddNotice(post *model.SysNotice) (*model.SysNotice, error)
+	EditNotice(post *model.SysNotice) (*model.SysNotice, int64, error)
+	DeleteNoticeById(id int64) (int64, error)
 }

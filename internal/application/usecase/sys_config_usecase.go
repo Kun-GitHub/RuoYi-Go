@@ -77,3 +77,56 @@ func (this *SysConfigService) QueryConfigPage(pageReq common.PageRequest, r *mod
 
 	return data, total, nil
 }
+
+func (this *SysConfigService) AddConfig(post *model.SysConfig) (*model.SysConfig, error) {
+	data, err := this.repo.AddConfig(post)
+	if err != nil {
+		this.logger.Error("AddConfig", zap.Error(err))
+		return nil, err
+	}
+	if data != nil && data.ConfigID != 0 {
+		// 序列化用户对象并存入缓存
+		userBytes, err := json.Marshal(data)
+		if err == nil {
+			this.cache.Set([]byte(fmt.Sprintf("ConfigID:%d", data.ConfigID)), userBytes, common.EXPIRESECONDS) // 第三个参数是过期时间，0表示永不过期
+		}
+	}
+	return data, nil
+}
+
+func (this *SysConfigService) EditConfig(post *model.SysConfig) (*model.SysConfig, int64, error) {
+	data, result, err := this.repo.EditConfig(post)
+	if err != nil {
+		this.logger.Error("AddConfig", zap.Error(err))
+		return nil, 0, err
+	}
+	if data != nil && data.ConfigID != 0 && result == 1 {
+		// 序列化用户对象并存入缓存
+		userBytes, err := json.Marshal(data)
+		if err == nil {
+			this.cache.Set([]byte(fmt.Sprintf("ConfigID:%d", data.ConfigID)), userBytes, common.EXPIRESECONDS) // 第三个参数是过期时间，0表示永不过期
+		}
+	}
+	return data, result, nil
+}
+
+func (this *SysConfigService) DeleteConfigById(id int64) (int64, error) {
+	result, err := this.repo.DeleteConfigById(id)
+	if err != nil {
+		this.logger.Error("删除用户信息失败", zap.Error(err))
+		return 0, err
+	}
+	if result == 1 {
+		this.cache.Del(fmt.Sprintf("ConfigId:%d", id))
+	}
+	return result, nil
+}
+
+func (this *SysConfigService) CheckConfigNameUnique(id int64, name string) (int64, error) {
+	result, err := this.repo.CheckConfigNameUnique(id, name)
+	if err != nil {
+		this.logger.Error("CheckConfigNameUnique", zap.Error(err))
+		return -1, err
+	}
+	return result, nil
+}
