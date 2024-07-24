@@ -117,3 +117,15 @@ func (this *SysPostRepository) DeletePostById(id int64) (int64, error) {
 		Where(this.db.Gen.SysPost.PostID.Eq(id)).Delete()
 	return r.RowsAffected, err
 }
+
+func (this *SysPostRepository) CheckPostNameUnique(id int64, name string) (int64, error) {
+	r, err := this.db.Gen.SysPost.WithContext(context.Background()).
+		Where(this.db.Gen.SysPost.PostName.Eq(name), this.db.Gen.SysPost.PostID.Neq(id)).Count()
+	return r, err
+}
+
+func (this *SysPostRepository) CheckPostCodeUnique(id int64, code string) (int64, error) {
+	r, err := this.db.Gen.SysPost.WithContext(context.Background()).
+		Where(this.db.Gen.SysPost.PostCode.Eq(code), this.db.Gen.SysPost.PostID.Neq(id)).Count()
+	return r, err
+}

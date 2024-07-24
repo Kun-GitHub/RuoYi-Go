@@ -19,6 +19,6 @@ type SysPostService interface {
 	AddPost(post *model.SysPost) (*model.SysPost, error)
 	EditPost(post *model.SysPost) (*model.SysPost, int64, error)
 	DeletePostById(id int64) (int64, error)
-	checkPostNameUnique(id int64, name string) (int64, error)
-	checkPostCodeUnique(id int64, code string) (int64, error)
+	CheckPostNameUnique(id int64, name string) (int64, error)
+	CheckPostCodeUnique(id int64, code string) (int64, error)
 }

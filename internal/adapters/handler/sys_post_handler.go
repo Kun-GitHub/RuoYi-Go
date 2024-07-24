@@ -88,14 +88,6 @@ func (this *SysPostHandler) PostInfo(ctx iris.Context) {
 }
 
 func (this *SysPostHandler) AddPostInfo(ctx iris.Context) {
-	user := ctx.Values().Get(common.LOGINUSER)
-	// 类型断言
-	loginUser, ok := user.(*model.UserInfoStruct)
-	if !ok {
-		ctx.JSON(common.Error(iris.StatusUnauthorized, "请重新登录"))
-		return
-	}
-
 	post := &model.SysPost{}
 	// Attempt to read and bind the JSON request body to the 'user' variable
 	if err := filter.ValidateRequest(ctx, post); err != nil {
@@ -103,6 +95,26 @@ func (this *SysPostHandler) AddPostInfo(ctx iris.Context) {
 		return
 	}
 
+	count, err := this.service.CheckPostNameUnique(-1, post.PostName)
+	if err != nil || count != 0 {
+		//this.logger.Debug("login failed", zap.Error(err))
+		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "新增岗位失败，已存在相同名称岗位"))
+		return
+	}
+	count, err = this.service.CheckPostCodeUnique(-1, post.PostCode)
+	if err != nil || count != 0 {
+		//this.logger.Debug("login failed", zap.Error(err))
+		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "新增岗位失败，已存在相同编号岗位"))
+		return
+	}
+
+	user := ctx.Values().Get(common.LOGINUSER)
+	// 类型断言
+	loginUser, ok := user.(*model.UserInfoStruct)
+	if !ok {
+		ctx.JSON(common.Error(iris.StatusUnauthorized, "请重新登录"))
+		return
+	}
 	post.CreateTime = time.Now()
 	post.CreateBy = loginUser.UserName
 	post.UpdateTime = time.Now()
@@ -119,13 +131,6 @@ func (this *SysPostHandler) AddPostInfo(ctx iris.Context) {
 }
 
 func (this *SysPostHandler) EditPostInfo(ctx iris.Context) {
-	user := ctx.Values().Get(common.LOGINUSER)
-	// 类型断言
-	loginUser, ok := user.(*model.UserInfoStruct)
-	if !ok {
-		ctx.JSON(common.Error(iris.StatusUnauthorized, "请重新登录"))
-		return
-	}
 
 	post := &model.SysPost{}
 	// Attempt to read and bind the JSON request body to the 'user' variable
@@ -134,8 +139,26 @@ func (this *SysPostHandler) EditPostInfo(ctx iris.Context) {
 		return
 	}
 
-	post.CreateTime = time.Now()
-	post.CreateBy = loginUser.UserName
+	count, err := this.service.CheckPostNameUnique(post.PostID, post.PostName)
+	if err != nil || count != 0 {
+		//this.logger.Debug("login failed", zap.Error(err))
+		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "新增岗位失败，已存在相同名称岗位"))
+		return
+	}
+	count, err = this.service.CheckPostCodeUnique(post.PostID, post.PostCode)
+	if err != nil || count != 0 {
+		//this.logger.Debug("login failed", zap.Error(err))
+		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "新增岗位失败，已存在相同编号岗位"))
+		return
+	}
+
+	user := ctx.Values().Get(common.LOGINUSER)
+	// 类型断言
+	loginUser, ok := user.(*model.UserInfoStruct)
+	if !ok {
+		ctx.JSON(common.Error(iris.StatusUnauthorized, "请重新登录"))
+		return
+	}
 	post.UpdateTime = time.Now()
 	post.UpdateBy = loginUser.UserName
 
