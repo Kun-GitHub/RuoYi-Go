@@ -30,7 +30,7 @@ func NewAuthService(service input.SysUserService, roleService input.SysRoleServi
 	return &AuthService{service: service, roleService: roleService, deptService: deptService, redis: redis, logger: logger}
 }
 
-func (this *AuthService) Login(l model.LoginRequest) (*model.LoginSuccess, error) {
+func (this *AuthService) Login(l *model.LoginRequest) (*model.LoginSuccess, error) {
 	v, err := this.redis.Get(fmt.Sprintf("%s:%v", common.CAPTCHA, l.Uuid))
 	if err != nil || v == "" {
 		return nil, fmt.Errorf("验证码错误或已失效")

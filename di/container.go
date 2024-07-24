@@ -94,6 +94,9 @@ func NewContainer(c config.AppConfig) (*Container, error) {
 	sysPostHandler := ryserver.ResolveSysPostHandler(db, log, freeCache)
 	app.Get("/system/post/list", ms.PermissionMiddleware("system:post:list"), sysPostHandler.PostPage)
 	app.Get("/system/post/{postId:uint}", ms.PermissionMiddleware("system:post:query"), sysPostHandler.PostInfo)
+	app.Post("/system/post", ms.PermissionMiddleware("system:post:add"), sysPostHandler.AddPostInfo)
+	app.Put("/system/post", ms.PermissionMiddleware("system:post:edit"), sysPostHandler.EditPostInfo)
+	app.Delete("/system/post/*postId", ms.PermissionMiddleware("system:post:remove"), sysPostHandler.DeletePostInfo)
 
 	sysDictTypeHandler := ryserver.ResolveSysDictTypeHandler(db, log, freeCache)
 	app.Get("/system/dict/type/list", ms.PermissionMiddleware("system:dict:type:list"), sysDictTypeHandler.DictTypePage)

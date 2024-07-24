@@ -16,4 +16,7 @@ type SysPostService interface {
 	QueryPostByUserId(userId int64) ([]*model.SysPost, error)
 	QueryPostList(post *model.SysPostRequest) ([]*model.SysPost, error)
 	QueryPostPage(pageReq common.PageRequest, r *model.SysPostRequest) ([]*model.SysPost, int64, error)
+	AddPost(post *model.SysPost) (*model.SysPost, error)
+	EditPost(post *model.SysPost) (*model.SysPost, int64, error)
+	DeletePostById(id int64) (int64, error)
 }

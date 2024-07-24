@@ -156,16 +156,12 @@ func (this *SysUserService) DeleteUserByUserId(userId int64) (int64, error) {
 		return 0, err
 	}
 	if result == 1 {
-		// 尝试从缓存中获取
-		_, err := this.cache.Get([]byte(fmt.Sprintf("UserID:%d", userId)))
-		if err == nil {
-			this.cache.Del(fmt.Sprintf("UserID:%d", userId))
-		}
+		this.cache.Del(fmt.Sprintf("UserID:%d", userId))
 	}
 	return result, nil
 }
 
-func (this *SysUserService) ChangeUserStatus(user model.ChangeUserStatusRequest) (int64, error) {
+func (this *SysUserService) ChangeUserStatus(user *model.ChangeUserStatusRequest) (int64, error) {
 	result, err := this.repo.ChangeUserStatus(user)
 	if err != nil {
 		this.logger.Error("修改用户状态失败", zap.Error(err))
@@ -188,7 +184,7 @@ func (this *SysUserService) ChangeUserStatus(user model.ChangeUserStatusRequest)
 	return result, nil
 }
 
-func (this *SysUserService) ResetUserPwd(user model.ResetUserPwdRequest) (int64, error) {
+func (this *SysUserService) ResetUserPwd(user *model.ResetUserPwdRequest) (int64, error) {
 	result, err := this.repo.ResetUserPwd(user)
 	if err != nil {
 		this.logger.Error("修改用户状态失败", zap.Error(err))

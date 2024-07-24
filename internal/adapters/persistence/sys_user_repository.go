@@ -161,14 +161,14 @@ func (this *SysUserRepository) DeleteUserByUserId(userId int64) (int64, error) {
 	return r.RowsAffected, err
 }
 
-func (this *SysUserRepository) ChangeUserStatus(user model.ChangeUserStatusRequest) (int64, error) {
+func (this *SysUserRepository) ChangeUserStatus(user *model.ChangeUserStatusRequest) (int64, error) {
 	r, err := this.db.Gen.SysUser.WithContext(context.Background()).
 		Where(this.db.Gen.SysUser.UserID.Eq(user.UserID), this.db.Gen.SysUser.DelFlag.Eq("0")).
 		Update(this.db.Gen.SysUser.Status, user.Status)
 	return r.RowsAffected, err
 }
 
-func (this *SysUserRepository) ResetUserPwd(user model.ResetUserPwdRequest) (int64, error) {
+func (this *SysUserRepository) ResetUserPwd(user *model.ResetUserPwdRequest) (int64, error) {
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
 	if err != nil {
 		return 0, err

@@ -97,3 +97,23 @@ func (this *SysPostRepository) QueryPostPage(pageReq common.PageRequest, request
 	}
 	return structEntity, total, err
 }
+
+func (this *SysPostRepository) AddPost(post *model.SysPost) (*model.SysPost, error) {
+	err := this.db.Gen.SysPost.WithContext(context.Background()).
+		Where(this.db.Gen.SysPost.PostID.Eq(post.PostID)).
+		Save(post)
+	return post, err
+}
+
+func (this *SysPostRepository) EditPost(post *model.SysPost) (*model.SysPost, int64, error) {
+	r, err := this.db.Gen.SysPost.WithContext(context.Background()).
+		Where(this.db.Gen.SysPost.PostID.Eq(post.PostID)).
+		Updates(post)
+	return post, r.RowsAffected, err
+}
+
+func (this *SysPostRepository) DeletePostById(id int64) (int64, error) {
+	r, err := this.db.Gen.SysPost.WithContext(context.Background()).
+		Where(this.db.Gen.SysPost.PostID.Eq(id)).Delete()
+	return r.RowsAffected, err
+}

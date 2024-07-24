@@ -8,9 +8,12 @@ package handler
 import (
 	"RuoYi-Go/internal/common"
 	"RuoYi-Go/internal/domain/model"
+	"RuoYi-Go/internal/filter"
 	"RuoYi-Go/internal/ports/input"
 	"github.com/kataras/iris/v12"
 	"strconv"
+	"strings"
+	"time"
 )
 
 type SysPostHandler struct {
@@ -82,4 +85,91 @@ func (this *SysPostHandler) PostInfo(ctx iris.Context) {
 	}
 
 	ctx.JSON(common.Success(info))
+}
+
+func (this *SysPostHandler) AddPostInfo(ctx iris.Context) {
+	user := ctx.Values().Get(common.LOGINUSER)
+	// 类型断言
+	loginUser, ok := user.(*model.UserInfoStruct)
+	if !ok {
+		ctx.JSON(common.Error(iris.StatusUnauthorized, "请重新登录"))
+		return
+	}
+
+	post := &model.SysPost{}
+	// Attempt to read and bind the JSON request body to the 'user' variable
+	if err := filter.ValidateRequest(ctx, post); err != nil {
+		//ctx.JSON(common.ErrorFormat(iris.StatusBadRequest, "Invalid JSON, error:%s", err.Error()))
+		return
+	}
+
+	post.CreateTime = time.Now()
+	post.CreateBy = loginUser.UserName
+	post.UpdateTime = time.Now()
+	post.UpdateBy = loginUser.UserName
+
+	info, err := this.service.AddPost(post)
+	if err != nil {
+		//this.logger.Debug("login failed", zap.Error(err))
+		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "AddPost, error：%s", err.Error()))
+		return
+	}
+
+	ctx.JSON(common.Success(info))
+}
+
+func (this *SysPostHandler) EditPostInfo(ctx iris.Context) {
+	user := ctx.Values().Get(common.LOGINUSER)
+	// 类型断言
+	loginUser, ok := user.(*model.UserInfoStruct)
+	if !ok {
+		ctx.JSON(common.Error(iris.StatusUnauthorized, "请重新登录"))
+		return
+	}
+
+	post := &model.SysPost{}
+	// Attempt to read and bind the JSON request body to the 'user' variable
+	if err := filter.ValidateRequest(ctx, post); err != nil {
+		//ctx.JSON(common.ErrorFormat(iris.StatusBadRequest, "Invalid JSON, error:%s", err.Error()))
+		return
+	}
+
+	post.CreateTime = time.Now()
+	post.CreateBy = loginUser.UserName
+	post.UpdateTime = time.Now()
+	post.UpdateBy = loginUser.UserName
+
+	info, _, err := this.service.EditPost(post)
+	if err != nil {
+		//this.logger.Debug("login failed", zap.Error(err))
+		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "EditPost, error：%s", err.Error()))
+		return
+	}
+
+	ctx.JSON(common.Success(info))
+}
+
+func (this *SysPostHandler) DeletePostInfo(ctx iris.Context) {
+	postIdStr := ctx.Params().GetString("postId")
+	if postIdStr == "" {
+		ctx.JSON(common.ErrorFormat(iris.StatusBadRequest, "Invalid postIdStr"))
+		return
+	}
+
+	parts := strings.Split(postIdStr, ",")
+	for _, part := range parts {
+		id, err := strconv.ParseInt(part, 10, 64)
+		if err != nil {
+			ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "ParseInt error：%s", err.Error()))
+			return
+		}
+
+		_, err = this.service.DeletePostById(id)
+		if err != nil {
+			ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "DeletePostById error：%s", err.Error()))
+			return
+		}
+	}
+
+	ctx.JSON(common.Success(nil))
 }

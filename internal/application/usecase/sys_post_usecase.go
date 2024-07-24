@@ -85,6 +85,49 @@ func (this *SysPostService) QueryPostPage(pageReq common.PageRequest, r *model.S
 		this.logger.Error("查询角色分页信息失败", zap.Error(err))
 		return nil, 0, err
 	}
-
 	return data, total, nil
+}
+
+func (this *SysPostService) AddPost(post *model.SysPost) (*model.SysPost, error) {
+	data, err := this.repo.AddPost(post)
+	if err != nil {
+		this.logger.Error("AddPost", zap.Error(err))
+		return nil, err
+	}
+	if data != nil && data.PostID != 0 {
+		// 序列化用户对象并存入缓存
+		userBytes, err := json.Marshal(data)
+		if err == nil {
+			this.cache.Set([]byte(fmt.Sprintf("PostId:%d", data.PostID)), userBytes, common.EXPIRESECONDS) // 第三个参数是过期时间，0表示永不过期
+		}
+	}
+	return data, nil
+}
+
+func (this *SysPostService) EditPost(post *model.SysPost) (*model.SysPost, int64, error) {
+	data, result, err := this.repo.EditPost(post)
+	if err != nil {
+		this.logger.Error("AddPost", zap.Error(err))
+		return nil, 0, err
+	}
+	if data != nil && data.PostID != 0 && result == 1 {
+		// 序列化用户对象并存入缓存
+		userBytes, err := json.Marshal(data)
+		if err == nil {
+			this.cache.Set([]byte(fmt.Sprintf("PostId:%d", data.PostID)), userBytes, common.EXPIRESECONDS) // 第三个参数是过期时间，0表示永不过期
+		}
+	}
+	return data, result, nil
+}
+
+func (this *SysPostService) DeletePostById(id int64) (int64, error) {
+	result, err := this.repo.DeletePostById(id)
+	if err != nil {
+		this.logger.Error("删除用户信息失败", zap.Error(err))
+		return 0, err
+	}
+	if result == 1 {
+		this.cache.Del(fmt.Sprintf("PostId:%d", id))
+	}
+	return result, nil
 }

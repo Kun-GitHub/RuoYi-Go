@@ -11,7 +11,7 @@ import (
 
 // AuthService 输入端口接口
 type AuthService interface {
-	Login(l model.LoginRequest) (*model.LoginSuccess, error)
+	Login(l *model.LoginRequest) (*model.LoginSuccess, error)
 	Logout(token string) error
 	GetInfo(loginUser *model.UserInfoStruct) (*model.UserInfoStruct, []string, []string, error)
 }

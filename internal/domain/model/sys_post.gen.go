@@ -17,16 +17,16 @@ const TableNameSysPost = "sys_post"
 
 // SysPost mapped from table <sys_post>
 type SysPost struct {
-	PostID     int64     `gorm:"column:post_id;primaryKey;comment:岗位ID" json:"postId"`     // 岗位ID
-	PostCode   string    `gorm:"column:post_code;not null;comment:岗位编码" json:"postCode"`   // 岗位编码
-	PostName   string    `gorm:"column:post_name;not null;comment:岗位名称" json:"postName"`   // 岗位名称
-	PostSort   int32     `gorm:"column:post_sort;not null;comment:显示顺序" json:"postSort"`   // 显示顺序
-	Status     string    `gorm:"column:status;not null;comment:状态（0正常 1停用）" json:"status"` // 状态（0正常 1停用）
-	CreateBy   string    `gorm:"column:create_by;comment:创建者" json:"createBy"`             // 创建者
-	CreateTime time.Time `gorm:"column:create_time;comment:创建时间" json:"createTime"`        // 创建时间
-	UpdateBy   string    `gorm:"column:update_by;comment:更新者" json:"updateBy"`             // 更新者
-	UpdateTime time.Time `gorm:"column:update_time;comment:更新时间" json:"updateTime"`        // 更新时间
-	Remark     string    `gorm:"column:remark;comment:备注" json:"remark"`                   // 备注
+	PostID     int64     `gorm:"column:post_id;primaryKey;comment:岗位ID" json:"postId"`                       // 岗位ID
+	PostCode   string    `gorm:"column:post_code;not null;comment:岗位编码" json:"postCode" validate:"required"` // 岗位编码
+	PostName   string    `gorm:"column:post_name;not null;comment:岗位名称" json:"postName" validate:"required"` // 岗位名称
+	PostSort   int32     `gorm:"column:post_sort;not null;comment:显示顺序" json:"postSort"`                     // 显示顺序
+	Status     string    `gorm:"column:status;not null;comment:状态（0正常 1停用）" json:"status"`                   // 状态（0正常 1停用）
+	CreateBy   string    `gorm:"column:create_by;comment:创建者" json:"createBy"`                               // 创建者
+	CreateTime time.Time `gorm:"column:create_time;comment:创建时间" json:"createTime"`                          // 创建时间
+	UpdateBy   string    `gorm:"column:update_by;comment:更新者" json:"updateBy"`                               // 更新者
+	UpdateTime time.Time `gorm:"column:update_time;comment:更新时间" json:"updateTime"`                          // 更新时间
+	Remark     string    `gorm:"column:remark;comment:备注" json:"remark"`                                     // 备注
 }
 
 // TableName SysPost's table name

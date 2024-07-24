@@ -235,10 +235,10 @@ func (this *SysUserHandler) UserInfo(ctx iris.Context) {
 //}
 
 func (this *SysUserHandler) ChangeUserStatus(ctx iris.Context) {
-	var u model.ChangeUserStatusRequest
+	u := &model.ChangeUserStatusRequest{}
 	// Attempt to read and bind the JSON request body to the 'user' variable
-	if err := filter.ValidateRequest(ctx, &u); err != nil {
-		ctx.JSON(common.ErrorFormat(iris.StatusBadRequest, "Invalid JSON, error:%s", err.Error()))
+	if err := filter.ValidateRequest(ctx, u); err != nil {
+		//ctx.JSON(common.ErrorFormat(iris.StatusBadRequest, "Invalid JSON, error:%s", err.Error()))
 		return
 	}
 
@@ -251,10 +251,10 @@ func (this *SysUserHandler) ChangeUserStatus(ctx iris.Context) {
 }
 
 func (this *SysUserHandler) ResetUserPwd(ctx iris.Context) {
-	var u model.ResetUserPwdRequest
+	u := &model.ResetUserPwdRequest{}
 	// Attempt to read and bind the JSON request body to the 'user' variable
-	if err := filter.ValidateRequest(ctx, &u); err != nil {
-		ctx.JSON(common.ErrorFormat(iris.StatusBadRequest, "Invalid JSON, error:%s", err.Error()))
+	if err := filter.ValidateRequest(ctx, u); err != nil {
+		//ctx.JSON(common.ErrorFormat(iris.StatusBadRequest, "Invalid JSON, error:%s", err.Error()))
 		return
 	}
 

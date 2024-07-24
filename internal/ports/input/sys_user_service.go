@@ -18,6 +18,6 @@ type SysUserService interface {
 	QueryUserPage(pageReq common.PageRequest, user *model.SysUserRequest) ([]*model.UserInfoStruct, int64, error)
 	QueryUserList(user *model.SysUserRequest) ([]*model.SysUser, error)
 	DeleteUserByUserId(userId int64) (int64, error)
-	ChangeUserStatus(user model.ChangeUserStatusRequest) (int64, error)
-	ResetUserPwd(user model.ResetUserPwdRequest) (int64, error)
+	ChangeUserStatus(user *model.ChangeUserStatusRequest) (int64, error)
+	ResetUserPwd(user *model.ResetUserPwdRequest) (int64, error)
 }
