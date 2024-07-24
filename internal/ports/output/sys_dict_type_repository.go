@@ -14,4 +14,8 @@ type SysDictTypeRepository interface {
 	QueryDictTypeByDictID(postId int64) (*model.SysDictType, error)
 	QueryDictTypeList(post *model.SysDictTypeRequest) ([]*model.SysDictType, error)
 	QueryDictTypePage(pageReq common.PageRequest, r *model.SysDictTypeRequest) ([]*model.SysDictType, int64, error)
+	AddDictType(post *model.SysDictType) (*model.SysDictType, error)
+	EditDictType(post *model.SysDictType) (*model.SysDictType, int64, error)
+	DeleteDictTypeById(id int64) (int64, error)
+	CheckDictTypeUnique(id int64, typeStr string) (int64, error)
 }

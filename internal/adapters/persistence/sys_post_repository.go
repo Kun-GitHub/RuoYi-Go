@@ -87,11 +87,8 @@ func (this *SysPostRepository) QueryPostPage(pageReq common.PageRequest, request
 		}
 	}
 
-	structEntity, err := this.db.Gen.SysPost.WithContext(context.Background()).
-		Where(status, postName, postCode).Limit(pageReq.PageSize).Offset((pageReq.PageNum - 1) * pageReq.PageSize).Find()
-	total, err := this.db.Gen.SysPost.WithContext(context.Background()).
-		Where(status, postName, postCode).Limit(pageReq.PageSize).Offset((pageReq.PageNum - 1) * pageReq.PageSize).Count()
-
+	structEntity, total, err := this.db.Gen.SysPost.WithContext(context.Background()).
+		Where(status, postName, postCode).FindByPage((pageReq.PageNum-1)*pageReq.PageSize, pageReq.PageSize)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -100,7 +97,6 @@ func (this *SysPostRepository) QueryPostPage(pageReq common.PageRequest, request
 
 func (this *SysPostRepository) AddPost(post *model.SysPost) (*model.SysPost, error) {
 	err := this.db.Gen.SysPost.WithContext(context.Background()).
-		Where(this.db.Gen.SysPost.PostID.Eq(post.PostID)).
 		Save(post)
 	return post, err
 }

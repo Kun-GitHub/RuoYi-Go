@@ -77,3 +77,56 @@ func (this *SysDictTypeService) QueryDictTypePage(pageReq common.PageRequest, r 
 
 	return data, total, nil
 }
+
+func (this *SysDictTypeService) AddDictType(post *model.SysDictType) (*model.SysDictType, error) {
+	data, err := this.repo.AddDictType(post)
+	if err != nil {
+		this.logger.Error("AddDictType", zap.Error(err))
+		return nil, err
+	}
+	if data != nil && data.DictID != 0 {
+		// 序列化用户对象并存入缓存
+		userBytes, err := json.Marshal(data)
+		if err == nil {
+			this.cache.Set([]byte(fmt.Sprintf("DictID:%d", data.DictID)), userBytes, common.EXPIRESECONDS) // 第三个参数是过期时间，0表示永不过期
+		}
+	}
+	return data, nil
+}
+
+func (this *SysDictTypeService) EditDictType(post *model.SysDictType) (*model.SysDictType, int64, error) {
+	data, result, err := this.repo.EditDictType(post)
+	if err != nil {
+		this.logger.Error("AddDictType", zap.Error(err))
+		return nil, 0, err
+	}
+	if data != nil && data.DictID != 0 && result == 1 {
+		// 序列化用户对象并存入缓存
+		userBytes, err := json.Marshal(data)
+		if err == nil {
+			this.cache.Set([]byte(fmt.Sprintf("DictID:%d", data.DictID)), userBytes, common.EXPIRESECONDS) // 第三个参数是过期时间，0表示永不过期
+		}
+	}
+	return data, result, nil
+}
+
+func (this *SysDictTypeService) DeleteDictTypeById(id int64) (int64, error) {
+	result, err := this.repo.DeleteDictTypeById(id)
+	if err != nil {
+		this.logger.Error("删除用户信息失败", zap.Error(err))
+		return 0, err
+	}
+	if result == 1 {
+		this.cache.Del(fmt.Sprintf("DictTypeId:%d", id))
+	}
+	return result, nil
+}
+
+func (this *SysDictTypeService) CheckDictTypeUnique(id int64, name string) (int64, error) {
+	result, err := this.repo.CheckDictTypeUnique(id, name)
+	if err != nil {
+		this.logger.Error("CheckDictTypeUnique", zap.Error(err))
+		return -1, err
+	}
+	return result, nil
+}

@@ -96,13 +96,9 @@ func (this *SysUserRepository) QueryUserPage(pageReq common.PageRequest, user *m
 		}
 	}
 
-	structEntity, err := this.db.Gen.SysUser.WithContext(context.Background()).
+	structEntity, total, err := this.db.Gen.SysUser.WithContext(context.Background()).
 		Where(deptID, status, phonenumber, userName, timeField, this.db.Gen.SysUser.DelFlag.Eq("0")).
-		Order(this.db.Gen.SysUser.UserID).Limit(pageReq.PageSize).Offset((pageReq.PageNum - 1) * pageReq.PageSize).Find()
-	total, err := this.db.Gen.SysUser.WithContext(context.Background()).
-		Where(deptID, status, phonenumber, userName, timeField, this.db.Gen.SysUser.DelFlag.Eq("0")).
-		Order(this.db.Gen.SysUser.UserID).Limit(pageReq.PageSize).Offset((pageReq.PageNum - 1) * pageReq.PageSize).Count()
-
+		Order(this.db.Gen.SysUser.UserID).FindByPage((pageReq.PageNum-1)*pageReq.PageSize, pageReq.PageSize)
 	if err != nil {
 		return nil, 0, err
 	}

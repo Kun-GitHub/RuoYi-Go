@@ -106,11 +106,8 @@ func (this *SysConfigRepository) QueryConfigPage(pageReq common.PageRequest, req
 		}
 	}
 
-	structEntity, err := this.db.Gen.SysConfig.WithContext(context.Background()).
-		Where(configType, configName, configKey, timeField).Limit(pageReq.PageSize).Offset((pageReq.PageNum - 1) * pageReq.PageSize).Find()
-	total, err := this.db.Gen.SysConfig.WithContext(context.Background()).
-		Where(configType, configName, configKey, timeField).Limit(pageReq.PageSize).Offset((pageReq.PageNum - 1) * pageReq.PageSize).Count()
-
+	structEntity, total, err := this.db.Gen.SysConfig.WithContext(context.Background()).
+		Where(configType, configName, configKey, timeField).FindByPage((pageReq.PageNum-1)*pageReq.PageSize, pageReq.PageSize)
 	if err != nil {
 		return nil, 0, err
 	}

@@ -106,13 +106,35 @@ func (this *SysDictTypeRepository) QueryDictTypePage(pageReq common.PageRequest,
 		}
 	}
 
-	structEntity, err := this.db.Gen.SysDictType.WithContext(context.Background()).
-		Where(status, dictName, dictType, timeField).Limit(pageReq.PageSize).Offset((pageReq.PageNum - 1) * pageReq.PageSize).Find()
-	total, err := this.db.Gen.SysDictType.WithContext(context.Background()).
-		Where(status, dictName, dictType, timeField).Limit(pageReq.PageSize).Offset((pageReq.PageNum - 1) * pageReq.PageSize).Count()
-
+	structEntity, total, err := this.db.Gen.SysDictType.WithContext(context.Background()).
+		Where(status, dictName, dictType, timeField).FindByPage((pageReq.PageNum-1)*pageReq.PageSize, pageReq.PageSize)
 	if err != nil {
 		return nil, 0, err
 	}
 	return structEntity, total, err
+}
+
+func (this *SysDictTypeRepository) AddDictType(post *model.SysDictType) (*model.SysDictType, error) {
+	err := this.db.Gen.SysDictType.WithContext(context.Background()).
+		Save(post)
+	return post, err
+}
+
+func (this *SysDictTypeRepository) EditDictType(post *model.SysDictType) (*model.SysDictType, int64, error) {
+	r, err := this.db.Gen.SysDictType.WithContext(context.Background()).
+		Where(this.db.Gen.SysDictType.DictID.Eq(post.DictID)).
+		Updates(post)
+	return post, r.RowsAffected, err
+}
+
+func (this *SysDictTypeRepository) DeleteDictTypeById(id int64) (int64, error) {
+	r, err := this.db.Gen.SysDictType.WithContext(context.Background()).
+		Where(this.db.Gen.SysDictType.DictID.Eq(id)).Delete()
+	return r.RowsAffected, err
+}
+
+func (this *SysDictTypeRepository) CheckDictTypeUnique(id int64, name string) (int64, error) {
+	r, err := this.db.Gen.SysDictType.WithContext(context.Background()).
+		Where(this.db.Gen.SysDictType.DictType.Eq(name), this.db.Gen.SysDictType.DictID.Neq(id)).Count()
+	return r, err
 }

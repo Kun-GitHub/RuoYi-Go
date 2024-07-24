@@ -8,9 +8,12 @@ package handler
 import (
 	"RuoYi-Go/internal/common"
 	"RuoYi-Go/internal/domain/model"
+	"RuoYi-Go/internal/filter"
 	"RuoYi-Go/internal/ports/input"
 	"github.com/kataras/iris/v12"
 	"strconv"
+	"strings"
+	"time"
 )
 
 type SysDictTypeHandler struct {
@@ -99,4 +102,102 @@ func (this *SysDictTypeHandler) DictTypeInfo(ctx iris.Context) {
 	}
 
 	ctx.JSON(common.Success(info))
+}
+
+func (this *SysDictTypeHandler) AddDictTypeInfo(ctx iris.Context) {
+	post := &model.SysDictType{}
+	// Attempt to read and bind the JSON request body to the 'user' variable
+	if err := filter.ValidateRequest(ctx, post); err != nil {
+		//ctx.JSON(common.ErrorFormat(iris.StatusBadRequest, "Invalid JSON, error:%s", err.Error()))
+		return
+	}
+
+	count, err := this.service.CheckDictTypeUnique(-1, post.DictType)
+	if err != nil || count != 0 {
+		//this.logger.Debug("login failed", zap.Error(err))
+		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "新增岗位字典，已存在相同字典类型"))
+		return
+	}
+
+	user := ctx.Values().Get(common.LOGINUSER)
+	// 类型断言
+	loginUser, ok := user.(*model.UserInfoStruct)
+	if !ok {
+		ctx.JSON(common.Error(iris.StatusUnauthorized, "请重新登录"))
+		return
+	}
+	post.CreateTime = time.Now()
+	post.CreateBy = loginUser.UserName
+	post.UpdateTime = time.Now()
+	post.UpdateBy = loginUser.UserName
+
+	info, err := this.service.AddDictType(post)
+	if err != nil {
+		//this.logger.Debug("login failed", zap.Error(err))
+		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "AddDictType, error：%s", err.Error()))
+		return
+	}
+
+	ctx.JSON(common.Success(info))
+}
+
+func (this *SysDictTypeHandler) EditDictTypeInfo(ctx iris.Context) {
+
+	post := &model.SysDictType{}
+	// Attempt to read and bind the JSON request body to the 'user' variable
+	if err := filter.ValidateRequest(ctx, post); err != nil {
+		//ctx.JSON(common.ErrorFormat(iris.StatusBadRequest, "Invalid JSON, error:%s", err.Error()))
+		return
+	}
+
+	count, err := this.service.CheckDictTypeUnique(post.DictID, post.DictType)
+	if err != nil || count != 0 {
+		//this.logger.Debug("login failed", zap.Error(err))
+		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "修改岗位字典，已存在相同字典类型"))
+		return
+	}
+
+	user := ctx.Values().Get(common.LOGINUSER)
+	// 类型断言
+	loginUser, ok := user.(*model.UserInfoStruct)
+	if !ok {
+		ctx.JSON(common.Error(iris.StatusUnauthorized, "请重新登录"))
+		return
+	}
+	post.UpdateTime = time.Now()
+	post.UpdateBy = loginUser.UserName
+
+	info, _, err := this.service.EditDictType(post)
+	if err != nil {
+		//this.logger.Debug("login failed", zap.Error(err))
+		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "EditDictType, error：%s", err.Error()))
+		return
+	}
+
+	ctx.JSON(common.Success(info))
+}
+
+func (this *SysDictTypeHandler) DeleteDictTypeInfo(ctx iris.Context) {
+	postIdStr := ctx.Params().GetString("dictId")
+	if postIdStr == "" {
+		ctx.JSON(common.ErrorFormat(iris.StatusBadRequest, "Invalid postIdStr"))
+		return
+	}
+
+	parts := strings.Split(postIdStr, ",")
+	for _, part := range parts {
+		id, err := strconv.ParseInt(part, 10, 64)
+		if err != nil {
+			ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "ParseInt error：%s", err.Error()))
+			return
+		}
+
+		_, err = this.service.DeleteDictTypeById(id)
+		if err != nil {
+			ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "DeleteDictTypeById error：%s", err.Error()))
+			return
+		}
+	}
+
+	ctx.JSON(common.Success(nil))
 }

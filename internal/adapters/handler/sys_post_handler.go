@@ -142,13 +142,13 @@ func (this *SysPostHandler) EditPostInfo(ctx iris.Context) {
 	count, err := this.service.CheckPostNameUnique(post.PostID, post.PostName)
 	if err != nil || count != 0 {
 		//this.logger.Debug("login failed", zap.Error(err))
-		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "新增岗位失败，已存在相同名称岗位"))
+		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "修改岗位失败，已存在相同名称岗位"))
 		return
 	}
 	count, err = this.service.CheckPostCodeUnique(post.PostID, post.PostCode)
 	if err != nil || count != 0 {
 		//this.logger.Debug("login failed", zap.Error(err))
-		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "新增岗位失败，已存在相同编号岗位"))
+		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "修改岗位失败，已存在相同编号岗位"))
 		return
 	}
 

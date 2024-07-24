@@ -77,11 +77,8 @@ func (this *SysNoticeRepository) QueryNoticePage(pageReq common.PageRequest, req
 		}
 	}
 
-	structEntity, err := this.db.Gen.SysNotice.WithContext(context.Background()).
-		Where(noticeType, configName, configKey).Limit(pageReq.PageSize).Offset((pageReq.PageNum - 1) * pageReq.PageSize).Find()
-	total, err := this.db.Gen.SysNotice.WithContext(context.Background()).
-		Where(noticeType, configName, configKey).Limit(pageReq.PageSize).Offset((pageReq.PageNum - 1) * pageReq.PageSize).Count()
-
+	structEntity, total, err := this.db.Gen.SysNotice.WithContext(context.Background()).
+		Where(noticeType, configName, configKey).FindByPage((pageReq.PageNum-1)*pageReq.PageSize, pageReq.PageSize)
 	if err != nil {
 		return nil, 0, err
 	}

@@ -101,6 +101,9 @@ func NewContainer(c config.AppConfig) (*Container, error) {
 	sysDictTypeHandler := ryserver.ResolveSysDictTypeHandler(db, log, freeCache)
 	app.Get("/system/dict/type/list", ms.PermissionMiddleware("system:dict:type:list"), sysDictTypeHandler.DictTypePage)
 	app.Get("/system/dict/type/{dictId:uint}", ms.PermissionMiddleware("system:dict:type:query"), sysDictTypeHandler.DictTypeInfo)
+	app.Post("/system/dict/type", ms.PermissionMiddleware("system:dict:type:add"), sysDictTypeHandler.AddDictTypeInfo)
+	app.Put("/system/dict/type", ms.PermissionMiddleware("system:dict:type:edit"), sysDictTypeHandler.EditDictTypeInfo)
+	app.Delete("/system/dict/type/*dictId", ms.PermissionMiddleware("system:dict:type:remove"), sysDictTypeHandler.DeleteDictTypeInfo)
 
 	sysConfigHandler := ryserver.ResolveSysConfigHandler(db, log, freeCache)
 	app.Get("/system/config/list", ms.PermissionMiddleware("system:config:list"), sysConfigHandler.ConfigPage)

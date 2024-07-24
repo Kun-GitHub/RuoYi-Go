@@ -70,11 +70,8 @@ func (this *SysRoleRepository) QueryRolePage(pageReq common.PageRequest, request
 		}
 	}
 
-	structEntity, err := this.db.Gen.SysRole.WithContext(context.Background()).
-		Where(status, roleName, roleKey, timeField).Limit(pageReq.PageSize).Offset((pageReq.PageNum - 1) * pageReq.PageSize).Find()
-	total, err := this.db.Gen.SysRole.WithContext(context.Background()).
-		Where(status, roleName, roleKey, timeField).Limit(pageReq.PageSize).Offset((pageReq.PageNum - 1) * pageReq.PageSize).Count()
-
+	structEntity, total, err := this.db.Gen.SysRole.WithContext(context.Background()).
+		Where(status, roleName, roleKey, timeField).FindByPage((pageReq.PageNum-1)*pageReq.PageSize, pageReq.PageSize)
 	if err != nil {
 		return nil, 0, err
 	}
