@@ -45,7 +45,10 @@ func ResolveAuthHandler(db *dao.DatabaseStruct, redis *cache.RedisClient, logger
 	sysDeptRepo := persistence.NewSysDeptRepository(db)
 	sysDeptService := usecase.NewSysDeptService(sysDeptRepo, cache, logger)
 
-	authService := usecase.NewAuthService(sysUserService, sysRoleService, sysDeptService, redis, logger)
+	repo := persistence.NewSysLogininforRepository(db)
+	loginService := usecase.NewSysLogininforService(repo, cache, logger)
+
+	authService := usecase.NewAuthService(sysUserService, sysRoleService, sysDeptService, loginService, redis, logger)
 	return handler.NewAuthHandler(authService, logger)
 }
 
@@ -116,4 +119,10 @@ func ResolveSysNoticeHandler(db *dao.DatabaseStruct, logger *zap.Logger, cache *
 	repo := persistence.NewSysNoticeRepository(db)
 	service := usecase.NewSysNoticeService(repo, cache, logger)
 	return handler.NewSysNoticeHandler(service)
+}
+
+func ResolveSysLogininforHandler(db *dao.DatabaseStruct, logger *zap.Logger, cache *cache.FreeCacheClient) *handler.SysLogininforHandler {
+	repo := persistence.NewSysLogininforRepository(db)
+	service := usecase.NewSysLogininforService(repo, cache, logger)
+	return handler.NewSysLogininforHandler(service)
 }

@@ -119,6 +119,12 @@ func NewContainer(c config.AppConfig) (*Container, error) {
 	app.Put("/system/notice", ms.PermissionMiddleware("system:notice:edit"), sysNoticeHandler.EditNoticeInfo)
 	app.Delete("/system/notice/*noticeId", ms.PermissionMiddleware("system:notice:remove"), sysNoticeHandler.DeleteNoticeInfo)
 
+	sysLogininforHandler := ryserver.ResolveSysLogininforHandler(db, log, freeCache)
+	app.Get("/monitor/logininfor/list", ms.PermissionMiddleware("monitor:logininfor:list"), sysLogininforHandler.LogininforPage)
+	app.Get("/monitor/logininfor/{infoId:uint}", ms.PermissionMiddleware("monitor:logininfor:query"), sysLogininforHandler.LogininforInfo)
+	app.Post("/monitor/logininfor", ms.PermissionMiddleware("monitor:logininfor:add"), sysLogininforHandler.AddLogininforInfo)
+	app.Delete("/monitor/logininfor/*infoIds", ms.PermissionMiddleware("monitor:logininfor:remove"), sysLogininforHandler.DeleteLogininforInfo)
+
 	ryws.StartWebSocket(app, log)
 
 	log.Info("http server started", zap.Int("port", c.Server.Port))

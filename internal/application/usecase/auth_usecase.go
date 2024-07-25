@@ -19,15 +19,16 @@ import (
 )
 
 type AuthService struct {
-	service     input.SysUserService
-	roleService input.SysRoleService
-	deptService input.SysDeptService
-	redis       *cache.RedisClient
-	logger      *zap.Logger
+	service      input.SysUserService
+	roleService  input.SysRoleService
+	deptService  input.SysDeptService
+	loginService input.SysLogininforService
+	redis        *cache.RedisClient
+	logger       *zap.Logger
 }
 
-func NewAuthService(service input.SysUserService, roleService input.SysRoleService, deptService input.SysDeptService, redis *cache.RedisClient, logger *zap.Logger) input.AuthService {
-	return &AuthService{service: service, roleService: roleService, deptService: deptService, redis: redis, logger: logger}
+func NewAuthService(service input.SysUserService, roleService input.SysRoleService, deptService input.SysDeptService, loginService input.SysLogininforService, redis *cache.RedisClient, logger *zap.Logger) input.AuthService {
+	return &AuthService{service: service, roleService: roleService, deptService: deptService, loginService: loginService, redis: redis, logger: logger}
 }
 
 func (this *AuthService) Login(l *model.LoginRequest) (*model.LoginSuccess, error) {
@@ -44,20 +45,44 @@ func (this *AuthService) Login(l *model.LoginRequest) (*model.LoginSuccess, erro
 			return nil, err
 		}
 		if sysUser.UserID == 0 {
+			this.loginService.AddLogininfor(&model.SysLogininfor{
+				Status:    "1",
+				UserName:  l.Username,
+				LoginTime: time.Now(),
+			})
+
 			return nil, fmt.Errorf("用户名或密码错误")
 		}
 
 		if err = bcrypt.CompareHashAndPassword([]byte(sysUser.Password), []byte(l.Password)); err != nil {
+			this.loginService.AddLogininfor(&model.SysLogininfor{
+				Status:    "1",
+				UserName:  l.Username,
+				LoginTime: time.Now(),
+			})
+
 			return nil, fmt.Errorf("用户名或密码错误", zap.Error(err))
 		}
 
 		var token = ""
 		token, err = ryjwt.Sign(common.USER_ID, fmt.Sprintf("%d", sysUser.UserID), 72)
 		if err != nil {
+			this.loginService.AddLogininfor(&model.SysLogininfor{
+				Status:    "1",
+				UserName:  l.Username,
+				LoginTime: time.Now(),
+			})
+
 			this.logger.Error("生成token失败", zap.Error(err))
 			return nil, fmt.Errorf("生成token失败", zap.Error(err))
 		} else {
 			this.redis.Set(fmt.Sprintf("%s:%s", common.TOKEN, token), sysUser.UserID, 72*time.Hour)
+
+			this.loginService.AddLogininfor(&model.SysLogininfor{
+				Status:    "0",
+				UserName:  sysUser.UserName,
+				LoginTime: time.Now(),
+			})
 
 			loginSuccess := &model.LoginSuccess{
 				Code:    common.SUCCESS,

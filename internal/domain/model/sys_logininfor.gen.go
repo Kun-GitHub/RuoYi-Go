@@ -32,3 +32,12 @@ type SysLogininfor struct {
 func (*SysLogininfor) TableName() string {
 	return TableNameSysLogininfor
 }
+
+// SysLogininforRequest mapped from table <SysLogininforRequest>
+type SysLogininforRequest struct {
+	Status    string `json:"status"`
+	Ipaddr    string `json:"ipaddr"`
+	UserName  string `json:"userName"`
+	BeginTime string `json:"beginTime"`
+	EndTime   string `json:"endTime"`
+}
