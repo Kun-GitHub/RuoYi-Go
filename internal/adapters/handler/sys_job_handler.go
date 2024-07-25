@@ -16,34 +16,19 @@ import (
 	"time"
 )
 
-type SysDictTypeHandler struct {
-	service input.SysDictTypeService
+type SysJobHandler struct {
+	service input.SysJobService
 }
 
-func NewSysDictTypeHandler(service input.SysDictTypeService) *SysDictTypeHandler {
-	return &SysDictTypeHandler{service: service}
+func NewSysJobHandler(service input.SysJobService) *SysJobHandler {
+	return &SysJobHandler{service: service}
 }
 
 // GenerateCaptchaImage
-func (h *SysDictTypeHandler) DictTypePage(ctx iris.Context) {
+func (h *SysJobHandler) JobPage(ctx iris.Context) {
 	// 获取查询参数
 	pageNumStr := ctx.URLParamDefault("pageNum", "1")
 	pageSizeStr := ctx.URLParamDefault("pageSize", "10")
-
-	// 使用 Query() 方法获取所有的查询参数
-	allParams := ctx.Request().URL.Query()
-	// 从 url.Values 结构体中获取参数
-	beginTimeList, _ := allParams["params[beginTime]"]
-	endTimeList, _ := allParams["params[endTime]"]
-	// 假设我们只关心第一个值，我们可以这样获取：
-	beginTime := ""
-	if len(beginTimeList) > 0 {
-		beginTime = beginTimeList[0]
-	}
-	endTime := ""
-	if len(endTimeList) > 0 {
-		endTime = endTimeList[0]
-	}
 
 	pageNum, _ := strconv.Atoi(pageNumStr)
 	pageSize, _ := strconv.Atoi(pageSizeStr)
@@ -52,21 +37,19 @@ func (h *SysDictTypeHandler) DictTypePage(ctx iris.Context) {
 		pageSize,
 	}
 
+	jobName := ctx.URLParam("jobName")
+	jobGroup := ctx.URLParam("jobGroup")
 	status := ctx.URLParam("status")
-	dictName := ctx.URLParam("dictName")
-	dictType := ctx.URLParam("dictType")
-	u := &model.SysDictTypeRequest{
-		Status:    status,
-		DictName:  dictName,
-		DictType:  dictType,
-		BeginTime: beginTime,
-		EndTime:   endTime,
+	u := &model.SysJobRequest{
+		JobName:  jobName,
+		JobGroup: jobGroup,
+		Status:   status,
 	}
 
-	datas, total, err := h.service.QueryDictTypePage(l, u)
+	datas, total, err := h.service.QueryJobPage(l, u)
 	if err != nil {
 		//h.logger.Debug("login failed", zap.Error(err))
-		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "QueryDictTypePage, error：%s", err.Error()))
+		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "QueryJobPage, error：%s", err.Error()))
 		return
 	}
 
@@ -80,42 +63,35 @@ func (h *SysDictTypeHandler) DictTypePage(ctx iris.Context) {
 	ctx.JSON(data)
 }
 
-func (this *SysDictTypeHandler) DictTypeInfo(ctx iris.Context) {
-	dictIdStr := ctx.Params().GetString("dictId")
-	if dictIdStr == "" {
-		ctx.JSON(common.ErrorFormat(iris.StatusBadRequest, "Invalid dictIdStr"))
+func (this *SysJobHandler) JobInfo(ctx iris.Context) {
+	idStr := ctx.Params().GetString("jobId")
+	if idStr == "" {
+		ctx.JSON(common.ErrorFormat(iris.StatusBadRequest, "Invalid idStr"))
 		return
 	}
 
-	postId, err := strconv.ParseInt(dictIdStr, 10, 64)
+	id, err := strconv.ParseInt(idStr, 10, 64)
 	if err != nil {
 		//this.logger.Debug("login failed", zap.Error(err))
 		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "ParseInt error：%s", err.Error()))
 		return
 	}
 
-	info, err := this.service.QueryDictTypeByDictID(postId)
+	info, err := this.service.QueryJobByID(id)
 	if err != nil {
 		//this.logger.Debug("login failed", zap.Error(err))
-		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "QueryDictTypeByDictID, error：%s", err.Error()))
+		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "QueryJobByID, error：%s", err.Error()))
 		return
 	}
 
 	ctx.JSON(common.Success(info))
 }
 
-func (this *SysDictTypeHandler) AddDictTypeInfo(ctx iris.Context) {
-	post := &model.SysDictType{}
+func (this *SysJobHandler) AddJobInfo(ctx iris.Context) {
+	post := &model.SysJob{}
 	// Attempt to read and bind the JSON request body to the 'user' variable
 	if err := filter.ValidateRequest(ctx, post); err != nil {
 		//ctx.JSON(common.ErrorFormat(iris.StatusBadRequest, "Invalid JSON, error:%s", err.Error()))
-		return
-	}
-
-	count, err := this.service.CheckDictTypeUnique(-1, post.DictType)
-	if err != nil || count != 0 {
-		//this.logger.Debug("login failed", zap.Error(err))
-		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "新增岗位字典，已存在相同字典类型"))
 		return
 	}
 
@@ -131,29 +107,21 @@ func (this *SysDictTypeHandler) AddDictTypeInfo(ctx iris.Context) {
 	post.UpdateTime = time.Now()
 	post.UpdateBy = loginUser.UserName
 
-	info, err := this.service.AddDictType(post)
+	info, err := this.service.AddJob(post)
 	if err != nil {
 		//this.logger.Debug("login failed", zap.Error(err))
-		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "AddDictType, error：%s", err.Error()))
+		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "AddJob, error：%s", err.Error()))
 		return
 	}
 
 	ctx.JSON(common.Success(info))
 }
 
-func (this *SysDictTypeHandler) EditDictTypeInfo(ctx iris.Context) {
-
-	post := &model.SysDictType{}
+func (this *SysJobHandler) EditJobInfo(ctx iris.Context) {
+	post := &model.SysJob{}
 	// Attempt to read and bind the JSON request body to the 'user' variable
 	if err := filter.ValidateRequest(ctx, post); err != nil {
 		//ctx.JSON(common.ErrorFormat(iris.StatusBadRequest, "Invalid JSON, error:%s", err.Error()))
-		return
-	}
-
-	count, err := this.service.CheckDictTypeUnique(post.DictID, post.DictType)
-	if err != nil || count != 0 {
-		//this.logger.Debug("login failed", zap.Error(err))
-		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "修改岗位字典，已存在相同字典类型"))
 		return
 	}
 
@@ -167,24 +135,24 @@ func (this *SysDictTypeHandler) EditDictTypeInfo(ctx iris.Context) {
 	post.UpdateTime = time.Now()
 	post.UpdateBy = loginUser.UserName
 
-	info, _, err := this.service.EditDictType(post)
+	info, _, err := this.service.EditJob(post)
 	if err != nil {
 		//this.logger.Debug("login failed", zap.Error(err))
-		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "EditDictType, error：%s", err.Error()))
+		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "EditJob, error：%s", err.Error()))
 		return
 	}
 
 	ctx.JSON(common.Success(info))
 }
 
-func (this *SysDictTypeHandler) DeleteDictTypeInfo(ctx iris.Context) {
-	postIdStr := ctx.Params().GetString("dictIds")
-	if postIdStr == "" {
-		ctx.JSON(common.ErrorFormat(iris.StatusBadRequest, "Invalid postIdStr"))
+func (this *SysJobHandler) DeleteJobInfo(ctx iris.Context) {
+	idStr := ctx.Params().GetString("jobIds")
+	if idStr == "" {
+		ctx.JSON(common.ErrorFormat(iris.StatusBadRequest, "Invalid idStr"))
 		return
 	}
 
-	parts := strings.Split(postIdStr, ",")
+	parts := strings.Split(idStr, ",")
 	for _, part := range parts {
 		id, err := strconv.ParseInt(part, 10, 64)
 		if err != nil {
@@ -192,9 +160,9 @@ func (this *SysDictTypeHandler) DeleteDictTypeInfo(ctx iris.Context) {
 			return
 		}
 
-		_, err = this.service.DeleteDictTypeById(id)
+		_, err = this.service.DeleteJobById(id)
 		if err != nil {
-			ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "DeleteDictTypeById error：%s", err.Error()))
+			ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "DeleteJobById error：%s", err.Error()))
 			return
 		}
 	}

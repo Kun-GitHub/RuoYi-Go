@@ -178,7 +178,7 @@ func (this *SysConfigHandler) EditConfigInfo(ctx iris.Context) {
 }
 
 func (this *SysConfigHandler) DeleteConfigInfo(ctx iris.Context) {
-	idStr := ctx.Params().GetString("configId")
+	idStr := ctx.Params().GetString("configIds")
 	if idStr == "" {
 		ctx.JSON(common.ErrorFormat(iris.StatusBadRequest, "Invalid idStr"))
 		return

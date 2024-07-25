@@ -267,7 +267,7 @@ func (this *SysUserHandler) ResetUserPwd(ctx iris.Context) {
 }
 
 func (this *SysUserHandler) DeleteUser(ctx iris.Context) {
-	userIdStr := ctx.Params().GetString("userId")
+	userIdStr := ctx.Params().GetString("userIds")
 	if userIdStr == "" {
 		ctx.JSON(common.ErrorFormat(iris.StatusBadRequest, "Invalid userIdStr"))
 		return

@@ -36,3 +36,10 @@ type SysJob struct {
 func (*SysJob) TableName() string {
 	return TableNameSysJob
 }
+
+// SysJobRequest mapped from table <SysJobRequest>
+type SysJobRequest struct {
+	JobName  string `json:"jobName"`
+	JobGroup string `json:"jobGroup"`
+	Status   string `json:"status"`
+}

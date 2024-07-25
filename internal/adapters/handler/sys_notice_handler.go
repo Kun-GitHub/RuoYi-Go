@@ -146,7 +146,7 @@ func (this *SysNoticeHandler) EditNoticeInfo(ctx iris.Context) {
 }
 
 func (this *SysNoticeHandler) DeleteNoticeInfo(ctx iris.Context) {
-	idStr := ctx.Params().GetString("noticeId")
+	idStr := ctx.Params().GetString("noticeIds")
 	if idStr == "" {
 		ctx.JSON(common.ErrorFormat(iris.StatusBadRequest, "Invalid idStr"))
 		return

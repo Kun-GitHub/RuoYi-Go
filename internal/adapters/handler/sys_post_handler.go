@@ -173,7 +173,7 @@ func (this *SysPostHandler) EditPostInfo(ctx iris.Context) {
 }
 
 func (this *SysPostHandler) DeletePostInfo(ctx iris.Context) {
-	postIdStr := ctx.Params().GetString("postId")
+	postIdStr := ctx.Params().GetString("postIds")
 	if postIdStr == "" {
 		ctx.JSON(common.ErrorFormat(iris.StatusBadRequest, "Invalid postIdStr"))
 		return

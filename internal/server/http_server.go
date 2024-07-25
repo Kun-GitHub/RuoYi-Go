@@ -126,3 +126,13 @@ func ResolveSysLogininforHandler(db *dao.DatabaseStruct, logger *zap.Logger, cac
 	service := usecase.NewSysLogininforService(repo, cache, logger)
 	return handler.NewSysLogininforHandler(service)
 }
+
+func ResolveMonitorHandler(db *dao.DatabaseStruct, redis *cache.RedisClient, logger *zap.Logger, cache *cache.FreeCacheClient) *handler.MonitorHandler {
+	return handler.NewMonitorHandler(logger)
+}
+
+func ResolveSysJobHandler(db *dao.DatabaseStruct, logger *zap.Logger, cache *cache.FreeCacheClient) *handler.SysJobHandler {
+	repo := persistence.NewSysJobRepository(db)
+	service := usecase.NewSysJobService(repo, cache, logger)
+	return handler.NewSysJobHandler(service)
+}
