@@ -171,9 +171,9 @@ func (this *SysUserHandler) UserInfo(ctx iris.Context) {
 	}
 	userInfo.Roles = roles
 
-	dept, err := this.deptService.QueryRolesByDeptId(user.DeptID)
+	dept, err := this.deptService.QueryDeptById(user.DeptID)
 	if err != nil {
-		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "QueryRolesByDeptId, error：%s", err.Error()))
+		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "QueryDeptById, error：%s", err.Error()))
 		return
 	}
 	userInfo.Dept = dept
@@ -328,9 +328,9 @@ func (this *SysUserHandler) AuthRoleByUserId(ctx iris.Context) {
 	}
 	userInfo.Roles = roles
 
-	dept, err := this.deptService.QueryRolesByDeptId(user.DeptID)
+	dept, err := this.deptService.QueryDeptById(user.DeptID)
 	if err != nil {
-		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "QueryRolesByDeptId, error：%s", err.Error()))
+		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "QueryDeptById, error：%s", err.Error()))
 		return
 	}
 	userInfo.Dept = dept

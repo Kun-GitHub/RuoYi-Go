@@ -10,6 +10,10 @@ import (
 )
 
 type SysDeptRepository interface {
-	QueryRolesByDeptId(deptId int64) (*model.SysDept, error)
 	QueryDeptList(dept *model.SysDept) ([]*model.SysDept, error)
+	QueryDeptListExcludeById(id int64) ([]*model.SysDept, error)
+	QueryDeptById(id int64) (*model.SysDept, error)
+	AddDept(post *model.SysDept) (*model.SysDept, error)
+	EditDept(post *model.SysDept) (*model.SysDept, int64, error)
+	DeleteDeptById(id int64) (int64, error)
 }

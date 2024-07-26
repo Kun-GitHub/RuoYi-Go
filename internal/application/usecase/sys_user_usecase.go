@@ -128,9 +128,9 @@ func (this *SysUserService) QueryUserPage(pageReq common.PageRequest, u *model.S
 		}
 		userInfo.Roles = roles
 
-		dept, err := this.deptRepo.QueryRolesByDeptId(user.DeptID)
+		dept, err := this.deptRepo.QueryDeptById(user.DeptID)
 		if err != nil {
-			this.logger.Error("QueryRolesByDeptId error,", zap.Error(err))
+			this.logger.Error("QueryDeptById error,", zap.Error(err))
 			return nil, 0, fmt.Errorf("getInfo error", zap.Error(err))
 		}
 		userInfo.Dept = dept

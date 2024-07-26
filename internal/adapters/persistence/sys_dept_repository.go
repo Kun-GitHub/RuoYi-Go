@@ -20,17 +20,6 @@ func NewSysDeptRepository(db *dao.DatabaseStruct) *SysDeptRepository {
 	return &SysDeptRepository{db: db}
 }
 
-func (this *SysDeptRepository) QueryRolesByDeptId(deptId int64) (*model.SysDept, error) {
-	structEntity := &model.SysDept{}
-	err := this.db.Gen.SysDept.WithContext(context.Background()).
-		Where(this.db.Gen.SysDept.DeptID.Eq(deptId), this.db.Gen.SysDept.DelFlag.Eq("0"), this.db.Gen.SysDept.Status.Eq("0")).
-		Scan(structEntity)
-	if err != nil {
-		return nil, err
-	}
-	return structEntity, nil
-}
-
 func (this *SysDeptRepository) QueryDeptList(dept *model.SysDept) ([]*model.SysDept, error) {
 	structEntity := make([]*model.SysDept, 0)
 
@@ -47,9 +36,59 @@ func (this *SysDeptRepository) QueryDeptList(dept *model.SysDept) ([]*model.SysD
 	}
 
 	structEntity, err := this.db.Gen.SysDept.WithContext(context.Background()).
-		Where(deptName, status).Find()
+		Where(deptName, status, this.db.Gen.SysDept.DelFlag.Eq("0")).Find()
 	if err != nil {
 		return nil, err
 	}
 	return structEntity, nil
+}
+
+func (this *SysDeptRepository) QueryDeptListExcludeById(id int64) ([]*model.SysDept, error) {
+	structEntity := make([]*model.SysDept, 0)
+
+	var idField field.Expr
+	if id != 0 {
+		idField = this.db.Gen.SysDept.DeptID.Neq(id)
+	}
+
+	structEntity, err := this.db.Gen.SysDept.WithContext(context.Background()).
+		Where(idField, this.db.Gen.SysDept.DelFlag.Eq("0")).Find()
+	if err != nil {
+		return nil, err
+	}
+	return structEntity, nil
+}
+
+func (this *SysDeptRepository) QueryDeptById(id int64) (*model.SysDept, error) {
+	structEntity := &model.SysDept{}
+
+	err := this.db.Gen.SysDept.WithContext(context.Background()).
+		Where(this.db.Gen.SysDept.DeptID.Eq(id)).Scan(structEntity)
+
+	if err != nil {
+		return nil, err
+	}
+	return structEntity, nil
+}
+
+func (this *SysDeptRepository) AddDept(post *model.SysDept) (*model.SysDept, error) {
+	post.Status = "0"
+	post.DelFlag = "0"
+
+	err := this.db.Gen.SysDept.WithContext(context.Background()).
+		Save(post)
+	return post, err
+}
+
+func (this *SysDeptRepository) EditDept(post *model.SysDept) (*model.SysDept, int64, error) {
+	r, err := this.db.Gen.SysDept.WithContext(context.Background()).
+		Where(this.db.Gen.SysDept.DeptID.Eq(post.DeptID), this.db.Gen.SysDept.DelFlag.Eq("0")).
+		Updates(post)
+	return post, r.RowsAffected, err
+}
+
+func (this *SysDeptRepository) DeleteDeptById(id int64) (int64, error) {
+	r, err := this.db.Gen.SysDept.WithContext(context.Background()).
+		Where(this.db.Gen.SysDept.DeptID.Eq(id)).Update(this.db.Gen.SysDept.DelFlag, "2")
+	return r.RowsAffected, err
 }

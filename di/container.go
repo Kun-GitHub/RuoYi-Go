@@ -89,6 +89,11 @@ func NewContainer(c config.AppConfig) (*Container, error) {
 
 	sysDeptHandler := ryserver.ResolveSysDeptHandler(db, log, freeCache)
 	app.Get("/system/dept/list", ms.PermissionMiddleware("system:dept:list"), sysDeptHandler.DeptList)
+	app.Get("/system/dept/{deptId:uint}", ms.PermissionMiddleware("system:dept:query"), sysDeptHandler.DeptInfo)
+	app.Get("/system/dept/list/exclude/{deptId:uint}", ms.PermissionMiddleware("system:dept:query"), sysDeptHandler.DeptListExcludeById)
+	app.Post("/system/dept", ms.PermissionMiddleware("system:dept:add"), sysDeptHandler.AddDeptInfo)
+	app.Put("/system/dept", ms.PermissionMiddleware("system:dept:edit"), sysDeptHandler.EditDeptInfo)
+	app.Delete("/system/dept/*deptIds", ms.PermissionMiddleware("system:dept:remove"), sysDeptHandler.DeleteDeptInfo)
 
 	sysRoleHandler := ryserver.ResolveSysRoleHandler(db, log, freeCache)
 	app.Get("/system/role/list", ms.PermissionMiddleware("system:role:list"), sysRoleHandler.RolePage)

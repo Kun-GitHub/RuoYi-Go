@@ -123,9 +123,9 @@ func (this *AuthService) GetInfo(loginUser *model.UserInfoStruct) (*model.UserIn
 		roleNames = append(roleNames, role.RoleKey)
 	}
 
-	dept, err := this.deptService.QueryRolesByDeptId(loginUser.DeptID)
+	dept, err := this.deptService.QueryDeptById(loginUser.DeptID)
 	if err != nil {
-		this.logger.Error("QueryRolesByDeptId error,", zap.Error(err))
+		this.logger.Error("QueryDeptById error,", zap.Error(err))
 		return nil, p, roleNames, fmt.Errorf("getInfo error", zap.Error(err))
 	}
 	loginUser.Dept = dept
