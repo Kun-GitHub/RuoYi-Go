@@ -1,23 +1,18 @@
-package handler
+// Copyright (c) [2024] K. All rights reserved.
+// Use of this source code is governed by a MIT license that can be found in the LICENSE file. or see：https://github.com/Kun-GitHub/RuoYi-Go/blob/main/LICENSE
+// Author: K. See：https://github.com/Kun-GitHub/RuoYi-Go or https://gitee.com/gitee_kun/RuoYi-Go
+// Email: hot_kun@hotmail.com or 867917691@qq.com
+
+package main
 
 import (
-	"RuoYi-Go/internal/common"
 	"fmt"
-	"github.com/kataras/iris/v12"
 	"github.com/shirou/gopsutil/v4/cpu"
 	"github.com/shirou/gopsutil/v4/mem"
-	"go.uber.org/zap"
+	"testing"
 )
 
-type MonitorHandler struct {
-	logger *zap.Logger
-}
-
-func NewMonitorHandler(logger *zap.Logger) *MonitorHandler {
-	return &MonitorHandler{logger: logger}
-}
-
-func (h *MonitorHandler) Server(ctx iris.Context) {
+func TestServer(t *testing.T) {
 	// 获取 CPU 使用率
 	cpuPercent, err := cpu.Percent(0, false)
 	if err != nil {
@@ -36,13 +31,4 @@ func (h *MonitorHandler) Server(ctx iris.Context) {
 	fmt.Printf("Free Memory: %v\n", vmStat.Free)
 	fmt.Printf("Used Memory: %v\n", vmStat.Used)
 
-	ctx.JSON(common.Success(nil))
-}
-
-func (h *MonitorHandler) Cache(ctx iris.Context) {
-	ctx.JSON(common.Success(nil))
-}
-
-func (h *MonitorHandler) CacheNames(ctx iris.Context) {
-	ctx.JSON(common.Success(nil))
 }

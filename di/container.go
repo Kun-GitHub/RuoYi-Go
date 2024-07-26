@@ -81,6 +81,8 @@ func NewContainer(c config.AppConfig) (*Container, error) {
 	app.Put("/system/user/changeStatus", ms.PermissionMiddleware("system:user:edit"), pageSysUserHandler.ChangeUserStatus)
 	app.Put("/system/user/resetPwd", ms.PermissionMiddleware("system:user:resetPwd"), pageSysUserHandler.ResetUserPwd)
 	app.Delete("/system/user/*userIds", ms.PermissionMiddleware("system:user:remove"), pageSysUserHandler.DeleteUser)
+	app.Get("/system/user/authRole/{userId:uint}", ms.PermissionMiddleware("system:user:query"), pageSysUserHandler.AuthRoleByUserId)
+	app.Put("/system/user/authRole", ms.PermissionMiddleware("system:user:edit"), pageSysUserHandler.AuthRole)
 
 	sysDictDataHandler := ryserver.ResolveSysDictDataHandler(db, log, freeCache)
 	app.Get("/system/dict/data/type/{dictType:string}", sysDictDataHandler.DictType)

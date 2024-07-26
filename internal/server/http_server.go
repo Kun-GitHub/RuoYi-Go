@@ -76,7 +76,10 @@ func ResolvePageSysUserHandler(db *dao.DatabaseStruct, logger *zap.Logger, cache
 
 	sysUserRepo := persistence.NewSysUserRepository(db)
 	sysUserService := usecase.NewPageSysUserService(sysUserRepo, sysRoleRepo, sysDeptRepo, cache, logger)
-	return handler.NewSysUserHandler(sysUserService, sysDeptService, sysRoleService, sysPostService)
+
+	sysUserRoleRepo := persistence.NewSysUserRoleRepository(db)
+	sysUserUserRoleService := usecase.NewSysUserRoleService(sysUserRoleRepo, cache, logger)
+	return handler.NewSysUserHandler(sysUserService, sysDeptService, sysRoleService, sysPostService, sysUserUserRoleService)
 }
 
 func ResolveSysDictDataHandler(db *dao.DatabaseStruct, logger *zap.Logger, cache *cache.FreeCacheClient) *handler.SysDictDataHandler {

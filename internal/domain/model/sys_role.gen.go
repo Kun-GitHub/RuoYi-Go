@@ -45,3 +45,9 @@ type SysRoleRequest struct {
 func (*SysRole) TableName() string {
 	return TableNameSysRole
 }
+
+type SysRoleInfoStruct struct {
+	*SysRole
+	Admin       bool     `gorm:"-" json:"admin"`
+	Permissions []string `gorm:"-" json:"permissions"`
+}

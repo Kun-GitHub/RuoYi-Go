@@ -16,15 +16,16 @@ import (
 )
 
 type SysUserHandler struct {
-	service     input.SysUserService
-	deptService input.SysDeptService
-	roleService input.SysRoleService
-	postService input.SysPostService
+	service         input.SysUserService
+	deptService     input.SysDeptService
+	roleService     input.SysRoleService
+	postService     input.SysPostService
+	userRoleService input.SysUserRoleService
 }
 
-func NewSysUserHandler(service input.SysUserService, deptService input.SysDeptService, roleService input.SysRoleService, postService input.SysPostService) *SysUserHandler {
+func NewSysUserHandler(service input.SysUserService, deptService input.SysDeptService, roleService input.SysRoleService, postService input.SysPostService, userRoleService input.SysUserRoleService) *SysUserHandler {
 	return &SysUserHandler{service: service,
-		deptService: deptService, roleService: roleService, postService: postService}
+		deptService: deptService, roleService: roleService, postService: postService, userRoleService: userRoleService}
 }
 
 // GenerateCaptchaImage
@@ -286,6 +287,102 @@ func (this *SysUserHandler) DeleteUser(ctx iris.Context) {
 			ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "DeleteUserByUserId error：%s", err.Error()))
 			return
 		}
+	}
+
+	ctx.JSON(common.Success(nil))
+}
+
+func (this *SysUserHandler) AuthRoleByUserId(ctx iris.Context) {
+	userIdStr := ctx.Params().GetString("userId")
+	if userIdStr == "" {
+		ctx.JSON(common.ErrorFormat(iris.StatusBadRequest, "Invalid userIdStr"))
+		return
+	}
+
+	userId, err := strconv.ParseInt(userIdStr, 10, 64)
+	if err != nil {
+		//this.logger.Debug("login failed", zap.Error(err))
+		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "ParseInt error：%s", err.Error()))
+		return
+	}
+
+	user, err := this.service.QueryUserInfoByUserId(userId)
+	if err != nil {
+		//this.logger.Debug("login failed", zap.Error(err))
+		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "QueryUserInfoByUserId, error：%s", err.Error()))
+		return
+	}
+	user.Password = ""
+
+	userInfo := &model.UserInfoStruct{}
+	userInfo.SysUser = user
+
+	if user.UserID == common.ADMINID {
+		userInfo.Admin = true
+	}
+
+	roles, err := this.roleService.QueryRolesByUserId(user.UserID)
+	if err != nil {
+		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "QueryRolesByUserId, error：%s", err.Error()))
+		return
+	}
+	userInfo.Roles = roles
+
+	dept, err := this.deptService.QueryRolesByDeptId(user.DeptID)
+	if err != nil {
+		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "QueryRolesByDeptId, error：%s", err.Error()))
+		return
+	}
+	userInfo.Dept = dept
+
+	roleList, err := this.roleService.QueryRoleList(nil)
+	if err != nil {
+		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "QueryRoleList, error：%s", err.Error()))
+		return
+	}
+
+	infoSuccess := &model.AuthRoleSuccess{
+		Code:    common.SUCCESS,
+		User:    userInfo,
+		Message: "操作成功",
+		Roles:   roleList,
+	}
+
+	ctx.JSON(infoSuccess)
+}
+
+func (this *SysUserHandler) AuthRole(ctx iris.Context) {
+	userIdStr := ctx.URLParamDefault("userId", "0")
+	if userIdStr == "" {
+		ctx.JSON(common.ErrorFormat(iris.StatusBadRequest, "Invalid userIdStr"))
+		return
+	}
+
+	userId, err := strconv.ParseInt(userIdStr, 10, 64)
+	if err != nil {
+		//this.logger.Debug("login failed", zap.Error(err))
+		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "ParseInt error：%s", err.Error()))
+		return
+	}
+	this.userRoleService.DeleteUserRoleByUserId(userId)
+
+	roleIdStr := ctx.URLParamDefault("roleIds", "0")
+	if roleIdStr == "" {
+		ctx.JSON(common.ErrorFormat(iris.StatusBadRequest, "Invalid roleIdStr"))
+		return
+	}
+
+	roleIds := strings.Split(roleIdStr, ",")
+	for _, id := range roleIds {
+		roleId, err := strconv.ParseInt(id, 10, 64)
+		if err != nil {
+			ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "ParseInt error：%s", err.Error()))
+			return
+		}
+		this.userRoleService.AddUserRole(&model.SysUserRole{
+			userId,
+			roleId,
+		})
 	}
 
 	ctx.JSON(common.Success(nil))

@@ -73,6 +73,13 @@ type UserInfoSuccess struct {
 	Posts   []*SysPost      `gorm:"-" json:"posts,omitempty"`
 }
 
+type AuthRoleSuccess struct {
+	Code    int             `json:"code"`
+	Message string          `json:"msg"`
+	User    *UserInfoStruct `json:"user"`
+	Roles   []*SysRole      `gorm:"-" json:"roles,omitempty"`
+}
+
 type UserInfoNoneUserIdSuccess struct {
 	Code    int        `json:"code"`
 	Message string     `json:"msg"`
