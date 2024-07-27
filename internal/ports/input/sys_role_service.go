@@ -12,7 +12,11 @@ import (
 
 // SysRoleService 输入端口接口
 type SysRoleService interface {
+	QueryRoleByID(id int64) (*model.SysRole, error)
 	QueryRolesByUserId(userId int64) ([]*model.SysRole, error)
 	QueryRolePage(pageReq common.PageRequest, r *model.SysRoleRequest) ([]*model.SysRole, int64, error)
 	QueryRoleList(r *model.SysRoleRequest) ([]*model.SysRole, error)
+	AddRole(post *model.SysRole) (*model.SysRole, error)
+	EditRole(post *model.SysRole) (*model.SysRole, int64, error)
+	DeleteRoleById(id int64) (int64, error)
 }

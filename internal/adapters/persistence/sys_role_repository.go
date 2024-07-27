@@ -71,7 +71,7 @@ func (this *SysRoleRepository) QueryRolePage(pageReq common.PageRequest, request
 	}
 
 	structEntity, total, err := this.db.Gen.SysRole.WithContext(context.Background()).
-		Where(status, roleName, roleKey, timeField).FindByPage((pageReq.PageNum-1)*pageReq.PageSize, pageReq.PageSize)
+		Where(status, roleName, roleKey, timeField, this.db.Gen.SysRole.DelFlag.Eq("0")).FindByPage((pageReq.PageNum-1)*pageReq.PageSize, pageReq.PageSize)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -111,10 +111,44 @@ func (this *SysRoleRepository) QueryRoleList(request *model.SysRoleRequest) ([]*
 	}
 
 	structEntity, err := this.db.Gen.SysRole.WithContext(context.Background()).
-		Where(status, roleName, roleKey, timeField).Find()
+		Where(status, roleName, roleKey, timeField, this.db.Gen.SysRole.DelFlag.Eq("0")).Find()
 
 	if err != nil {
 		return nil, err
 	}
 	return structEntity, err
+}
+
+func (this *SysRoleRepository) QueryRoleByID(id int64) (*model.SysRole, error) {
+	structEntity := &model.SysRole{}
+
+	err := this.db.Gen.SysRole.WithContext(context.Background()).
+		Where(this.db.Gen.SysRole.RoleID.Eq(id)).Scan(structEntity)
+
+	if err != nil {
+		return nil, err
+	}
+	return structEntity, nil
+}
+
+func (this *SysRoleRepository) AddRole(post *model.SysRole) (*model.SysRole, error) {
+	post.Status = "0"
+	post.DelFlag = "0"
+
+	err := this.db.Gen.SysRole.WithContext(context.Background()).
+		Save(post)
+	return post, err
+}
+
+func (this *SysRoleRepository) EditRole(post *model.SysRole) (*model.SysRole, int64, error) {
+	r, err := this.db.Gen.SysRole.WithContext(context.Background()).
+		Where(this.db.Gen.SysRole.RoleID.Eq(post.RoleID), this.db.Gen.SysRole.DelFlag.Eq("0")).
+		Updates(post)
+	return post, r.RowsAffected, err
+}
+
+func (this *SysRoleRepository) DeleteRoleById(id int64) (int64, error) {
+	r, err := this.db.Gen.SysRole.WithContext(context.Background()).
+		Where(this.db.Gen.SysRole.RoleID.Eq(id)).Update(this.db.Gen.SysRole.DelFlag, "2")
+	return r.RowsAffected, err
 }

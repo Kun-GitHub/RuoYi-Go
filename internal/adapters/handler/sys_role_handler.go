@@ -8,9 +8,12 @@ package handler
 import (
 	"RuoYi-Go/internal/common"
 	"RuoYi-Go/internal/domain/model"
+	"RuoYi-Go/internal/filter"
 	"RuoYi-Go/internal/ports/input"
 	"github.com/kataras/iris/v12"
 	"strconv"
+	"strings"
+	"time"
 )
 
 type SysRoleHandler struct {
@@ -75,4 +78,111 @@ func (h *SysRoleHandler) RolePage(ctx iris.Context) {
 	}
 
 	ctx.JSON(data)
+}
+
+func (this *SysRoleHandler) RoleInfo(ctx iris.Context) {
+	idStr := ctx.Params().GetString("roleId")
+	if idStr == "" {
+		ctx.JSON(common.ErrorFormat(iris.StatusBadRequest, "Invalid idStr"))
+		return
+	}
+
+	id, err := strconv.ParseInt(idStr, 10, 64)
+	if err != nil {
+		//this.logger.Debug("login failed", zap.Error(err))
+		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "ParseInt error：%s", err.Error()))
+		return
+	}
+
+	info, err := this.service.QueryRoleByID(id)
+	if err != nil {
+		//this.logger.Debug("login failed", zap.Error(err))
+		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "QueryRoleByID, error：%s", err.Error()))
+		return
+	}
+
+	ctx.JSON(common.Success(info))
+}
+
+func (this *SysRoleHandler) AddRoleInfo(ctx iris.Context) {
+	post := &model.SysRole{}
+	// Attempt to read and bind the JSON request body to the 'user' variable
+	if err := filter.ValidateRequest(ctx, post); err != nil {
+		//ctx.JSON(common.ErrorFormat(iris.StatusBadRequest, "Invalid JSON, error:%s", err.Error()))
+		return
+	}
+
+	user := ctx.Values().Get(common.LOGINUSER)
+	// 类型断言
+	loginUser, ok := user.(*model.UserInfoStruct)
+	if !ok {
+		ctx.JSON(common.Error(iris.StatusUnauthorized, "请重新登录"))
+		return
+	}
+	post.CreateTime = time.Now()
+	post.CreateBy = loginUser.UserName
+	post.UpdateTime = time.Now()
+	post.UpdateBy = loginUser.UserName
+
+	info, err := this.service.AddRole(post)
+	if err != nil {
+		//this.logger.Debug("login failed", zap.Error(err))
+		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "AddRole, error：%s", err.Error()))
+		return
+	}
+
+	ctx.JSON(common.Success(info))
+}
+
+func (this *SysRoleHandler) EditRoleInfo(ctx iris.Context) {
+	post := &model.SysRole{}
+	// Attempt to read and bind the JSON request body to the 'user' variable
+	if err := filter.ValidateRequest(ctx, post); err != nil {
+		//ctx.JSON(common.ErrorFormat(iris.StatusBadRequest, "Invalid JSON, error:%s", err.Error()))
+		return
+	}
+
+	user := ctx.Values().Get(common.LOGINUSER)
+	// 类型断言
+	loginUser, ok := user.(*model.UserInfoStruct)
+	if !ok {
+		ctx.JSON(common.Error(iris.StatusUnauthorized, "请重新登录"))
+		return
+	}
+	post.UpdateTime = time.Now()
+	post.UpdateBy = loginUser.UserName
+
+	info, _, err := this.service.EditRole(post)
+	if err != nil {
+		//this.logger.Debug("login failed", zap.Error(err))
+		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "EditRole, error：%s", err.Error()))
+		return
+	}
+
+	ctx.JSON(common.Success(info))
+}
+
+func (this *SysRoleHandler) DeleteRoleInfo(ctx iris.Context) {
+	idStr := ctx.Params().GetString("roleIds")
+	if idStr == "" {
+		ctx.JSON(common.ErrorFormat(iris.StatusBadRequest, "Invalid idStr"))
+		return
+	}
+
+	parts := strings.Split(idStr, ",")
+	for _, part := range parts {
+		id, err := strconv.ParseInt(part, 10, 64)
+		if err != nil {
+			ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "ParseInt error：%s", err.Error()))
+			return
+		}
+
+		_, err = this.service.DeleteRoleById(id)
+		if err != nil {
+			ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "DeleteRoleById error：%s", err.Error()))
+			return
+		}
+	}
+
+	ctx.JSON(common.Success(nil))
 }
