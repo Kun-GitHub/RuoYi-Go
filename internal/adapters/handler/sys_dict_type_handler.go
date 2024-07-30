@@ -201,3 +201,7 @@ func (this *SysDictTypeHandler) DeleteDictTypeInfo(ctx iris.Context) {
 
 	ctx.JSON(common.Success(nil))
 }
+
+func (this *SysDictTypeHandler) RefreshCache(ctx iris.Context) {
+	ctx.JSON(common.Success(nil))
+}

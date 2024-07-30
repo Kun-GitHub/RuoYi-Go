@@ -114,6 +114,7 @@ func NewContainer(c config.AppConfig) (*Container, error) {
 	app.Get("/system/dict/type/{dictId:uint}", ms.PermissionMiddleware("system:dict:type:query"), sysDictTypeHandler.DictTypeInfo)
 	app.Post("/system/dict/type", ms.PermissionMiddleware("system:dict:type:add"), sysDictTypeHandler.AddDictTypeInfo)
 	app.Put("/system/dict/type", ms.PermissionMiddleware("system:dict:type:edit"), sysDictTypeHandler.EditDictTypeInfo)
+	app.Delete("/system/dict/type/refreshCache", ms.PermissionMiddleware("system:dict:type:remove"), sysDictTypeHandler.RefreshCache)
 	app.Delete("/system/dict/type/*dictIds", ms.PermissionMiddleware("system:dict:type:remove"), sysDictTypeHandler.DeleteDictTypeInfo)
 
 	sysConfigHandler := ryserver.ResolveSysConfigHandler(db, log, freeCache)
