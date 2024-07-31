@@ -26,6 +26,12 @@ func main() {
 	}
 	defer container.Close()
 
+	container.InitJob()
+	err = container.StartServer()
+	if err != nil {
+		os.Exit(2)
+	}
+
 	// 系统关闭
 	shutdown.NewHook().Close(
 		func() {

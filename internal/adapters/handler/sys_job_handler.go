@@ -169,3 +169,7 @@ func (this *SysJobHandler) DeleteJobInfo(ctx iris.Context) {
 
 	ctx.JSON(common.Success(nil))
 }
+
+func (h *SysJobHandler) JobList(request *model.SysJobRequest) ([]*model.SysJob, error) {
+	return h.service.QueryJobList(request)
+}

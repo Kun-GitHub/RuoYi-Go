@@ -149,15 +149,6 @@ func NewContainer(c config.AppConfig) (*Container, error) {
 	app.Put("/monitor/job", ms.PermissionMiddleware("monitor:job:edit"), sysJobHandler.EditJobInfo)
 	app.Delete("/monitor/job/*jobIds", ms.PermissionMiddleware("monitor:job:remove"), sysJobHandler.DeleteJobInfo)
 
-	ryws.StartWebSocket(app, log)
-
-	log.Info("http server started", zap.Int("port", c.Server.Port))
-	err = app.Run(iris.Addr(fmt.Sprintf(":%d", c.Server.Port)))
-	if err != nil {
-		log.Error("failed to run http server", zap.Error(err))
-		return nil, fmt.Errorf("failed to run http server: %w", err)
-	}
-
 	return &Container{
 		appConfig: c,
 		logger:    log,
@@ -167,6 +158,28 @@ func NewContainer(c config.AppConfig) (*Container, error) {
 		app:       app,
 		freeCache: freeCache,
 	}, nil
+}
+
+func (c *Container) InitJob() {
+	sysJobHandler := ryserver.ResolveSysJobHandler(c.gormDB, c.logger, c.freeCache)
+	data, err := sysJobHandler.JobList(nil)
+	if err == nil {
+		for _, item := range data {
+			item.JobID++
+		}
+	}
+}
+
+func (c *Container) StartServer() error {
+	ryws.StartWebSocket(c.app, c.logger)
+
+	c.logger.Info("http server started", zap.Int("port", c.appConfig.Server.Port))
+	err := c.app.Run(iris.Addr(fmt.Sprintf(":%d", c.appConfig.Server.Port)))
+	if err != nil {
+		c.logger.Error("failed to run http server", zap.Error(err))
+		return fmt.Errorf("failed to run http server: %w", err)
+	}
+	return nil
 }
 
 func (c *Container) Close() {
