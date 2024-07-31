@@ -171,6 +171,28 @@
 <td></td>
 <td>提供了多种内置的验证标签和自定义标签支持</td>
 </tr>
+<tr>
+<td  rowspan="2">主机资源</td>
+<td><a href="https://github.com/shirou/gopsutil">gopsutil</a></td>
+<td>✅</td>
+<td>用于检索系统和进程信息的库，包括CPU、内存、磁盘、网络等信息</td>
+</tr>
+<tr>
+<td>syscall</td>
+<td>✅</td>
+<td>Go的标准库</td>
+</tr>
+<tr>
+<td  rowspan="2">定时任务</td>
+<td><a href="https://github.com/robfig/cron">cron</a></td>
+<td>✅</td>
+<td>功能强大的库，类似于Unix的cron调度程序。它支持标准的cron语法，并且可以处理秒级的精度。</td>
+</tr>
+<tr>
+<td><a href="https://github.com/ouqiang/gocron">gocron</a></td>
+<td></td>
+<td>简单而强大的任务调度库，类似于Python的schedule库</td>
+</tr>
 </tbody>
 </table>
   

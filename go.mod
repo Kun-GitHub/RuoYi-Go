@@ -12,6 +12,8 @@ require (
 	github.com/mojocn/base64Captcha v1.3.6
 	github.com/nicksnyder/go-i18n/v2 v2.4.0
 	github.com/redis/go-redis/v9 v9.5.1
+	github.com/robfig/cron/v3 v3.0.1
+	github.com/shirou/gopsutil/v4 v4.24.6
 	github.com/spf13/viper v1.18.2
 	go.uber.org/zap v1.27.0
 	golang.org/x/crypto v0.23.0
@@ -23,6 +25,7 @@ require (
 	gorm.io/driver/sqlite v1.5.5
 	gorm.io/gen v0.3.26
 	gorm.io/gorm v1.25.10
+	gorm.io/plugin/dbresolver v1.5.1
 )
 
 require (
@@ -86,7 +89,6 @@ require (
 	github.com/sagikazarmark/slog-shim v0.1.0 // indirect
 	github.com/schollz/closestmatch v2.1.0+incompatible // indirect
 	github.com/sergi/go-diff v1.1.0 // indirect
-	github.com/shirou/gopsutil/v4 v4.24.6 // indirect
 	github.com/shoenig/go-m1cpu v0.1.6 // indirect
 	github.com/sirupsen/logrus v1.9.3 // indirect
 	github.com/sourcegraph/conc v0.3.0 // indirect
@@ -117,5 +119,4 @@ require (
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gorm.io/datatypes v1.2.0 // indirect
 	gorm.io/hints v1.1.2 // indirect
-	gorm.io/plugin/dbresolver v1.5.1 // indirect
 )
