@@ -3,33 +3,30 @@ package task
 import (
 	"fmt"
 	"github.com/robfig/cron/v3"
-	"log"
+	"go.uber.org/zap"
 	"sync"
-	"time"
 )
-
-// Task 接口定义了一个任务必须实现的方法
-type Task interface {
-	Run()
-}
 
 // TaskManager 用于管理多个任务
 type TaskManager struct {
-	mu         sync.Mutex
-	tasks      map[string]Task
+	mu     sync.Mutex
+	logger *zap.Logger
+
+	tasks      map[string]cron.Job
 	schedulers map[string]*cron.Cron
 }
 
 // NewTaskManager 创建一个新的任务管理器实例
-func NewTaskManager() *TaskManager {
+func NewTaskManager(l *zap.Logger) *TaskManager {
 	return &TaskManager{
-		tasks:      make(map[string]Task),
+		logger:     l,
+		tasks:      make(map[string]cron.Job),
 		schedulers: make(map[string]*cron.Cron),
 	}
 }
 
 // RegisterTask 注册一个任务
-func (tm *TaskManager) RegisterTask(name string, task Task) {
+func (tm *TaskManager) RegisterTask(name string, task cron.Job) {
 	tm.mu.Lock()
 	defer tm.mu.Unlock()
 	tm.tasks[name] = task
@@ -42,13 +39,22 @@ func (tm *TaskManager) StartTask(name string, cronSpec string) {
 
 	task, ok := tm.tasks[name]
 	if !ok {
-		log.Fatalf("Task not registered: %s", name)
+		tm.logger.Error(fmt.Sprintf("Task not registered: %s", name))
+		return
+	}
+
+	// 创建一个新的cron.Cron实例
+	scheduler, err := cron.NewParser(cron.Second | cron.Minute | cron.Hour | cron.Dom | cron.Month | cron.Dow).Parse(cronSpec)
+	if err != nil {
+		tm.logger.Error("Failed to parse Cron expression: %s", zap.Error(err))
+		return
 	}
 
 	c := cron.New()
-	_, err := c.AddFunc(cronSpec, task.Run)
-	if err != nil {
-		log.Fatal(err)
+	entryID := c.Schedule(scheduler, task)
+	if entryID == 0 {
+		tm.logger.Error(fmt.Sprintf("Task Fatal AddFunc: %s, err:%v", name, zap.Error(err)))
+		return
 	}
 
 	tm.schedulers[name] = c
@@ -62,7 +68,8 @@ func (tm *TaskManager) StopTask(name string) {
 
 	scheduler, ok := tm.schedulers[name]
 	if !ok {
-		log.Fatalf("Scheduler not found for task: %s", name)
+		tm.logger.Error(fmt.Sprintf("Scheduler not found for task: %s", name))
+		return
 	}
 
 	scheduler.Stop()
@@ -79,29 +86,4 @@ func (tm *TaskManager) GetTasks() []string {
 		names = append(names, name)
 	}
 	return names
-}
-
-// TaskExample 实现 Task 接口的一个示例
-type TaskExample struct{}
-
-func (te *TaskExample) Run() {
-	fmt.Println("Running task...")
-}
-
-func main() {
-	taskManager := NewTaskManager()
-
-	// 注册一个任务
-	taskManager.RegisterTask("TaskExample", &TaskExample{})
-
-	// 启动一个基于Cron表达式的时间任务
-	taskManager.StartTask("TaskExample", "0/15 * * * * ?") // 每15分钟执行一次
-
-	// 获取所有已注册的任务名称
-	tasks := taskManager.GetTasks()
-	fmt.Println("Registered tasks:", tasks)
-
-	// 运行一段时间后停止任务
-	time.Sleep(2 * time.Minute)
-	taskManager.StopTask("TaskExample")
 }

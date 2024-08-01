@@ -8,11 +8,13 @@ package di
 import (
 	"RuoYi-Go/config"
 	"RuoYi-Go/internal/adapters/dao"
+	"RuoYi-Go/internal/jobs"
 	"RuoYi-Go/internal/server"
 	"RuoYi-Go/internal/websocket"
 	"RuoYi-Go/pkg/cache"
 	"RuoYi-Go/pkg/i18n"
 	"RuoYi-Go/pkg/logger"
+	"RuoYi-Go/pkg/task"
 	"context"
 	"fmt"
 	"github.com/kataras/iris/v12"
@@ -29,6 +31,7 @@ type Container struct {
 	gormDB    *dao.DatabaseStruct
 	app       *iris.Application
 	freeCache *cache.FreeCacheClient
+	jobs      *task.TaskManager
 }
 
 func NewContainer(c config.AppConfig) (*Container, error) {
@@ -149,6 +152,9 @@ func NewContainer(c config.AppConfig) (*Container, error) {
 	app.Put("/monitor/job", ms.PermissionMiddleware("monitor:job:edit"), sysJobHandler.EditJobInfo)
 	app.Delete("/monitor/job/*jobIds", ms.PermissionMiddleware("monitor:job:remove"), sysJobHandler.DeleteJobInfo)
 
+	task := task.NewTaskManager(log)
+	task.RegisterTask("ryTask.ryNoParams", jobs.NewTaskDemo(log))
+
 	return &Container{
 		appConfig: c,
 		logger:    log,
@@ -157,6 +163,7 @@ func NewContainer(c config.AppConfig) (*Container, error) {
 		gormDB:    db,
 		app:       app,
 		freeCache: freeCache,
+		jobs:      task,
 	}, nil
 }
 
@@ -165,7 +172,9 @@ func (c *Container) InitJob() {
 	data, err := sysJobHandler.JobList(nil)
 	if err == nil {
 		for _, item := range data {
-			item.JobID++
+			if item.Status == "0" && item.MisfirePolicy == "1" {
+				c.jobs.StartTask(item.InvokeTarget, item.CronExpression)
+			}
 		}
 	}
 }
