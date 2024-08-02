@@ -23,7 +23,7 @@ func NewSysUserRepository(db *dao.DatabaseStruct) *SysUserRepository {
 	return &SysUserRepository{db: db}
 }
 
-func (this *SysUserRepository) QueryUserInfoByUserName(username string) (*model.SysUser, error) {
+func (this *SysUserRepository) QueryUserByUserName(username string) (*model.SysUser, error) {
 	structEntity := &model.SysUser{}
 	err := this.db.Gen.SysUser.WithContext(context.Background()).
 		Where(this.db.Gen.SysUser.UserName.Eq(username), this.db.Gen.SysUser.DelFlag.Eq("0")).
@@ -34,7 +34,7 @@ func (this *SysUserRepository) QueryUserInfoByUserName(username string) (*model.
 	return structEntity, nil
 }
 
-func (this *SysUserRepository) QueryUserInfoLikeUserName(username string) ([]*model.SysUser, error) {
+func (this *SysUserRepository) QueryUserLikeUserName(username string) ([]*model.SysUser, error) {
 	structEntity := make([]*model.SysUser, 0)
 	structEntity, err := this.db.Gen.SysUser.WithContext(context.Background()).
 		Where(this.db.Gen.SysUser.UserName.Like("%"+username+"%"), this.db.Gen.SysUser.DelFlag.Eq("0"),
@@ -45,7 +45,7 @@ func (this *SysUserRepository) QueryUserInfoLikeUserName(username string) ([]*mo
 	return structEntity, nil
 }
 
-func (this *SysUserRepository) QueryUserInfoByUserId(userId int64) (*model.SysUser, error) {
+func (this *SysUserRepository) QueryUserByUserId(userId int64) (*model.SysUser, error) {
 	structEntity := &model.SysUser{}
 	err := this.db.Gen.SysUser.WithContext(context.Background()).
 		Where(this.db.Gen.SysUser.UserID.Eq(userId), this.db.Gen.SysUser.DelFlag.Eq("0")).
@@ -174,4 +174,26 @@ func (this *SysUserRepository) ResetUserPwd(user *model.ResetUserPwdRequest) (in
 		Where(this.db.Gen.SysUser.UserID.Eq(user.UserID), this.db.Gen.SysUser.DelFlag.Eq("0")).
 		Update(this.db.Gen.SysUser.Password, string(hashedPassword))
 	return r.RowsAffected, err
+}
+
+func (this *SysUserRepository) AddUser(post *model.SysUser) (*model.SysUser, error) {
+	post.Status = "0"
+	post.DelFlag = "0"
+
+	err := this.db.Gen.SysUser.WithContext(context.Background()).
+		Save(post)
+	return post, err
+}
+
+func (this *SysUserRepository) EditUser(post *model.SysUser) (*model.SysUser, int64, error) {
+	r, err := this.db.Gen.SysUser.WithContext(context.Background()).
+		Where(this.db.Gen.SysUser.UserID.Eq(post.UserID), this.db.Gen.SysUser.DelFlag.Eq("0")).
+		Updates(post)
+	return post, r.RowsAffected, err
+}
+
+func (this *SysUserRepository) CheckUserNameUnique(id int64, name string) (int64, error) {
+	r, err := this.db.Gen.SysUser.WithContext(context.Background()).
+		Where(this.db.Gen.SysUser.UserName.Eq(name), this.db.Gen.SysUser.UserID.Neq(id), this.db.Gen.SysUser.DelFlag.Eq("0")).Count()
+	return r, err
 }

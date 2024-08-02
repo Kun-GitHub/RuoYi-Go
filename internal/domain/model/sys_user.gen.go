@@ -63,6 +63,12 @@ type ResetUserPwdRequest struct {
 	Password string `json:"password" validate:"required"`
 }
 
+type UserInfoRequest struct {
+	*SysUser
+	RoleIds []int64 `gorm:"-" json:"roleIds,omitempty"`
+	PostIds []int64 `gorm:"-" json:"postIds,omitempty"`
+}
+
 type UserInfoSuccess struct {
 	Code    int             `json:"code"`
 	Message string          `json:"msg"`

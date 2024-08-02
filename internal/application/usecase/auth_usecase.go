@@ -40,7 +40,7 @@ func (this *AuthService) Login(l *model.LoginRequest) (*model.LoginSuccess, erro
 
 	if strings.EqualFold(v, l.Code) {
 		sysUser := &model.SysUser{}
-		sysUser, err = this.service.QueryUserInfoByUserName(l.Username)
+		sysUser, err = this.service.QueryUserByUserName(l.Username)
 		if err != nil {
 			return nil, err
 		}

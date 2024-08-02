@@ -77,7 +77,7 @@ func (this *ServerMiddleware) MiddlewareHandler(ctx iris.Context) {
 		return
 	}
 
-	sysUser, err := this.service.QueryUserInfoByUserId(jwtId)
+	sysUser, err := this.service.QueryUserByUserId(jwtId)
 	if err != nil {
 		ctx.JSON(common.Error(iris.StatusUnauthorized, "请重新登录"))
 		return

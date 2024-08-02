@@ -52,8 +52,7 @@ func (this *SysRoleService) QueryRolesByUserId(userId int64) ([]*model.SysRole, 
 		return roles, nil
 	}
 
-	this.logger.Debug("查询用户角色信息失败", zap.Error(err))
-	return nil, fmt.Errorf("查询用户角色信息失败", zap.Error(err))
+	return roles, nil
 }
 
 func (this *SysRoleService) QueryRolePage(pageReq common.PageRequest, u *model.SysRoleRequest) ([]*model.SysRole, int64, error) {

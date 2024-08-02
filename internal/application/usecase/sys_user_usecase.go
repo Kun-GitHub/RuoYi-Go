@@ -32,7 +32,7 @@ func NewSysUserService(repo output.SysUserRepository, cache *cache.FreeCacheClie
 	return &SysUserService{repo: repo, cache: cache, logger: logger}
 }
 
-func (this *SysUserService) QueryUserInfoByUserName(username string) (*model.SysUser, error) {
+func (this *SysUserService) QueryUserByUserName(username string) (*model.SysUser, error) {
 	structEntity := &model.SysUser{}
 	// 尝试从缓存中获取
 	userBytes, err := this.cache.Get([]byte(fmt.Sprintf("UserName:%s", username)))
@@ -45,7 +45,7 @@ func (this *SysUserService) QueryUserInfoByUserName(username string) (*model.Sys
 		}
 	}
 
-	structEntity, err = this.repo.QueryUserInfoByUserName(username)
+	structEntity, err = this.repo.QueryUserByUserName(username)
 	if err != nil {
 		this.logger.Error("查询用户信息失败", zap.Error(err))
 		return nil, err
@@ -63,8 +63,8 @@ func (this *SysUserService) QueryUserInfoByUserName(username string) (*model.Sys
 	return nil, fmt.Errorf("查询用户信息失败", zap.Error(err))
 }
 
-func (this *SysUserService) QueryUserInfoLikeUserName(username string) ([]*model.SysUser, error) {
-	structEntity, err := this.repo.QueryUserInfoLikeUserName(username)
+func (this *SysUserService) QueryUserLikeUserName(username string) ([]*model.SysUser, error) {
+	structEntity, err := this.repo.QueryUserLikeUserName(username)
 	if err != nil {
 		this.logger.Error("查询用户信息失败", zap.Error(err))
 		return nil, err
@@ -72,7 +72,7 @@ func (this *SysUserService) QueryUserInfoLikeUserName(username string) ([]*model
 	return structEntity, nil
 }
 
-func (this *SysUserService) QueryUserInfoByUserId(userId int64) (*model.SysUser, error) {
+func (this *SysUserService) QueryUserByUserId(userId int64) (*model.SysUser, error) {
 	structEntity := &model.SysUser{}
 	if userId == 0 {
 		return structEntity, nil
@@ -89,7 +89,7 @@ func (this *SysUserService) QueryUserInfoByUserId(userId int64) (*model.SysUser,
 		}
 	}
 
-	structEntity, err = this.repo.QueryUserInfoByUserId(userId)
+	structEntity, err = this.repo.QueryUserByUserId(userId)
 	if err != nil {
 		this.logger.Error("查询用户信息失败", zap.Error(err))
 		return nil, err
@@ -168,7 +168,7 @@ func (this *SysUserService) ChangeUserStatus(user *model.ChangeUserStatusRequest
 		return 0, err
 	}
 	if result == 1 {
-		structEntity, err := this.repo.QueryUserInfoByUserId(user.UserID)
+		structEntity, err := this.repo.QueryUserByUserId(user.UserID)
 		if err != nil {
 			this.logger.Error("查询用户信息失败", zap.Error(err))
 			return 0, err
@@ -189,6 +189,47 @@ func (this *SysUserService) ResetUserPwd(user *model.ResetUserPwdRequest) (int64
 	if err != nil {
 		this.logger.Error("修改用户状态失败", zap.Error(err))
 		return 0, err
+	}
+	return result, nil
+}
+
+func (this *SysUserService) AddUser(post *model.SysUser) (*model.SysUser, error) {
+	data, err := this.repo.AddUser(post)
+	if err != nil {
+		this.logger.Error("AddUser", zap.Error(err))
+		return nil, err
+	}
+	if data != nil && data.UserID != 0 {
+		// 序列化用户对象并存入缓存
+		userBytes, err := json.Marshal(data)
+		if err == nil {
+			this.cache.Set([]byte(fmt.Sprintf("UserID:%d", data.UserID)), userBytes, common.EXPIRESECONDS) // 第三个参数是过期时间，0表示永不过期
+		}
+	}
+	return data, nil
+}
+
+func (this *SysUserService) EditUser(post *model.SysUser) (*model.SysUser, int64, error) {
+	data, result, err := this.repo.EditUser(post)
+	if err != nil {
+		this.logger.Error("EditUser", zap.Error(err))
+		return nil, 0, err
+	}
+	if data != nil && data.UserID != 0 && result == 1 {
+		// 序列化用户对象并存入缓存
+		userBytes, err := json.Marshal(data)
+		if err == nil {
+			this.cache.Set([]byte(fmt.Sprintf("UserID:%d", data.UserID)), userBytes, common.EXPIRESECONDS) // 第三个参数是过期时间，0表示永不过期
+		}
+	}
+	return data, result, nil
+}
+
+func (this *SysUserService) CheckUserNameUnique(id int64, name string) (int64, error) {
+	result, err := this.repo.CheckUserNameUnique(id, name)
+	if err != nil {
+		this.logger.Error("CheckUserNameUnique", zap.Error(err))
+		return -1, err
 	}
 	return result, nil
 }
