@@ -30,7 +30,8 @@ type SysRole struct {
 	CreateTime        time.Time `gorm:"column:create_time;comment:创建时间" json:"createTime"`                                         // 创建时间
 	UpdateBy          string    `gorm:"column:update_by;comment:更新者" json:"updateBy"`                                              // 更新者
 	UpdateTime        time.Time `gorm:"column:update_time;comment:更新时间" json:"updateTime"`                                         // 更新时间
-	Remark            string    `gorm:"column:remark;comment:备注" json:"remark"`                                                    // 备注
+	Remark            string    `gorm:"column:remark;comment:备注" json:"remark"`
+	Admin             bool      `gorm:"-" json:"admin"` // 备注
 }
 
 type SysRoleRequest struct {

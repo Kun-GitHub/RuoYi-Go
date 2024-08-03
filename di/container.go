@@ -75,9 +75,14 @@ func NewContainer(c config.AppConfig) (*Container, error) {
 
 	sysMenuHandler := ryserver.ResolveSysMenuHandler(db, log, freeCache)
 	app.Get("/getRouters", sysMenuHandler.GetRouters)
+	app.Get("/system/menu/list", ms.PermissionMiddleware("system:menu:list"), sysMenuHandler.MenuList)
+	app.Get("/system/menu/{menuId:uint}", ms.PermissionMiddleware("system:menu:query"), sysMenuHandler.MenuInfo)
+	app.Post("/system/menu", ms.PermissionMiddleware("system:menu:add"), sysMenuHandler.AddMenuInfo)
+	app.Put("/system/menu", ms.PermissionMiddleware("system:menu:edit"), sysMenuHandler.EditMenuInfo)
+	app.Delete("/system/menu/*menuIds", ms.PermissionMiddleware("system:menu:remove"), sysMenuHandler.DeleteMenuInfo)
 
 	pageSysUserHandler := ryserver.ResolvePageSysUserHandler(db, log, freeCache)
-	//app.Get("/system/user", ms.PermissionMiddleware("system:user:query"), pageSysUserHandler.UserInfo)
+	app.Get("/system/user/", ms.PermissionMiddleware("system:user:query"), pageSysUserHandler.UserInfo)
 	app.Get("/system/user/list", ms.PermissionMiddleware("system:user:list"), pageSysUserHandler.UserPage)
 	app.Get("/system/user/deptTree", ms.PermissionMiddleware("system:user:list"), pageSysUserHandler.DeptTree)
 	app.Get("/system/user/{userId:uint}", ms.PermissionMiddleware("system:user:query"), pageSysUserHandler.UserInfo)

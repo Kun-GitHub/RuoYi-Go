@@ -24,8 +24,8 @@ type SysMenu struct {
 	Path       string    `gorm:"column:path;comment:路由地址" json:"path"`                       // 路由地址
 	Component  string    `gorm:"column:component;comment:组件路径" json:"component"`             // 组件路径
 	Query      string    `gorm:"column:query;comment:路由参数" json:"query"`                     // 路由参数
-	IsFrame    int32     `gorm:"column:is_frame;comment:是否为外链（0是 1否）" json:"isFrame"`        // 是否为外链（0是 1否）
-	IsCache    int32     `gorm:"column:is_cache;comment:是否缓存（0缓存 1不缓存）" json:"isCache"`      // 是否缓存（0缓存 1不缓存）
+	IsFrame    string    `gorm:"column:is_frame;comment:是否为外链（0是 1否）" json:"isFrame"`        // 是否为外链（0是 1否）
+	IsCache    string    `gorm:"column:is_cache;comment:是否缓存（0缓存 1不缓存）" json:"isCache"`      // 是否缓存（0缓存 1不缓存）
 	MenuType   string    `gorm:"column:menu_type;comment:菜单类型（M目录 C菜单 F按钮）" json:"menuType"` // 菜单类型（M目录 C菜单 F按钮）
 	Visible    string    `gorm:"column:visible;comment:菜单状态（0显示 1隐藏）" json:"visible"`        // 菜单状态（0显示 1隐藏）
 	Status     string    `gorm:"column:status;comment:菜单状态（0正常 1停用）" json:"status"`          // 菜单状态（0正常 1停用）
@@ -41,4 +41,10 @@ type SysMenu struct {
 // TableName SysMenu's table name
 func (*SysMenu) TableName() string {
 	return TableNameSysMenu
+}
+
+// SysMenuRequest mapped from table <SysNoticeRequest>
+type SysMenuRequest struct {
+	MenuName string `json:"menuName"`
+	Status   string `json:"status"`
 }

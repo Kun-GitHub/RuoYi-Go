@@ -39,8 +39,8 @@ func newSysMenu(db *gorm.DB, opts ...gen.DOOption) sysMenu {
 	_sysMenu.Path = field.NewString(tableName, "path")
 	_sysMenu.Component = field.NewString(tableName, "component")
 	_sysMenu.Query = field.NewString(tableName, "query")
-	_sysMenu.IsFrame = field.NewInt32(tableName, "is_frame")
-	_sysMenu.IsCache = field.NewInt32(tableName, "is_cache")
+	_sysMenu.IsFrame = field.NewString(tableName, "is_frame")
+	_sysMenu.IsCache = field.NewString(tableName, "is_cache")
 	_sysMenu.MenuType = field.NewString(tableName, "menu_type")
 	_sysMenu.Visible = field.NewString(tableName, "visible")
 	_sysMenu.Status = field.NewString(tableName, "status")
@@ -68,8 +68,8 @@ type sysMenu struct {
 	Path       field.String // 路由地址
 	Component  field.String // 组件路径
 	Query      field.String // 路由参数
-	IsFrame    field.Int32  // 是否为外链（0是 1否）
-	IsCache    field.Int32  // 是否缓存（0缓存 1不缓存）
+	IsFrame    field.String // 是否为外链（0是 1否）
+	IsCache    field.String // 是否缓存（0缓存 1不缓存）
 	MenuType   field.String // 菜单类型（M目录 C菜单 F按钮）
 	Visible    field.String // 菜单状态（0显示 1隐藏）
 	Status     field.String // 菜单状态（0正常 1停用）
@@ -103,8 +103,8 @@ func (s *sysMenu) updateTableName(table string) *sysMenu {
 	s.Path = field.NewString(table, "path")
 	s.Component = field.NewString(table, "component")
 	s.Query = field.NewString(table, "query")
-	s.IsFrame = field.NewInt32(table, "is_frame")
-	s.IsCache = field.NewInt32(table, "is_cache")
+	s.IsFrame = field.NewString(table, "is_frame")
+	s.IsCache = field.NewString(table, "is_cache")
 	s.MenuType = field.NewString(table, "menu_type")
 	s.Visible = field.NewString(table, "visible")
 	s.Status = field.NewString(table, "status")

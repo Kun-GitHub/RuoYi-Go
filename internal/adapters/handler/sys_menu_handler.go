@@ -8,10 +8,13 @@ package handler
 import (
 	"RuoYi-Go/internal/common"
 	"RuoYi-Go/internal/domain/model"
+	"RuoYi-Go/internal/filter"
 	"RuoYi-Go/internal/ports/input"
 	"github.com/kataras/iris/v12"
 	"net/url"
+	"strconv"
 	"strings"
+	"time"
 )
 
 type SysMenuHandler struct {
@@ -40,6 +43,169 @@ func (h *SysMenuHandler) GetRouters(ctx iris.Context) {
 		return
 	}
 	ctx.JSON(common.Success(buildMenuTree(menus)))
+}
+
+// GenerateCaptchaImage
+func (h *SysMenuHandler) MenuPage(ctx iris.Context) {
+	// 获取查询参数
+	pageNumStr := ctx.URLParamDefault("pageNum", "1")
+	pageSizeStr := ctx.URLParamDefault("pageSize", "10")
+
+	pageNum, _ := strconv.Atoi(pageNumStr)
+	pageSize, _ := strconv.Atoi(pageSizeStr)
+	l := common.PageRequest{
+		pageNum,
+		pageSize,
+	}
+
+	menuName := ctx.URLParam("menuName")
+	status := ctx.URLParam("status")
+	u := &model.SysMenuRequest{
+		MenuName: menuName,
+		Status:   status,
+	}
+
+	datas, total, err := h.service.QueryMenuPage(l, u)
+	if err != nil {
+		//h.logger.Debug("login failed", zap.Error(err))
+		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "QueryMenuPage, error：%s", err.Error()))
+		return
+	}
+
+	data := &common.PageResponse{
+		Rows:    datas,
+		Total:   total,
+		Message: "操作成功",
+		Code:    iris.StatusOK,
+	}
+
+	ctx.JSON(data)
+}
+
+// GenerateCaptchaImage
+func (h *SysMenuHandler) MenuList(ctx iris.Context) {
+	menuName := ctx.URLParam("menuName")
+	status := ctx.URLParam("status")
+	u := &model.SysMenuRequest{
+		MenuName: menuName,
+		Status:   status,
+	}
+
+	datas, err := h.service.QueryMenuList(u)
+	if err != nil {
+		//h.logger.Debug("login failed", zap.Error(err))
+		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "QueryMenuPage, error：%s", err.Error()))
+		return
+	}
+
+	ctx.JSON(common.Success(datas))
+}
+
+func (this *SysMenuHandler) MenuInfo(ctx iris.Context) {
+	idStr := ctx.Params().GetString("menuId")
+	if idStr == "" {
+		ctx.JSON(common.ErrorFormat(iris.StatusBadRequest, "Invalid idStr"))
+		return
+	}
+
+	id, err := strconv.ParseInt(idStr, 10, 64)
+	if err != nil {
+		//this.logger.Debug("login failed", zap.Error(err))
+		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "ParseInt error：%s", err.Error()))
+		return
+	}
+
+	info, err := this.service.QueryMenuByID(id)
+	if err != nil {
+		//this.logger.Debug("login failed", zap.Error(err))
+		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "QueryMenuByID, error：%s", err.Error()))
+		return
+	}
+
+	ctx.JSON(common.Success(info))
+}
+
+func (this *SysMenuHandler) AddMenuInfo(ctx iris.Context) {
+	post := &model.SysMenu{}
+	// Attempt to read and bind the JSON request body to the 'user' variable
+	if err := filter.ValidateRequest(ctx, post); err != nil {
+		//ctx.JSON(common.ErrorFormat(iris.StatusBadRequest, "Invalid JSON, error:%s", err.Error()))
+		return
+	}
+
+	user := ctx.Values().Get(common.LOGINUSER)
+	// 类型断言
+	loginUser, ok := user.(*model.UserInfoStruct)
+	if !ok {
+		ctx.JSON(common.Error(iris.StatusUnauthorized, "请重新登录"))
+		return
+	}
+	post.CreateTime = time.Now()
+	post.CreateBy = loginUser.UserName
+	post.UpdateTime = time.Now()
+	post.UpdateBy = loginUser.UserName
+
+	info, err := this.service.AddMenu(post)
+	if err != nil {
+		//this.logger.Debug("login failed", zap.Error(err))
+		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "AddMenu, error：%s", err.Error()))
+		return
+	}
+
+	ctx.JSON(common.Success(info))
+}
+
+func (this *SysMenuHandler) EditMenuInfo(ctx iris.Context) {
+	post := &model.SysMenu{}
+	// Attempt to read and bind the JSON request body to the 'user' variable
+	if err := filter.ValidateRequest(ctx, post); err != nil {
+		//ctx.JSON(common.ErrorFormat(iris.StatusBadRequest, "Invalid JSON, error:%s", err.Error()))
+		return
+	}
+
+	user := ctx.Values().Get(common.LOGINUSER)
+	// 类型断言
+	loginUser, ok := user.(*model.UserInfoStruct)
+	if !ok {
+		ctx.JSON(common.Error(iris.StatusUnauthorized, "请重新登录"))
+		return
+	}
+	post.UpdateTime = time.Now()
+	post.UpdateBy = loginUser.UserName
+
+	info, _, err := this.service.EditMenu(post)
+	if err != nil {
+		//this.logger.Debug("login failed", zap.Error(err))
+		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "EditMenu, error：%s", err.Error()))
+		return
+	}
+
+	ctx.JSON(common.Success(info))
+}
+
+func (this *SysMenuHandler) DeleteMenuInfo(ctx iris.Context) {
+	idStr := ctx.Params().GetString("menuIds")
+	if idStr == "" {
+		ctx.JSON(common.ErrorFormat(iris.StatusBadRequest, "Invalid idStr"))
+		return
+	}
+
+	parts := strings.Split(idStr, ",")
+	for _, part := range parts {
+		id, err := strconv.ParseInt(part, 10, 64)
+		if err != nil {
+			ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "ParseInt error：%s", err.Error()))
+			return
+		}
+
+		_, err = this.service.DeleteMenuById(id)
+		if err != nil {
+			ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "DeleteMenuById error：%s", err.Error()))
+			return
+		}
+	}
+
+	ctx.JSON(common.Success(nil))
 }
 
 type MetaStruct struct {
@@ -88,7 +254,7 @@ func buildMenuTree(menus []*model.SysMenu) []*routerStruct {
 				Meta: &MetaStruct{
 					Title:   menu.MenuName,
 					Icon:    menu.Icon,
-					NoCache: menu.IsCache == 1,
+					NoCache: menu.IsCache == common.IS_CACHE,
 				},
 			}
 
@@ -117,7 +283,7 @@ func buildMenuTree(menus []*model.SysMenu) []*routerStruct {
 					Meta: &MetaStruct{
 						Title:   menu.MenuName,
 						Icon:    menu.Icon,
-						NoCache: menu.IsCache == 1,
+						NoCache: menu.IsCache == common.IS_CACHE,
 					},
 				}
 

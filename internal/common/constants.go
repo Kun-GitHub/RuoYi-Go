@@ -16,7 +16,8 @@ const LOGINUSER = "loginUser"
 /** 菜单类型（菜单） */
 const TYPE_MENU = "C"
 const TYPE_DIR = "M"
-const NO_FRAME = 1
+const NO_FRAME = "1"
+const IS_CACHE = "1"
 const LAYOUT = "Layout"
 const INNER_LINK = "InnerLink"
 const PARENT_VIEW = "ParentView"

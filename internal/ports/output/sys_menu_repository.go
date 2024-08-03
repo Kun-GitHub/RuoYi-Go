@@ -6,9 +6,16 @@
 package output
 
 import (
+	"RuoYi-Go/internal/common"
 	"RuoYi-Go/internal/domain/model"
 )
 
 type SysMenuRepository interface {
 	QueryMenusByUserId(userId int64) ([]*model.SysMenu, error)
+	QueryMenuByID(id int64) (*model.SysMenu, error)
+	QueryMenuList(request *model.SysMenuRequest) ([]*model.SysMenu, error)
+	QueryMenuPage(pageReq common.PageRequest, r *model.SysMenuRequest) ([]*model.SysMenu, int64, error)
+	AddMenu(post *model.SysMenu) (*model.SysMenu, error)
+	EditMenu(post *model.SysMenu) (*model.SysMenu, int64, error)
+	DeleteMenuById(id int64) (int64, error)
 }

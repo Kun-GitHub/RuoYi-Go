@@ -93,6 +93,10 @@ func (this *SysRoleService) QueryRoleByID(id int64) (*model.SysRole, error) {
 		this.logger.Error("QueryRoleByID", zap.Error(err))
 		return nil, err
 	} else if structEntity.RoleID != 0 {
+		if structEntity.RoleID == common.ADMINID {
+			structEntity.Admin = true
+		}
+
 		// 序列化用户对象并存入缓存
 		userBytes, err = json.Marshal(structEntity)
 		if err == nil {
