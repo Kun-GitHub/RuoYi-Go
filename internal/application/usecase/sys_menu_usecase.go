@@ -26,18 +26,6 @@ func NewSysMenuService(repo output.SysMenuRepository, cache *cache.FreeCacheClie
 	return &SysMenuService{repo: repo, cache: cache, logger: logger}
 }
 
-func (this *SysMenuService) QueryMenusByUserId(userId int64) ([]*model.SysMenu, error) {
-	structEntity := make([]*model.SysMenu, 0)
-
-	structEntity, err := this.repo.QueryMenusByUserId(userId)
-	if err != nil {
-		this.logger.Error("查询用户菜单信息失败", zap.Error(err))
-		return nil, err
-	} else {
-		return structEntity, nil
-	}
-}
-
 func (this *SysMenuService) QueryMenuByID(id int64) (*model.SysMenu, error) {
 	structEntity := &model.SysMenu{}
 	// 尝试从缓存中获取

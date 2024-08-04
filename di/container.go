@@ -76,6 +76,8 @@ func NewContainer(c config.AppConfig) (*Container, error) {
 	sysMenuHandler := ryserver.ResolveSysMenuHandler(db, log, freeCache)
 	app.Get("/getRouters", sysMenuHandler.GetRouters)
 	app.Get("/system/menu/list", ms.PermissionMiddleware("system:menu:list"), sysMenuHandler.MenuList)
+	app.Get("/system/menu/treeselect", sysMenuHandler.TreeSelect)
+	app.Get("/system/menu/roleMenuTreeselect/{roleId:uint}", sysMenuHandler.RoleMenuTreeselect)
 	app.Get("/system/menu/{menuId:uint}", ms.PermissionMiddleware("system:menu:query"), sysMenuHandler.MenuInfo)
 	app.Post("/system/menu", ms.PermissionMiddleware("system:menu:add"), sysMenuHandler.AddMenuInfo)
 	app.Put("/system/menu", ms.PermissionMiddleware("system:menu:edit"), sysMenuHandler.EditMenuInfo)

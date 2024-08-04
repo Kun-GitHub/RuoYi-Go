@@ -35,8 +35,12 @@ func (h *SysMenuHandler) GetRouters(ctx iris.Context) {
 		return
 	}
 
+	u := &model.SysMenuRequest{
+		UserId: loginUser.UserID,
+	}
+
 	var menus = make([]*model.SysMenu, 0)
-	menus, err := h.service.QueryMenusByUserId(loginUser.UserID)
+	menus, err := h.service.QueryMenuList(u)
 	if err != nil {
 		//h.logger.Debug("login failed", zap.Error(err))
 		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "GetRouters, error：%s", err.Error()))
@@ -47,6 +51,14 @@ func (h *SysMenuHandler) GetRouters(ctx iris.Context) {
 
 // GenerateCaptchaImage
 func (h *SysMenuHandler) MenuPage(ctx iris.Context) {
+	user := ctx.Values().Get(common.LOGINUSER)
+	// 类型断言
+	loginUser, ok := user.(*model.UserInfoStruct)
+	if !ok {
+		ctx.JSON(common.Error(iris.StatusUnauthorized, "请重新登录"))
+		return
+	}
+
 	// 获取查询参数
 	pageNumStr := ctx.URLParamDefault("pageNum", "1")
 	pageSizeStr := ctx.URLParamDefault("pageSize", "10")
@@ -61,6 +73,7 @@ func (h *SysMenuHandler) MenuPage(ctx iris.Context) {
 	menuName := ctx.URLParam("menuName")
 	status := ctx.URLParam("status")
 	u := &model.SysMenuRequest{
+		UserId:   loginUser.UserID,
 		MenuName: menuName,
 		Status:   status,
 	}
@@ -84,9 +97,18 @@ func (h *SysMenuHandler) MenuPage(ctx iris.Context) {
 
 // GenerateCaptchaImage
 func (h *SysMenuHandler) MenuList(ctx iris.Context) {
+	user := ctx.Values().Get(common.LOGINUSER)
+	// 类型断言
+	loginUser, ok := user.(*model.UserInfoStruct)
+	if !ok {
+		ctx.JSON(common.Error(iris.StatusUnauthorized, "请重新登录"))
+		return
+	}
+
 	menuName := ctx.URLParam("menuName")
 	status := ctx.URLParam("status")
 	u := &model.SysMenuRequest{
+		UserId:   loginUser.UserID,
 		MenuName: menuName,
 		Status:   status,
 	}
@@ -293,7 +315,33 @@ func buildMenuTree(menus []*model.SysMenu) []*routerStruct {
 				parent.Children = append(parent.Children, router)
 				menuMap[menu.MenuID] = router
 			} else {
+				router := &routerStruct{
+					Hidden:    menu.Visible == "1",
+					Name:      getRouteName(menu),
+					Path:      getRouterPath(menu),
+					Component: getComponent(menu),
+					Redirect: func() string {
+						if menu.MenuType == common.TYPE_DIR {
+							return "noRedirect"
+						}
+						return ""
+					}(),
+					AlwaysShow: func() bool {
+						if menu.MenuType == common.TYPE_DIR {
+							return true
+						}
+						return false
+					}(),
+					Query: menu.Query,
+					Meta: &MetaStruct{
+						Title:   menu.MenuName,
+						Icon:    menu.Icon,
+						NoCache: menu.IsCache == common.IS_CACHE,
+					},
+				}
 
+				menuMap[menu.MenuID] = router
+				rootMenus = append(rootMenus, router)
 			}
 		}
 	}
@@ -385,3 +433,123 @@ const (
 	COLON = ":"
 	SLASH = "/"
 )
+
+func (h *SysMenuHandler) RoleMenuTreeselect(ctx iris.Context) {
+	user := ctx.Values().Get(common.LOGINUSER)
+	// 类型断言
+	loginUser, ok := user.(*model.UserInfoStruct)
+	if !ok {
+		ctx.JSON(common.Error(iris.StatusUnauthorized, "请重新登录"))
+		return
+	}
+
+	idStr := ctx.Params().GetString("roleId")
+	if idStr == "" {
+		ctx.JSON(common.ErrorFormat(iris.StatusBadRequest, "Invalid idStr"))
+		return
+	}
+
+	id, err := strconv.ParseInt(idStr, 10, 64)
+	if err != nil {
+		//this.logger.Debug("login failed", zap.Error(err))
+		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "ParseInt error：%s", err.Error()))
+		return
+	}
+
+	u := &model.SysMenuRequest{
+		UserId: loginUser.UserID,
+		RoleId: id,
+	}
+
+	datas, err := h.service.QueryMenuList(u)
+	if err != nil {
+		//h.logger.Debug("login failed", zap.Error(err))
+		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "QueryMenuList, error：%s", err.Error()))
+		return
+	}
+
+	var postIds []int64
+	for _, post := range datas {
+		postIds = append(postIds, post.MenuID)
+	}
+
+	infoSuccess := &model.TreeSelectSuccess{
+		Code:        common.SUCCESS,
+		Menus:       buildTreeSelect(datas),
+		Message:     "操作成功",
+		CheckedKeys: postIds,
+	}
+
+	// 使用 ctx.JSON 自动将user序列化为JSON并写入响应体
+	ctx.JSON(infoSuccess)
+}
+
+func (h *SysMenuHandler) TreeSelect(ctx iris.Context) {
+	user := ctx.Values().Get(common.LOGINUSER)
+	// 类型断言
+	loginUser, ok := user.(*model.UserInfoStruct)
+	if !ok {
+		ctx.JSON(common.Error(iris.StatusUnauthorized, "请重新登录"))
+		return
+	}
+
+	menuName := ctx.URLParam("menuName")
+	status := ctx.URLParam("status")
+	u := &model.SysMenuRequest{
+		UserId:   loginUser.UserID,
+		MenuName: menuName,
+		Status:   status,
+	}
+
+	datas, err := h.service.QueryMenuList(u)
+	if err != nil {
+		//h.logger.Debug("login failed", zap.Error(err))
+		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "QueryMenuList, error：%s", err.Error()))
+		return
+	}
+
+	ctx.JSON(common.Success(buildTreeSelect(datas)))
+
+}
+
+func buildTreeSelect(menus []*model.SysMenu) []*model.TreeSelect {
+	menuMap := make(map[int64]*model.TreeSelect)
+	rootMenus := make([]*model.TreeSelect, 0)
+
+	for _, menu := range menus {
+		if menu.ParentID == 0 {
+			router := &model.TreeSelect{
+				ID:       menu.MenuID,
+				Label:    menu.MenuName,
+				Children: make([]*model.TreeSelect, 0),
+			}
+
+			menuMap[menu.MenuID] = router
+			rootMenus = append(rootMenus, router)
+		} else {
+			if parent, ok := menuMap[menu.ParentID]; ok {
+				router := &model.TreeSelect{
+					ID:       menu.MenuID,
+					Label:    menu.MenuName,
+					Children: make([]*model.TreeSelect, 0),
+				}
+
+				if parent.Children == nil {
+					parent.Children = make([]*model.TreeSelect, 0)
+				}
+				parent.Children = append(parent.Children, router)
+				menuMap[menu.MenuID] = router
+			} else {
+				router := &model.TreeSelect{
+					ID:       menu.MenuID,
+					Label:    menu.MenuName,
+					Children: make([]*model.TreeSelect, 0),
+				}
+
+				menuMap[menu.MenuID] = router
+				rootMenus = append(rootMenus, router)
+			}
+		}
+	}
+	return rootMenus
+}

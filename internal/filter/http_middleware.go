@@ -118,7 +118,10 @@ func (this *ServerMiddleware) hasPermission(ctx iris.Context, permission string)
 		return true
 	}
 
-	menus, err := this.menuService.QueryMenusByUserId(loginUser.UserID)
+	u := &model.SysMenuRequest{
+		UserId: loginUser.UserID,
+	}
+	menus, err := this.menuService.QueryMenuList(u)
 	if err != nil {
 		return false
 	}

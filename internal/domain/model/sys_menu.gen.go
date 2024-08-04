@@ -45,6 +45,21 @@ func (*SysMenu) TableName() string {
 
 // SysMenuRequest mapped from table <SysNoticeRequest>
 type SysMenuRequest struct {
+	UserId   int64  `json:"userId"`
+	RoleId   int64  `json:"roleId"`
 	MenuName string `json:"menuName"`
 	Status   string `json:"status"`
+}
+
+type TreeSelect struct {
+	ID       int64         `json:"id"`
+	Label    string        `json:"label"`
+	Children []*TreeSelect `json:"children"`
+}
+
+type TreeSelectSuccess struct {
+	Code        int           `json:"code"`
+	Message     string        `json:"msg"`
+	Menus       []*TreeSelect `json:"menus"`
+	CheckedKeys []int64       `json:"checkedKeys"`
 }

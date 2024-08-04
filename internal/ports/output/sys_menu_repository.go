@@ -11,7 +11,6 @@ import (
 )
 
 type SysMenuRepository interface {
-	QueryMenusByUserId(userId int64) ([]*model.SysMenu, error)
 	QueryMenuByID(id int64) (*model.SysMenu, error)
 	QueryMenuList(request *model.SysMenuRequest) ([]*model.SysMenu, error)
 	QueryMenuPage(pageReq common.PageRequest, r *model.SysMenuRequest) ([]*model.SysMenu, int64, error)
