@@ -119,7 +119,7 @@ func (this *SysRoleService) AddRole(post *model.SysRole) (*model.SysRole, error)
 		// 序列化用户对象并存入缓存
 		userBytes, err := json.Marshal(data)
 		if err == nil {
-			this.cache.Set([]byte(fmt.Sprintf("RoleId:%d", data.RoleID)), userBytes, common.EXPIRESECONDS) // 第三个参数是过期时间，0表示永不过期
+			this.cache.Set([]byte(fmt.Sprintf("RoleID:%d", data.RoleID)), userBytes, common.EXPIRESECONDS) // 第三个参数是过期时间，0表示永不过期
 		}
 	}
 	return data, nil
@@ -135,7 +135,7 @@ func (this *SysRoleService) EditRole(post *model.SysRole) (*model.SysRole, int64
 		// 序列化用户对象并存入缓存
 		userBytes, err := json.Marshal(data)
 		if err == nil {
-			this.cache.Set([]byte(fmt.Sprintf("RoleId:%d", data.RoleID)), userBytes, common.EXPIRESECONDS) // 第三个参数是过期时间，0表示永不过期
+			this.cache.Set([]byte(fmt.Sprintf("RoleID:%d", data.RoleID)), userBytes, common.EXPIRESECONDS) // 第三个参数是过期时间，0表示永不过期
 		}
 	}
 	return data, result, nil
@@ -148,7 +148,30 @@ func (this *SysRoleService) DeleteRoleById(id int64) (int64, error) {
 		return 0, err
 	}
 	if result == 1 {
-		this.cache.Del(fmt.Sprintf("RoleId:%d", id))
+		this.cache.Del(fmt.Sprintf("RoleID:%d", id))
+	}
+	return result, nil
+}
+
+func (this *SysRoleService) ChangeRoleStatus(user *model.ChangeRoleStatusRequest) (int64, error) {
+	result, err := this.repo.ChangeRoleStatus(user)
+	if err != nil {
+		this.logger.Error("修改用户状态失败", zap.Error(err))
+		return 0, err
+	}
+	if result == 1 {
+		structEntity, err := this.repo.QueryRoleByID(user.RoleId)
+		if err != nil {
+			this.logger.Error("查询用户信息失败", zap.Error(err))
+			return 0, err
+		} else if structEntity.RoleID != 0 {
+			// 序列化用户对象并存入缓存
+			userBytes, err := json.Marshal(structEntity)
+			if err == nil {
+				this.cache.Set([]byte(fmt.Sprintf("RoleID:%d", structEntity.RoleID)), userBytes, common.EXPIRESECONDS) // 第三个参数是过期时间，0表示永不过期
+			}
+			return result, nil
+		}
 	}
 	return result, nil
 }

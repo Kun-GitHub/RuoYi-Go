@@ -152,3 +152,10 @@ func (this *SysRoleRepository) DeleteRoleById(id int64) (int64, error) {
 		Where(this.db.Gen.SysRole.RoleID.Eq(id)).Update(this.db.Gen.SysRole.DelFlag, "2")
 	return r.RowsAffected, err
 }
+
+func (this *SysRoleRepository) ChangeRoleStatus(user *model.ChangeRoleStatusRequest) (int64, error) {
+	r, err := this.db.Gen.SysRole.WithContext(context.Background()).
+		Where(this.db.Gen.SysRole.RoleID.Eq(user.RoleId), this.db.Gen.SysRole.DelFlag.Eq("0")).
+		Update(this.db.Gen.SysRole.Status, user.Status)
+	return r.RowsAffected, err
+}

@@ -18,4 +18,5 @@ type SysRoleRepository interface {
 	AddRole(post *model.SysRole) (*model.SysRole, error)
 	EditRole(post *model.SysRole) (*model.SysRole, int64, error)
 	DeleteRoleById(id int64) (int64, error)
+	ChangeRoleStatus(user *model.ChangeRoleStatusRequest) (int64, error)
 }

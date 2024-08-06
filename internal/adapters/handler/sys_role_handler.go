@@ -17,11 +17,12 @@ import (
 )
 
 type SysRoleHandler struct {
-	service input.SysRoleService
+	service         input.SysRoleService
+	roleMenuService input.SysRoleMenuService
 }
 
-func NewSysRoleHandler(service input.SysRoleService) *SysRoleHandler {
-	return &SysRoleHandler{service: service}
+func NewSysRoleHandler(service input.SysRoleService, roleMenuService input.SysRoleMenuService) *SysRoleHandler {
+	return &SysRoleHandler{service: service, roleMenuService: roleMenuService}
 }
 
 // GenerateCaptchaImage
@@ -131,7 +132,30 @@ func (this *SysRoleHandler) AddRoleInfo(ctx iris.Context) {
 		return
 	}
 
+	for _, id := range post.MenuIds {
+		this.roleMenuService.AddRoleMenu(&model.SysRoleMenu{
+			info.RoleID,
+			id,
+		})
+	}
+
 	ctx.JSON(common.Success(info))
+}
+
+func (this *SysRoleHandler) ChangeRoleStatus(ctx iris.Context) {
+	u := &model.ChangeRoleStatusRequest{}
+	// Attempt to read and bind the JSON request body to the 'user' variable
+	if err := filter.ValidateRequest(ctx, u); err != nil {
+		//ctx.JSON(common.ErrorFormat(iris.StatusBadRequest, "Invalid JSON, error:%s", err.Error()))
+		return
+	}
+
+	_, err := this.service.ChangeRoleStatus(u)
+	if err != nil {
+		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "ChangeRoleStatus error：%s", err.Error()))
+		return
+	}
+	ctx.JSON(common.Success(nil))
 }
 
 func (this *SysRoleHandler) EditRoleInfo(ctx iris.Context) {
@@ -157,6 +181,14 @@ func (this *SysRoleHandler) EditRoleInfo(ctx iris.Context) {
 		//this.logger.Debug("login failed", zap.Error(err))
 		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "EditRole, error：%s", err.Error()))
 		return
+	}
+
+	this.roleMenuService.DeleteRoleMenuByRoleId(info.RoleID)
+	for _, id := range post.MenuIds {
+		this.roleMenuService.AddRoleMenu(&model.SysRoleMenu{
+			info.RoleID,
+			id,
+		})
 	}
 
 	ctx.JSON(common.Success(info))

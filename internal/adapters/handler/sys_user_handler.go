@@ -293,6 +293,9 @@ func (this *SysUserHandler) DeleteUser(ctx iris.Context) {
 			ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "DeleteUserByUserId error：%s", err.Error()))
 			return
 		}
+
+		this.userRoleService.DeleteUserRoleByUserId(userId)
+		this.userPostService.DeleteUserPostByUserId(userId)
 	}
 
 	ctx.JSON(common.Success(nil))

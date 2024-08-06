@@ -37,8 +37,8 @@ func newSysRole(db *gorm.DB, opts ...gen.DOOption) sysRole {
 	_sysRole.RoleKey = field.NewString(tableName, "role_key")
 	_sysRole.RoleSort = field.NewInt32(tableName, "role_sort")
 	_sysRole.DataScope = field.NewString(tableName, "data_scope")
-	_sysRole.MenuCheckStrictly = field.NewInt16(tableName, "menu_check_strictly")
-	_sysRole.DeptCheckStrictly = field.NewInt16(tableName, "dept_check_strictly")
+	_sysRole.MenuCheckStrictly = field.NewBool(tableName, "menu_check_strictly")
+	_sysRole.DeptCheckStrictly = field.NewBool(tableName, "dept_check_strictly")
 	_sysRole.Status = field.NewString(tableName, "status")
 	_sysRole.DelFlag = field.NewString(tableName, "del_flag")
 	_sysRole.CreateBy = field.NewString(tableName, "create_by")
@@ -61,8 +61,8 @@ type sysRole struct {
 	RoleKey           field.String // 角色权限字符串
 	RoleSort          field.Int32  // 显示顺序
 	DataScope         field.String // 数据范围（1：全部数据权限 2：自定数据权限 3：本部门数据权限 4：本部门及以下数据权限）
-	MenuCheckStrictly field.Int16  // 菜单树选择项是否关联显示
-	DeptCheckStrictly field.Int16  // 部门树选择项是否关联显示
+	MenuCheckStrictly field.Bool   // 菜单树选择项是否关联显示
+	DeptCheckStrictly field.Bool   // 部门树选择项是否关联显示
 	Status            field.String // 角色状态（0正常 1停用）
 	DelFlag           field.String // 删除标志（0代表存在 2代表删除）
 	CreateBy          field.String // 创建者
@@ -91,8 +91,8 @@ func (s *sysRole) updateTableName(table string) *sysRole {
 	s.RoleKey = field.NewString(table, "role_key")
 	s.RoleSort = field.NewInt32(table, "role_sort")
 	s.DataScope = field.NewString(table, "data_scope")
-	s.MenuCheckStrictly = field.NewInt16(table, "menu_check_strictly")
-	s.DeptCheckStrictly = field.NewInt16(table, "dept_check_strictly")
+	s.MenuCheckStrictly = field.NewBool(table, "menu_check_strictly")
+	s.DeptCheckStrictly = field.NewBool(table, "dept_check_strictly")
 	s.Status = field.NewString(table, "status")
 	s.DelFlag = field.NewString(table, "del_flag")
 	s.CreateBy = field.NewString(table, "create_by")

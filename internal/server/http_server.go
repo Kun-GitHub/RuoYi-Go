@@ -100,7 +100,10 @@ func ResolveSysDeptHandler(db *dao.DatabaseStruct, logger *zap.Logger, cache *ca
 func ResolveSysRoleHandler(db *dao.DatabaseStruct, logger *zap.Logger, cache *cache.FreeCacheClient) *handler.SysRoleHandler {
 	sysRoleRepo := persistence.NewSysRoleRepository(db)
 	sysRoleService := usecase.NewSysRoleService(sysRoleRepo, cache, logger)
-	return handler.NewSysRoleHandler(sysRoleService)
+
+	sysRoleMenuRepo := persistence.NewSysRoleMenuRepository(db)
+	sysRoleMenuService := usecase.NewSysRoleMenuService(sysRoleMenuRepo, cache, logger)
+	return handler.NewSysRoleHandler(sysRoleService, sysRoleMenuService)
 }
 
 func ResolveSysPostHandler(db *dao.DatabaseStruct, logger *zap.Logger, cache *cache.FreeCacheClient) *handler.SysPostHandler {

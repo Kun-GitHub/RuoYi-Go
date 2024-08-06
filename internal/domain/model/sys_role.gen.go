@@ -22,8 +22,8 @@ type SysRole struct {
 	RoleKey           string    `gorm:"column:role_key;not null;comment:角色权限字符串" json:"roleKey"`                                   // 角色权限字符串
 	RoleSort          int32     `gorm:"column:role_sort;not null;comment:显示顺序" json:"roleSort"`                                    // 显示顺序
 	DataScope         string    `gorm:"column:data_scope;comment:数据范围（1：全部数据权限 2：自定数据权限 3：本部门数据权限 4：本部门及以下数据权限）" json:"dataScope"` // 数据范围（1：全部数据权限 2：自定数据权限 3：本部门数据权限 4：本部门及以下数据权限）
-	MenuCheckStrictly int16     `gorm:"column:menu_check_strictly;comment:菜单树选择项是否关联显示" json:"menuCheckStrictly"`                  // 菜单树选择项是否关联显示
-	DeptCheckStrictly int16     `gorm:"column:dept_check_strictly;comment:部门树选择项是否关联显示" json:"deptCheckStrictly"`                  // 部门树选择项是否关联显示
+	MenuCheckStrictly bool      `gorm:"column:menu_check_strictly;comment:菜单树选择项是否关联显示" json:"menuCheckStrictly"`                  // 菜单树选择项是否关联显示
+	DeptCheckStrictly bool      `gorm:"column:dept_check_strictly;comment:部门树选择项是否关联显示" json:"deptCheckStrictly"`                  // 部门树选择项是否关联显示
 	Status            string    `gorm:"column:status;not null;comment:角色状态（0正常 1停用）" json:"status"`                                // 角色状态（0正常 1停用）
 	DelFlag           string    `gorm:"column:del_flag;comment:删除标志（0代表存在 2代表删除）" json:"delFlag"`                                  // 删除标志（0代表存在 2代表删除）
 	CreateBy          string    `gorm:"column:create_by;comment:创建者" json:"createBy"`                                              // 创建者
@@ -32,6 +32,7 @@ type SysRole struct {
 	UpdateTime        time.Time `gorm:"column:update_time;comment:更新时间" json:"updateTime"`                                         // 更新时间
 	Remark            string    `gorm:"column:remark;comment:备注" json:"remark"`
 	Admin             bool      `gorm:"-" json:"admin"` // 备注
+	MenuIds           []int64   `gorm:"-" json:"menuIds"`
 }
 
 type SysRoleRequest struct {
@@ -51,4 +52,9 @@ type SysRoleInfoStruct struct {
 	*SysRole
 	Admin       bool     `gorm:"-" json:"admin"`
 	Permissions []string `gorm:"-" json:"permissions"`
+}
+
+type ChangeRoleStatusRequest struct {
+	RoleId int64  `json:"roleId" validate:"required"`
+	Status string `json:"status" validate:"required"`
 }
