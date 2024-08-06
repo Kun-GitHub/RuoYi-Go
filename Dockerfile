@@ -1,3 +1,8 @@
+# Copyright (c) [2024] K. All rights reserved.
+# Use of this source code is governed by a MIT license that can be found in the LICENSE file.
+# Author: K. See：https://github.com/Kun-GitHub/RuoYi-Go or https://gitee.com/gitee_kun/RuoYi-Go
+# Email: hot_kun@hotmail.com or 867917691@qq.com
+
 # 使用官方的Golang镜像作为构建阶段的基础镜像
 FROM golang:1.22-alpine as builder
 
