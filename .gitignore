@@ -16,7 +16,6 @@
 # vendor/
 
 # Project runtime log
-logs/*.log
 logs/app.log
 config/config.yaml
 
