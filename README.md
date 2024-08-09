@@ -309,10 +309,10 @@ PS:发现暂不支持安装插件，不太好用
 
 <br>
 
-### 10. 怎么运行
-1. 代码运行，拉下代码后，进项目，然后运行/cmd/api/main.go
-2. 部署，Windows系统下，编译/build/build.cmd 即可,会得到一个exe，然后在exe同目录下创建config文件夹，然后把config.yaml文件复制进去(代码是这个文件名，但具体文件我没提交，可以拿demo文件修改)，然后运行exe即可
-3. 部署，Linux系统下，用Dockerfile构建镜像，然后运行镜像即可。同样注意config.yaml文件，自己改。  
+### 10. 怎么运行（go版本，1.22.2）
+1. 代码运行，拉下代码后，进项目，先执行go mod tidy拉下依赖，成功后运行/cmd/api/main.go
+2. Windows系统部署，代码成功运行后，命令行执行 ./build/build.cmd 即可，会得到一个exe，然后在exe同目录下创建config文件夹，然后把config.yaml文件复制进去(代码是这个文件名，但具体文件我没提交，可以拿demo文件修改)，然后运行exe即可
+3. Linux系统部署，代码成功运行后，用Dockerfile构建镜像，然后运行镜像即可。同样注意config.yaml配置文件，自己改代码或者改配置文件。  
 Docker  
 ![Docker](docs/images/20240806154351.png)  
 
