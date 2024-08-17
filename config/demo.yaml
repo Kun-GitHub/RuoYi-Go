@@ -6,9 +6,11 @@
 
 # v.SetConfigName("config") //修改配置文件名
 
-language: "zh-CN" # 应用默认语言
+appInfo:
+  appName: "RuoYi-Go"
+  language: "zh-CN" # 应用默认语言
 
-logInfo:
+logConfig:
   logLevel: -1 # -1 Debug 0 Info 1 Warn 2 Error
   logPath: "./logs"
 

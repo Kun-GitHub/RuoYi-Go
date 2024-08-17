@@ -46,7 +46,7 @@ func NewContainer(c config.AppConfig) (*Container, error) {
 	}
 
 	// 初始化国际化
-	l := ryi18n.LoadLocalizer(c.Language) // 假设配置中指定了Language
+	l := ryi18n.LoadLocalizer(c.App.Language) // 假设配置中指定了Language
 
 	// 创建DatabaseStruct实例
 	db, err := dao.OpenDB(c)

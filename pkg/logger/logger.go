@@ -24,11 +24,11 @@ func NewZapLogger(c config.AppConfig) *zap.Logger {
 
 	// lumberjack配置
 	lumberjackLogger := &lumberjack.Logger{
-		Filename:   c.Log.LogPath + "/app_" + formatted + ".log", // 日志文件路径
-		MaxSize:    100,                                          // 单个日志文件最大大小（单位：MB）
-		MaxBackups: 3,                                            // 保留旧文件的最大数量
-		MaxAge:     28,                                           // 旧文件保留最大天数
-		Compress:   true,                                         // 是否压缩旧文件
+		Filename:   c.Log.LogPath + "/" + c.App.AppName + "_" + formatted + ".log", // 日志文件路径
+		MaxSize:    100,                                                            // 单个日志文件最大大小（单位：MB）
+		MaxBackups: 3,                                                              // 保留旧文件的最大数量
+		MaxAge:     28,                                                             // 旧文件保留最大天数
+		Compress:   true,                                                           // 是否压缩旧文件
 	}
 
 	// 自定义zap的encoder配置

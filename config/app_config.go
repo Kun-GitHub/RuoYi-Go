@@ -8,11 +8,16 @@ package config
 import "go.uber.org/zap/zapcore"
 
 type AppConfig struct {
-	Language string         `mapstructure:"language"` // 应用语言
-	Log      LogConfig      `mapstructure:"logInfo"`  // 应用语言
-	Server   ServerConfig   `mapstructure:"server"`   // 服务器配置
-	Database DatabaseConfig `mapstructure:"database"` // 数据库配置
-	Redis    RedisConfig    `mapstructure:"redis"`    // redis配置
+	App      AppInfo        `mapstructure:"appInfo"`   // 应用语言
+	Log      LogConfig      `mapstructure:"logConfig"` // 应用语言
+	Server   ServerConfig   `mapstructure:"server"`    // 服务器配置
+	Database DatabaseConfig `mapstructure:"database"`  // 数据库配置
+	Redis    RedisConfig    `mapstructure:"redis"`     // redis配置
+}
+
+type AppInfo struct {
+	Language string `mapstructure:"language"` // 应用语言
+	AppName  string `mapstructure:"appName"`
 }
 
 // ServerConfig 和 DatabaseConfig 也是结构体，分别定义服务器和数据库的相关配置
