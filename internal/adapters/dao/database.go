@@ -9,6 +9,7 @@ import (
 	"RuoYi-Go/config"
 	"fmt"
 	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 	"gorm.io/driver/mysql"
 	"gorm.io/driver/postgres"
 	"gorm.io/driver/sqlite"
@@ -41,10 +42,10 @@ func OpenDB(cfg config.AppConfig) (*DatabaseStruct, error) {
 	newLogger := logger.New(
 		log.New(os.Stdout, "\r\n", log.LstdFlags), // io writer（日志输出的目标，前缀和日志包含的内容——译者注）
 		logger.Config{
-			SlowThreshold:             time.Second, // 慢 SQL 阈值
-			LogLevel:                  logger.Info, // 日志级别
-			IgnoreRecordNotFoundError: true,        // 忽略ErrRecordNotFound（记录未找到）错误
-			Colorful:                  false,       // 禁用彩色打印
+			SlowThreshold:             time.Second,  // 慢 SQL 阈值
+			LogLevel:                  logger.Error, // 日志级别
+			IgnoreRecordNotFoundError: true,         // 忽略ErrRecordNotFound（记录未找到）错误
+			Colorful:                  false,        // 禁用彩色打印
 		},
 	)
 
@@ -62,9 +63,13 @@ func OpenDB(cfg config.AppConfig) (*DatabaseStruct, error) {
 			cfg.Database.Password, cfg.Database.Host, cfg.Database.Port, cfg.Database.DBName)
 		dialector = mysql.Open(dsn)
 	}
-	db, err := gorm.Open(dialector, &gorm.Config{
-		Logger: newLogger,
-	})
+	ops := &gorm.Config{}
+	if cfg.Log.LogLevel == zapcore.DebugLevel {
+		ops = &gorm.Config{
+			Logger: newLogger,
+		}
+	}
+	db, err := gorm.Open(dialector, ops)
 	if err != nil {
 		return nil, err
 	}
@@ -81,20 +86,8 @@ func OpenDB(cfg config.AppConfig) (*DatabaseStruct, error) {
 	// 如果需要，还可以设置连接在空闲多久后关闭（单位秒）
 	sqlDB.SetConnMaxLifetime(time.Minute * 5) // 5分钟后关闭空闲连接
 
-	//数据库迁移操作（升级或者字段变化）
-	//m, err := migrate.New("file://path/to/migrations", "sqlite://path/to/database.db")
-	//if err != nil {
-	//	log.Fatalf("Failed to initialize migrations: %v", err)
-	//}
-	//
-	//err = m.Up()
-	//if err != nil && err != migrate.ErrNoChange {
-	//	log.Fatalf("Failed to apply migrations: %v", err)
-	//}
-
 	// 初始化自动生成的组件
 	g := Use(db)
-
 	return &DatabaseStruct{
 		db:  db,
 		Gen: g,

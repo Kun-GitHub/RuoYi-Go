@@ -6,21 +6,29 @@
 package logger
 
 import (
+	"RuoYi-Go/config"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"gopkg.in/natefinch/lumberjack.v2"
 	"os"
+	"time"
 )
 
 // NewZapLogger
-func NewZapLogger(level zapcore.Level) *zap.Logger {
+func NewZapLogger(c config.AppConfig) *zap.Logger {
+	// 当前时间
+	now := time.Now()
+
+	// 格式化为 "2006-01-02" 的形式
+	formatted := now.Format("2006-01-02")
+
 	// lumberjack配置
 	lumberjackLogger := &lumberjack.Logger{
-		Filename:   "./logs/app.log", // 日志文件路径
-		MaxSize:    100,              // 单个日志文件最大大小（单位：MB）
-		MaxBackups: 3,                // 保留旧文件的最大数量
-		MaxAge:     28,               // 旧文件保留最大天数
-		Compress:   true,             // 是否压缩旧文件
+		Filename:   c.Log.LogPath + "/app_" + formatted + ".log", // 日志文件路径
+		MaxSize:    100,                                          // 单个日志文件最大大小（单位：MB）
+		MaxBackups: 3,                                            // 保留旧文件的最大数量
+		MaxAge:     28,                                           // 旧文件保留最大天数
+		Compress:   true,                                         // 是否压缩旧文件
 	}
 
 	// 自定义zap的encoder配置
@@ -37,12 +45,12 @@ func NewZapLogger(level zapcore.Level) *zap.Logger {
 			zapcore.AddSync(lumberjackLogger), // 输出到文件，使用lumberjack进行日志分割管理
 		),
 		zap.LevelEnablerFunc(func(lvl zapcore.Level) bool {
-			return lvl >= level // 设置日志级别
+			return lvl >= c.Log.LogLevel // 设置日志级别
 		}),
 	)
 
 	var zaplogger *zap.Logger
-	switch level {
+	switch c.Log.LogLevel {
 	case zap.ErrorLevel:
 		zaplogger = zap.New(core, zap.Development(), zap.AddCaller(), zap.AddStacktrace(zap.ErrorLevel))
 		break

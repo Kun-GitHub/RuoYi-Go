@@ -36,7 +36,7 @@ type Container struct {
 
 func NewContainer(c config.AppConfig) (*Container, error) {
 	// NewZapLogger
-	log := logger.NewZapLogger(c.LogLevel)
+	log := logger.NewZapLogger(c)
 
 	// 初始化Redis
 	redis, err := cache.NewRedisClient(c, log)

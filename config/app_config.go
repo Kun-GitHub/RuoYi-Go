@@ -8,8 +8,8 @@ package config
 import "go.uber.org/zap/zapcore"
 
 type AppConfig struct {
-	LogLevel zapcore.Level  `mapstructure:"logLevel"` // 是否开启调试模式
 	Language string         `mapstructure:"language"` // 应用语言
+	Log      LogConfig      `mapstructure:"logInfo"`  // 应用语言
 	Server   ServerConfig   `mapstructure:"server"`   // 服务器配置
 	Database DatabaseConfig `mapstructure:"database"` // 数据库配置
 	Redis    RedisConfig    `mapstructure:"redis"`    // redis配置
@@ -19,6 +19,11 @@ type AppConfig struct {
 type ServerConfig struct {
 	Port         int      `mapstructure:"port"`
 	NotIntercept []string `mapstructure:"notIntercept"`
+}
+
+type LogConfig struct {
+	LogLevel zapcore.Level `mapstructure:"logLevel"`
+	LogPath  string        `mapstructure:"logPath"`
 }
 
 type DatabaseConfig struct {
