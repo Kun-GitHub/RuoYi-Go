@@ -38,7 +38,7 @@ WORKDIR /app
 COPY --from=builder /app/RuoYi-Go .
 
 # 复制配置文件
-COPY --from=builder /app/config/config.yaml ./config/config.yaml
+COPY --from=builder /app/config/demo.yaml ./config/config.yaml
 
 # 暴露端口
 EXPOSE 8080
