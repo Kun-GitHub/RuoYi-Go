@@ -33,4 +33,4 @@ jobs:
       - name: Copy Config File
         run: |
           # 复制 config.yaml 到 bin 目录
-          cp config/config.yaml ./bin/config/config.yaml
+          cp config/demo.yaml ./bin/config/config.yaml
