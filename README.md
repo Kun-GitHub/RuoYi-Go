@@ -18,7 +18,8 @@
 <br>
 
 ### 3. 前端
-本项目没有自研前端，前端代码为 [RuoYi-Vue3 官方前端Vue3版](https://github.com/Kun-GitHub/RuoYi-Vue3)
+本项目没有自研前端，前端代码为 [RuoYi-Vue3 官方前端Vue3版](https://github.com/Kun-GitHub/RuoYi-Vue3)  
+推荐用我Fork的这个版本，在开发到后期，我拉了最新的前端，发现最新版前端有很多bug
 
 <br>
 
