@@ -84,7 +84,7 @@ func NewContainer(c config.AppConfig) (*Container, error) {
 	app.Delete("/system/menu/*menuIds", ms.PermissionMiddleware("system:menu:remove"), sysMenuHandler.DeleteMenuInfo)
 
 	pageSysUserHandler := ryserver.ResolvePageSysUserHandler(db, log, freeCache)
-	app.Get("/system/user/", ms.PermissionMiddleware("system:user:query"), pageSysUserHandler.UserInfo)
+	app.Get("/system/user", ms.PermissionMiddleware("system:user:query"), pageSysUserHandler.UserInfo)
 	app.Get("/system/user/list", ms.PermissionMiddleware("system:user:list"), pageSysUserHandler.UserPage)
 	app.Get("/system/user/deptTree", ms.PermissionMiddleware("system:user:list"), pageSysUserHandler.DeptTree)
 	app.Get("/system/user/{userId:uint}", ms.PermissionMiddleware("system:user:query"), pageSysUserHandler.UserInfo)
@@ -156,15 +156,15 @@ func NewContainer(c config.AppConfig) (*Container, error) {
 	app.Get("/monitor/cache", ms.PermissionMiddleware("monitor:cache:list"), monitorHandler.Cache)
 	app.Get("/monitor/cache/getNames", ms.PermissionMiddleware("monitor:cache:list"), monitorHandler.CacheNames)
 
-	sysJobHandler := ryserver.ResolveSysJobHandler(db, log, freeCache)
+	task := task.NewTaskManager(log)
+	task.RegisterTask("ryTask.ryNoParams", jobs.NewTaskDemo(log))
+
+	sysJobHandler := ryserver.ResolveSysJobHandler(db, log, freeCache, task)
 	app.Get("/monitor/job/list", ms.PermissionMiddleware("monitor:job:list"), sysJobHandler.JobPage)
 	app.Get("/monitor/job/{jobId:uint}", ms.PermissionMiddleware("monitor:job:query"), sysJobHandler.JobInfo)
 	app.Post("/monitor/job", ms.PermissionMiddleware("monitor:job:add"), sysJobHandler.AddJobInfo)
 	app.Put("/monitor/job", ms.PermissionMiddleware("monitor:job:edit"), sysJobHandler.EditJobInfo)
 	app.Delete("/monitor/job/*jobIds", ms.PermissionMiddleware("monitor:job:remove"), sysJobHandler.DeleteJobInfo)
-
-	task := task.NewTaskManager(log)
-	task.RegisterTask("ryTask.ryNoParams", jobs.NewTaskDemo(log))
 
 	return &Container{
 		appConfig: c,
@@ -179,7 +179,7 @@ func NewContainer(c config.AppConfig) (*Container, error) {
 }
 
 func (c *Container) InitJob() {
-	sysJobHandler := ryserver.ResolveSysJobHandler(c.gormDB, c.logger, c.freeCache)
+	sysJobHandler := ryserver.ResolveSysJobHandler(c.gormDB, c.logger, c.freeCache, c.jobs)
 	data, err := sysJobHandler.JobList(nil)
 	if err == nil {
 		for _, item := range data {

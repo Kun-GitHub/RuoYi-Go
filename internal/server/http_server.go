@@ -13,6 +13,7 @@ import (
 	"RuoYi-Go/internal/application/usecase"
 	"RuoYi-Go/internal/filter"
 	"RuoYi-Go/pkg/cache"
+	"RuoYi-Go/pkg/task"
 	"go.uber.org/zap"
 )
 
@@ -140,8 +141,8 @@ func ResolveMonitorHandler(db *dao.DatabaseStruct, redis *cache.RedisClient, log
 	return handler.NewMonitorHandler(logger)
 }
 
-func ResolveSysJobHandler(db *dao.DatabaseStruct, logger *zap.Logger, cache *cache.FreeCacheClient) *handler.SysJobHandler {
+func ResolveSysJobHandler(db *dao.DatabaseStruct, logger *zap.Logger, cache *cache.FreeCacheClient, task *task.TaskManager) *handler.SysJobHandler {
 	repo := persistence.NewSysJobRepository(db)
 	service := usecase.NewSysJobService(repo, cache, logger)
-	return handler.NewSysJobHandler(service)
+	return handler.NewSysJobHandler(service, task)
 }

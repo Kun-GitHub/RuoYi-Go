@@ -10,6 +10,7 @@ import (
 	"RuoYi-Go/internal/domain/model"
 	"RuoYi-Go/internal/filter"
 	"RuoYi-Go/internal/ports/input"
+	"RuoYi-Go/pkg/task"
 	"github.com/kataras/iris/v12"
 	"strconv"
 	"strings"
@@ -18,10 +19,11 @@ import (
 
 type SysJobHandler struct {
 	service input.SysJobService
+	task    *task.TaskManager
 }
 
-func NewSysJobHandler(service input.SysJobService) *SysJobHandler {
-	return &SysJobHandler{service: service}
+func NewSysJobHandler(service input.SysJobService, task *task.TaskManager) *SysJobHandler {
+	return &SysJobHandler{service: service, task: task}
 }
 
 // GenerateCaptchaImage
@@ -142,6 +144,10 @@ func (this *SysJobHandler) EditJobInfo(ctx iris.Context) {
 		return
 	}
 
+	if info.Status == "0" && info.MisfirePolicy != "3" {
+		this.task.StartTask(info.InvokeTarget, info.CronExpression)
+	}
+
 	ctx.JSON(common.Success(info))
 }
 
@@ -160,11 +166,19 @@ func (this *SysJobHandler) DeleteJobInfo(ctx iris.Context) {
 			return
 		}
 
+		info, err := this.service.QueryJobByID(id)
+		if err != nil {
+			//this.logger.Debug("login failed", zap.Error(err))
+			ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "QueryJobByID, error：%s", err.Error()))
+			return
+		}
+
 		_, err = this.service.DeleteJobById(id)
 		if err != nil {
 			ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "DeleteJobById error：%s", err.Error()))
 			return
 		}
+		this.task.StopTask(info.InvokeTarget)
 	}
 
 	ctx.JSON(common.Success(nil))
