@@ -234,7 +234,8 @@
 </tbody>
 </table>
 
-[RuoYi 数据库脚本](https://github.com/yangzongzhuan/RuoYi-Vue/blob/master/sql/ry_20240529.sql)
+[RuoYi 数据库脚本](https://github.com/yangzongzhuan/RuoYi-Vue/blob/master/sql/ry_20240529.sql)  
+[用我备份的数据库脚本](https://github.com/Kun-GitHub/RuoYi-Go/tree/main/db)
 
 <br>
 
