@@ -18,4 +18,5 @@ type SysConfigRepository interface {
 	EditConfig(post *model.SysConfig) (*model.SysConfig, int64, error)
 	DeleteConfigById(id int64) (int64, error)
 	CheckConfigNameUnique(id int64, name string) (int64, error)
+	QueryConfigByKey(configKey string) (*model.SysConfig, error)
 }

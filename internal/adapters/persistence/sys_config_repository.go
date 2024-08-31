@@ -138,3 +138,16 @@ func (this *SysConfigRepository) CheckConfigNameUnique(id int64, name string) (i
 		Where(this.db.Gen.SysConfig.ConfigName.Eq(name), this.db.Gen.SysConfig.ConfigID.Neq(id)).Count()
 	return r, err
 }
+
+func (this *SysConfigRepository) QueryConfigByKey(configKey string) (*model.SysConfig, error) {
+	structEntity := &model.SysConfig{}
+
+	err := this.db.Gen.SysConfig.WithContext(context.Background()).
+		Where(this.db.Gen.SysConfig.ConfigKey.Eq(configKey)).
+		Limit(1).Scan(structEntity)
+
+	if err != nil {
+		return nil, err
+	}
+	return structEntity, nil
+}

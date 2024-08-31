@@ -136,6 +136,7 @@ func NewContainer(c config.AppConfig) (*Container, error) {
 	app.Post("/system/config", ms.PermissionMiddleware("system:config:add"), sysConfigHandler.AddConfigInfo)
 	app.Put("/system/config", ms.PermissionMiddleware("system:config:edit"), sysConfigHandler.EditConfigInfo)
 	app.Delete("/system/config/*configIds", ms.PermissionMiddleware("system:config:remove"), sysConfigHandler.DeleteConfigInfo)
+	app.Get("/system/config/configKey/{configKey:string}", sysConfigHandler.ConfigInfoByKey)
 
 	sysNoticeHandler := ryserver.ResolveSysNoticeHandler(db, log, freeCache)
 	app.Get("/system/notice/list", ms.PermissionMiddleware("system:notice:list"), sysNoticeHandler.NoticePage)

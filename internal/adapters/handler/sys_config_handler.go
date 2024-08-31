@@ -104,6 +104,23 @@ func (this *SysConfigHandler) ConfigInfo(ctx iris.Context) {
 	ctx.JSON(common.Success(info))
 }
 
+func (this *SysConfigHandler) ConfigInfoByKey(ctx iris.Context) {
+	configKey := ctx.Params().GetString("configKey")
+	if configKey == "" {
+		ctx.JSON(common.ErrorFormat(iris.StatusBadRequest, "Invalid configKey"))
+		return
+	}
+
+	info, err := this.service.QueryConfigByKey(configKey)
+	if err != nil {
+		//this.logger.Debug("login failed", zap.Error(err))
+		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "QueryConfigByID, error：%s", err.Error()))
+		return
+	}
+
+	ctx.JSON(common.Success(info))
+}
+
 func (this *SysConfigHandler) AddConfigInfo(ctx iris.Context) {
 	post := &model.SysConfig{}
 	// Attempt to read and bind the JSON request body to the 'user' variable

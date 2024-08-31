@@ -130,3 +130,21 @@ func (this *SysConfigService) CheckConfigNameUnique(id int64, name string) (int6
 	}
 	return result, nil
 }
+
+func (this *SysConfigService) QueryConfigByKey(configKey string) (*model.SysConfig, error) {
+	structEntity, err := this.repo.QueryConfigByKey(configKey)
+	if err != nil {
+		this.logger.Error("查询部门信息失败", zap.Error(err))
+		return nil, err
+	} else if structEntity.ConfigID != 0 {
+		// 序列化用户对象并存入缓存
+		userBytes, err := json.Marshal(structEntity)
+		if err == nil {
+			this.cache.Set([]byte(fmt.Sprintf("ConfigID:%d", structEntity.ConfigID)), userBytes, common.EXPIRESECONDS) // 第三个参数是过期时间，0表示永不过期
+		}
+		return structEntity, nil
+	}
+
+	this.logger.Debug("查询信息失败", zap.Error(err))
+	return nil, fmt.Errorf("查询信息失败", zap.Error(err))
+}
