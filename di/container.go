@@ -114,6 +114,7 @@ func NewContainer(c config.AppConfig) (*Container, error) {
 	app.Put("/system/role", ms.PermissionMiddleware("system:role:edit"), sysRoleHandler.EditRoleInfo)
 	app.Delete("/system/role/*roleIds", ms.PermissionMiddleware("system:role:remove"), sysRoleHandler.DeleteRoleInfo)
 	app.Put("/system/role/changeStatus", ms.PermissionMiddleware("system:role:edit"), sysRoleHandler.ChangeRoleStatus)
+	app.Get("/system/role/deptTree/{roleId:uint}", ms.PermissionMiddleware("system:role:query"), sysRoleHandler.DeptTree)
 
 	sysPostHandler := ryserver.ResolveSysPostHandler(db, log, freeCache)
 	app.Get("/system/post/list", ms.PermissionMiddleware("system:post:list"), sysPostHandler.PostPage)

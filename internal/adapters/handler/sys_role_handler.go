@@ -19,10 +19,11 @@ import (
 type SysRoleHandler struct {
 	service         input.SysRoleService
 	roleMenuService input.SysRoleMenuService
+	deptService     input.SysDeptService
 }
 
-func NewSysRoleHandler(service input.SysRoleService, roleMenuService input.SysRoleMenuService) *SysRoleHandler {
-	return &SysRoleHandler{service: service, roleMenuService: roleMenuService}
+func NewSysRoleHandler(service input.SysRoleService, roleMenuService input.SysRoleMenuService, deptService input.SysDeptService) *SysRoleHandler {
+	return &SysRoleHandler{service: service, roleMenuService: roleMenuService, deptService: deptService}
 }
 
 // GenerateCaptchaImage
@@ -217,4 +218,16 @@ func (this *SysRoleHandler) DeleteRoleInfo(ctx iris.Context) {
 	}
 
 	ctx.JSON(common.Success(nil))
+}
+
+func (this *SysRoleHandler) DeptTree(ctx iris.Context) {
+	data, err := this.deptService.QueryDeptList(nil)
+	if err != nil {
+		//this.logger.Debug("login failed", zap.Error(err))
+		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "DeptTree, error：%s", err.Error()))
+		return
+	}
+
+	data = buildDeptTree(data)
+	ctx.JSON(common.Success(data))
 }

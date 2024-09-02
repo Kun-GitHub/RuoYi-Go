@@ -7,7 +7,7 @@ package main
 
 import (
 	"fmt"
-	"gorm.io/driver/postgres"
+	"gorm.io/driver/mysql"
 	"gorm.io/gen"
 	"gorm.io/gorm"
 	"strings"
@@ -16,11 +16,12 @@ import (
 var db *gorm.DB
 
 func init() {
-	dsn := fmt.Sprintf("%s://%s:%s@%s:%d/%s?sslmode=disable&TimeZone=Asia/Shanghai",
-		"postgres", "postgres", "postgresql.123456", "172.16.10.215",
-		5432, "postgres")
-
-	db, _ = gorm.Open(postgres.Open(dsn))
+	//dsn := fmt.Sprintf("%s://%s:%s@%s:%d/%s?sslmode=disable&TimeZone=Asia/Shanghai",
+	//	"postgres", "postgres", "postgresql.123456", "172.16.10.215",
+	//	5432, "postgres")
+	dsn := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&parseTime=True&loc=Local", "root",
+		"hn02le.34lkdLKD", "192.168.3.24", 3306, "ruoyi")
+	db, _ = gorm.Open(mysql.Open(dsn))
 }
 
 func toCamelCase(s string) string {
