@@ -18,8 +18,8 @@ const TableNameSysJob = "sys_job"
 // SysJob mapped from table <sys_job>
 type SysJob struct {
 	JobID          int64     `gorm:"column:job_id;primaryKey;comment:任务ID" json:"jobId"`                             // 任务ID
-	JobName        string    `gorm:"column:job_name;primaryKey;comment:任务名称" json:"jobName"`                         // 任务名称
-	JobGroup       string    `gorm:"column:job_group;primaryKey;comment:任务组名" json:"jobGroup"`                       // 任务组名
+	JobName        string    `gorm:"column:job_name;comment:任务名称" json:"jobName"`                                    // 任务名称
+	JobGroup       string    `gorm:"column:job_group;comment:任务组名" json:"jobGroup"`                                  // 任务组名
 	InvokeTarget   string    `gorm:"column:invoke_target;not null;comment:调用目标字符串" json:"invokeTarget"`              // 调用目标字符串
 	CronExpression string    `gorm:"column:cron_expression;comment:cron执行表达式" json:"cronExpression"`                 // cron执行表达式
 	MisfirePolicy  string    `gorm:"column:misfire_policy;comment:计划执行错误策略（1立即执行 2执行一次 3放弃执行）" json:"misfirePolicy"` // 计划执行错误策略（1立即执行 2执行一次 3放弃执行）

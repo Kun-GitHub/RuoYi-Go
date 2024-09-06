@@ -146,6 +146,8 @@ func (this *SysJobHandler) EditJobInfo(ctx iris.Context) {
 
 	if info.Status == "0" && info.MisfirePolicy != "3" {
 		this.task.StartTask(info.InvokeTarget, info.CronExpression)
+	} else {
+		this.task.StopTask(info.InvokeTarget)
 	}
 
 	ctx.JSON(common.Success(info))
@@ -201,5 +203,19 @@ func (this *SysJobHandler) ChangeJobStatus(ctx iris.Context) {
 		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "ChangeRoleStatus error：%s", err.Error()))
 		return
 	}
+
+	info, err := this.service.QueryJobByID(u.JobID)
+	if err != nil {
+		//this.logger.Debug("login failed", zap.Error(err))
+		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "QueryJobByID, error：%s", err.Error()))
+		return
+	}
+
+	if info.Status == "0" && info.MisfirePolicy != "3" {
+		this.task.StartTask(info.InvokeTarget, info.CronExpression)
+	} else {
+		this.task.StopTask(info.InvokeTarget)
+	}
+
 	ctx.JSON(common.Success(nil))
 }
