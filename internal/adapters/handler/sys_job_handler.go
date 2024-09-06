@@ -187,3 +187,19 @@ func (this *SysJobHandler) DeleteJobInfo(ctx iris.Context) {
 func (h *SysJobHandler) JobList(request *model.SysJobRequest) ([]*model.SysJob, error) {
 	return h.service.QueryJobList(request)
 }
+
+func (this *SysJobHandler) ChangeJobStatus(ctx iris.Context) {
+	u := &model.ChangeJobStatusRequest{}
+	// Attempt to read and bind the JSON request body to the 'user' variable
+	if err := filter.ValidateRequest(ctx, u); err != nil {
+		//ctx.JSON(common.ErrorFormat(iris.StatusBadRequest, "Invalid JSON, error:%s", err.Error()))
+		return
+	}
+
+	_, err := this.service.ChangeJobStatus(u)
+	if err != nil {
+		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "ChangeRoleStatus error：%s", err.Error()))
+		return
+	}
+	ctx.JSON(common.Success(nil))
+}

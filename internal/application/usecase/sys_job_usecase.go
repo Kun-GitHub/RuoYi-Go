@@ -121,3 +121,26 @@ func (this *SysJobService) DeleteJobById(id int64) (int64, error) {
 	}
 	return result, nil
 }
+
+func (this *SysJobService) ChangeJobStatus(user *model.ChangeJobStatusRequest) (int64, error) {
+	result, err := this.repo.ChangeJobStatus(user)
+	if err != nil {
+		this.logger.Error("修改用户状态失败", zap.Error(err))
+		return 0, err
+	}
+	if result == 1 {
+		structEntity, err := this.repo.QueryJobByID(user.JobID)
+		if err != nil {
+			this.logger.Error("查询用户信息失败", zap.Error(err))
+			return 0, err
+		} else if structEntity.JobID != 0 {
+			// 序列化用户对象并存入缓存
+			userBytes, err := json.Marshal(structEntity)
+			if err == nil {
+				this.cache.Set([]byte(fmt.Sprintf("RoleID:%d", structEntity.JobID)), userBytes, common.EXPIRESECONDS) // 第三个参数是过期时间，0表示永不过期
+			}
+			return result, nil
+		}
+	}
+	return result, nil
+}

@@ -218,12 +218,12 @@
 <td rowspan="3">gorm</td>
 <td><a href="https://www.postgresql.org">PostgreSQL</a></td>
 <td>✅</td>
-<td>默认</td>
+<td>支持，但对于若依的前端，Bug比较多</td>
 </tr>
 <tr>
 <td><a href="https://www.mysql.com/">Mysql</a></td>
 <td>✅</td>
-<td>不用说的，很赞</td>
+<td>默认</td>
 </tr>
 <tr>
 <td><a href="https://www.sqlite.org/">Sqlite</a></td>

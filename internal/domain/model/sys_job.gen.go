@@ -43,3 +43,8 @@ type SysJobRequest struct {
 	JobGroup string `json:"jobGroup"`
 	Status   string `json:"status"`
 }
+
+type ChangeJobStatusRequest struct {
+	JobID  int64  `json:"jobId" validate:"required"`
+	Status string `json:"status" validate:"required"`
+}

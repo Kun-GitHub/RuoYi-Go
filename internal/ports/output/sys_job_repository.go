@@ -17,4 +17,5 @@ type SysJobRepository interface {
 	AddJob(post *model.SysJob) (*model.SysJob, error)
 	EditJob(post *model.SysJob) (*model.SysJob, int64, error)
 	DeleteJobById(id int64) (int64, error)
+	ChangeJobStatus(user *model.ChangeJobStatusRequest) (int64, error)
 }

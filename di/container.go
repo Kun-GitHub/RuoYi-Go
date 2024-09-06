@@ -159,6 +159,7 @@ func NewContainer(c config.AppConfig) (*Container, error) {
 
 	task := task.NewTaskManager(log)
 	task.RegisterTask("ryTask.ryNoParams", jobs.NewTaskDemo(log))
+	task.RegisterTask("Task.NewTaskGoroutine", jobs.NewTaskGoroutine(log))
 
 	sysJobHandler := ryserver.ResolveSysJobHandler(db, log, freeCache, task)
 	app.Get("/monitor/job/list", ms.PermissionMiddleware("monitor:job:list"), sysJobHandler.JobPage)
@@ -166,6 +167,7 @@ func NewContainer(c config.AppConfig) (*Container, error) {
 	app.Post("/monitor/job", ms.PermissionMiddleware("monitor:job:add"), sysJobHandler.AddJobInfo)
 	app.Put("/monitor/job", ms.PermissionMiddleware("monitor:job:edit"), sysJobHandler.EditJobInfo)
 	app.Delete("/monitor/job/*jobIds", ms.PermissionMiddleware("monitor:job:remove"), sysJobHandler.DeleteJobInfo)
+	app.Put("/monitor/job/changeStatus", ms.PermissionMiddleware("monitor:job:edit"), sysJobHandler.ChangeJobStatus)
 
 	return &Container{
 		appConfig: c,

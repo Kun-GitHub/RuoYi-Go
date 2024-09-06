@@ -103,3 +103,10 @@ func (this *SysJobRepository) DeleteJobById(id int64) (int64, error) {
 		Where(this.db.Gen.SysJob.JobID.Eq(id)).Delete()
 	return r.RowsAffected, err
 }
+
+func (this *SysJobRepository) ChangeJobStatus(user *model.ChangeJobStatusRequest) (int64, error) {
+	r, err := this.db.Gen.SysJob.WithContext(context.Background()).
+		Where(this.db.Gen.SysJob.JobID.Eq(user.JobID)).
+		Update(this.db.Gen.SysJob.Status, user.Status)
+	return r.RowsAffected, err
+}
