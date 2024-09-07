@@ -1,7 +1,13 @@
 package jobs
 
 import (
+	"encoding/json"
+	"fmt"
+	"github.com/valyala/fasthttp"
 	"go.uber.org/zap"
+	"strconv"
+	"strings"
+	"time"
 )
 
 // TaskDemo 实现 Task 接口的一个示例
@@ -13,7 +19,7 @@ type TaskGoroutine struct {
 // NewTaskDemo
 func NewTaskGoroutine(l *zap.Logger) *TaskGoroutine {
 	pageNumChan := make(chan int, 1)
-	pageNumChan <- 0 // 初始化pageNum为0
+	pageNumChan <- 1 // 初始化pageNum为0
 
 	return &TaskGoroutine{
 		logger:      l,
@@ -22,19 +28,80 @@ func NewTaskGoroutine(l *zap.Logger) *TaskGoroutine {
 }
 
 func (this *TaskGoroutine) Run() {
-	this.logger.Info("TaskGoroutine is running")
+	//this.logger.Info("TaskGoroutine is running")
 	select {
 	case pageNum := <-this.pageNumChan:
-		this.logger.Info("当前页码为：%d", zap.Int("pageNum", pageNum))
-		this.fetchAndInsertData(pageNum)
+		this.logger.Info(fmt.Sprintf("当前页码为：%d", pageNum))
+		go this.fetchAndInsertData(pageNum)
 	default:
-		defaultPageNum := 0
-		this.fetchAndInsertData(defaultPageNum)
+		//defaultPageNum := 1
+		//this.fetchAndInsertData(defaultPageNum)
 	}
 }
 
 func (this *TaskGoroutine) fetchAndInsertData(pageNum int) {
-	this.pageNumChan <- pageNum + 1
 	// 获取数据
-	// 将数据插入数据库
+	// 创建一个客户端请求对象
+	req := fasthttp.AcquireRequest()
+	defer fasthttp.ReleaseRequest(req)
+
+	t := time.Now()
+	dateStr := t.Format("2006-01-02")
+
+	// 设置请求 URL
+	req.SetRequestURI("http://deal.ggzy.gov.cn/ds/deal/dealList_find.jsp?" +
+		"TIMEBEGIN_SHOW=" + dateStr + "&TIMEEND_SHOW=" + dateStr +
+		"&TIMEBEGIN=" + dateStr + "&TIMEEND=" + dateStr +
+		"&SOURCE_TYPE=1&DEAL_TIME=02&DEAL_CLASSIFY=01&DEAL_STAGE=0101&DEAL_PROVINCE=530000&DEAL_CITY=0&DEAL_PLATFORM=0&BID_PLATFORM=0&DEAL_TRADE=0&isShowAll=1&PAGENUMBER=" + strconv.Itoa(pageNum) + "&FINDTXT=")
+	// 设置请求方法为 POST
+	req.Header.SetMethod("POST")
+
+	// 创建一个响应对象
+	resp := fasthttp.AcquireResponse()
+	defer fasthttp.ReleaseResponse(resp)
+
+	// 发起请求
+	if err := fasthttp.Do(req, resp); err != nil {
+		this.logger.Error("An error occurred while making the request: %v", zap.Error(err))
+		return
+	}
+
+	if resp.StatusCode() != fasthttp.StatusOK {
+		this.logger.Error(fmt.Sprintf("Request failed with status code: %d", resp.StatusCode()))
+		return
+	}
+
+	// 获取响应体
+	body := string(resp.Body())
+	// 输出结果
+	body = strings.ReplaceAll(body, "&nbsp;", "")
+	body = strings.ReplaceAll(body, "\n", "")
+	body = strings.ReplaceAll(body, "\r", "")
+	//this.logger.Info(fmt.Sprintf("Response body: %s", body))
+
+	var response Response
+	err := json.Unmarshal(resp.Body(), &response)
+	if err != nil {
+		this.logger.Error("Error unmarshalling JSON: %v", zap.Error(err))
+		return
+	}
+	if response.Success && response.TtlRow > 0 {
+		this.logger.Info(fmt.Sprintf("TtlPage: %d", response.TtlPage))
+		if pageNum < response.TtlPage {
+			this.pageNumChan <- pageNum + 1
+		} else {
+			this.logger.Info("数据抓取完毕")
+			this.pageNumChan <- 1
+		}
+	}
+}
+
+type Response struct {
+	TtlPage     int           `json:"ttlpage"`
+	TtlRow      int           `json:"ttlrow"`
+	Data        []interface{} `json:"data"`
+	UseTime     int           `json:"usetime"`
+	CurrentPage int           `json:"currentpage"`
+	Success     bool          `json:"success"`
+	Error       string        `json:"error"`
 }

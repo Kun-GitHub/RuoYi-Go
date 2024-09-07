@@ -1,7 +1,6 @@
 package jobs
 
 import (
-	"fmt"
 	"go.uber.org/zap"
 )
 
@@ -17,6 +16,6 @@ func NewTaskDemo(l *zap.Logger) *TaskDemo {
 	}
 }
 
-func (te *TaskDemo) Run() {
-	fmt.Println("Running task...")
+func (this *TaskDemo) Run() {
+	this.logger.Info("TaskDemo is running")
 }
