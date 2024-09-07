@@ -147,7 +147,7 @@ func (this *SysRoleService) DeleteRoleById(id int64) (int64, error) {
 		this.logger.Error("删除用户信息失败", zap.Error(err))
 		return 0, err
 	}
-	if result == 1 {
+	if result > 0 {
 		this.cache.Del(fmt.Sprintf("RoleID:%d", id))
 	}
 	return result, nil

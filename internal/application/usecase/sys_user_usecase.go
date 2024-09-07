@@ -155,7 +155,7 @@ func (this *SysUserService) DeleteUserByUserId(userId int64) (int64, error) {
 		this.logger.Error("删除用户信息失败", zap.Error(err))
 		return 0, err
 	}
-	if result == 1 {
+	if result > 0 {
 		this.cache.Del(fmt.Sprintf("UserID:%d", userId))
 	}
 	return result, nil
@@ -167,7 +167,7 @@ func (this *SysUserService) ChangeUserStatus(user *model.ChangeUserStatusRequest
 		this.logger.Error("修改用户状态失败", zap.Error(err))
 		return 0, err
 	}
-	if result == 1 {
+	if result > 0 {
 		structEntity, err := this.repo.QueryUserByUserId(user.UserID)
 		if err != nil {
 			this.logger.Error("查询用户信息失败", zap.Error(err))

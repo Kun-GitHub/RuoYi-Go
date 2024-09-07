@@ -116,7 +116,7 @@ func (this *SysNoticeService) DeleteNoticeById(id int64) (int64, error) {
 		this.logger.Error("删除用户信息失败", zap.Error(err))
 		return 0, err
 	}
-	if result == 1 {
+	if result > 0 {
 		this.cache.Del(fmt.Sprintf("NoticeID:%d", id))
 	}
 	return result, nil

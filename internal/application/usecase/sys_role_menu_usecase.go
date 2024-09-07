@@ -38,7 +38,7 @@ func (this *SysRoleMenuService) DeleteRoleMenuByRoleId(roleId int64) (int64, err
 		this.logger.Error("删除用户信息失败", zap.Error(err))
 		return 0, err
 	}
-	if result == 1 {
+	if result > 0 {
 		//this.cache.Del(fmt.Sprintf("UserRoles:%d", userId))
 	}
 	return result, nil

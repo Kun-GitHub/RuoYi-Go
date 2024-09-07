@@ -116,7 +116,7 @@ func (this *SysJobService) DeleteJobById(id int64) (int64, error) {
 		this.logger.Error("删除用户信息失败", zap.Error(err))
 		return 0, err
 	}
-	if result == 1 {
+	if result > 0 {
 		this.cache.Del(fmt.Sprintf("JobID:%d", id))
 	}
 	return result, nil
@@ -128,7 +128,7 @@ func (this *SysJobService) ChangeJobStatus(user *model.ChangeJobStatusRequest) (
 		this.logger.Error("修改用户状态失败", zap.Error(err))
 		return 0, err
 	}
-	if result == 1 {
+	if result > 0 {
 		structEntity, err := this.repo.QueryJobByID(user.JobID)
 		if err != nil {
 			this.logger.Error("查询用户信息失败", zap.Error(err))

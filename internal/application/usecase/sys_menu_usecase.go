@@ -116,7 +116,7 @@ func (this *SysMenuService) DeleteMenuById(id int64) (int64, error) {
 		this.logger.Error("DeleteMenuById", zap.Error(err))
 		return 0, err
 	}
-	if result == 1 {
+	if result > 0 {
 		this.cache.Del(fmt.Sprintf("MenuID:%d", id))
 	}
 	return result, nil
