@@ -23,7 +23,6 @@ func NewTaskGoroutine(l *zap.Logger) *TaskGoroutine {
 
 	//无缓冲的chan
 	//pageNumChan := make(chan int)
-	//// 初始化pageNum为0
 	//go func() {
 	//	pageNumChan <- 1
 	//}()
