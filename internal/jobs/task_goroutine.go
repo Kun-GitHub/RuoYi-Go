@@ -19,7 +19,14 @@ type TaskGoroutine struct {
 // NewTaskDemo
 func NewTaskGoroutine(l *zap.Logger) *TaskGoroutine {
 	pageNumChan := make(chan int, 1)
-	pageNumChan <- 1 // 初始化pageNum为0
+	pageNumChan <- 1
+
+	//无缓冲的chan
+	//pageNumChan := make(chan int)
+	//// 初始化pageNum为0
+	//go func() {
+	//	pageNumChan <- 1
+	//}()
 
 	return &TaskGoroutine{
 		logger:      l,
@@ -34,6 +41,7 @@ func (this *TaskGoroutine) Run() {
 		this.logger.Info(fmt.Sprintf("当前页码为：%d", pageNum))
 		go this.fetchAndInsertData(pageNum)
 	default:
+		this.logger.Info(fmt.Sprintf("default"))
 		//defaultPageNum := 1
 		//this.fetchAndInsertData(defaultPageNum)
 	}
@@ -62,11 +70,13 @@ func (this *TaskGoroutine) fetchAndInsertData(pageNum int) {
 
 	// 发起请求
 	if err := fasthttp.Do(req, resp); err != nil {
+		this.pageNumChan <- pageNum
 		this.logger.Error("An error occurred while making the request: %v", zap.Error(err))
 		return
 	}
 
 	if resp.StatusCode() != fasthttp.StatusOK {
+		this.pageNumChan <- pageNum
 		this.logger.Error(fmt.Sprintf("Request failed with status code: %d", resp.StatusCode()))
 		return
 	}
@@ -82,6 +92,7 @@ func (this *TaskGoroutine) fetchAndInsertData(pageNum int) {
 	var response Response
 	err := json.Unmarshal(resp.Body(), &response)
 	if err != nil {
+		this.pageNumChan <- pageNum
 		this.logger.Error("Error unmarshalling JSON: %v", zap.Error(err))
 		return
 	}
@@ -93,6 +104,8 @@ func (this *TaskGoroutine) fetchAndInsertData(pageNum int) {
 			this.logger.Info("数据抓取完毕")
 			this.pageNumChan <- 1
 		}
+	} else {
+		this.pageNumChan <- pageNum
 	}
 }
 
