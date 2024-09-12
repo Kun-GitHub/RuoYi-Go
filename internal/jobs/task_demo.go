@@ -17,5 +17,5 @@ func NewTaskDemo(l *zap.Logger) *TaskDemo {
 }
 
 func (this *TaskDemo) Run() {
-	//this.logger.Info("TaskDemo is running")
+	this.logger.Info("TaskDemo is running")
 }

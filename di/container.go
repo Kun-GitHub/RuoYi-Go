@@ -84,7 +84,7 @@ func NewContainer(c config.AppConfig) (*Container, error) {
 	app.Delete("/system/menu/*menuIds", ms.PermissionMiddleware("system:menu:remove"), sysMenuHandler.DeleteMenuInfo)
 
 	pageSysUserHandler := ryserver.ResolvePageSysUserHandler(db, log, freeCache)
-	app.Get("/system/user", ms.PermissionMiddleware("system:user:query"), pageSysUserHandler.UserInfo)
+	//app.Get("/system/user", ms.PermissionMiddleware("system:user:query"), pageSysUserHandler.UserInfo)
 	app.Get("/system/user/list", ms.PermissionMiddleware("system:user:list"), pageSysUserHandler.UserPage)
 	app.Get("/system/user/deptTree", ms.PermissionMiddleware("system:user:list"), pageSysUserHandler.DeptTree)
 	app.Get("/system/user/{userId:uint}", ms.PermissionMiddleware("system:user:query"), pageSysUserHandler.UserInfo)
