@@ -18,6 +18,8 @@ type Product struct {
 	mu    sync.Mutex // 互斥锁
 	stock int        // 库存
 	sales int        // 销售量
+
+	temp int
 }
 
 // 下单函数
@@ -25,16 +27,17 @@ func (p *Product) PlaceOrder(n int) {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 
+	p.temp++
 	if p.stock-n >= 0 {
 		p.stock -= n
 		p.sales += n
-		fmt.Printf("已下单成功，剩余库存：%d\n", p.stock)
+		fmt.Printf("已下单成功，剩余库存：%d，下单次数：%d\n", p.stock, p.temp)
 		return
 	}
-	fmt.Printf("下单失败，剩余库存：%d\n", p.stock)
+	fmt.Printf("下单失败，剩余库存：%d，下单次数：%d\n", p.stock, p.temp)
 }
 
-func TestGoroutine(t *testing.T) {
+func TestGoroutine1Sales1For(t *testing.T) {
 	// 初始化商品
 	product := &Product{stock: 50}
 
