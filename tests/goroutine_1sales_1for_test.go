@@ -23,7 +23,7 @@ type Product struct {
 }
 
 // 下单函数
-func (p *Product) PlaceOrder(n int) {
+func (p *Product) Place1SalesOrder(n int) {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 
@@ -53,7 +53,7 @@ func TestGoroutine1Sales1For(t *testing.T) {
 		wg.Add(1)
 		go func(quantity int) {
 			defer wg.Done()
-			product.PlaceOrder(quantity)
+			product.Place1SalesOrder(quantity)
 		}(quantity)
 	}
 

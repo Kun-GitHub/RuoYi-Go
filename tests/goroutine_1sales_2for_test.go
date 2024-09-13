@@ -37,7 +37,7 @@ func TestGoroutine1Sales2For(t *testing.T) {
 			wg.Add(1)
 			go func(quantity int) {
 				defer wg.Done()
-				product.PlaceOrder(quantity)
+				product.Place1SalesOrder(quantity)
 			}(quantity)
 		}
 	}(quantity)
@@ -51,7 +51,7 @@ func TestGoroutine1Sales2For(t *testing.T) {
 			wg.Add(1)
 			go func(quantity int) {
 				defer wg.Done()
-				product.PlaceOrder(quantity)
+				product.Place1SalesOrder(quantity)
 			}(quantity)
 		}
 	}(quantity)
