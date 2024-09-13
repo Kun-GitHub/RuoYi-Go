@@ -61,6 +61,10 @@ func NewContainer(c config.AppConfig) (*Container, error) {
 	ms := ryserver.ResolveServerMiddleware(db, redis, log, freeCache, c)
 	app.Use(ms.MiddlewareHandler)
 
+	//// 日志和恢复中间件
+	//app.UseRouter(recover.New())
+	//app.UseRouter(iLog.New())
+
 	//demoHandler := ryserver.ResolveDemoHandler(redis, cache, log)
 	//app.Get("/demos/{id:uint}", demoHandler.GetDemoByID)
 	//app.Get("/generate-code", demoHandler.GenerateRandomCode)

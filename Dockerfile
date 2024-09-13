@@ -6,6 +6,8 @@
 # 使用官方的Golang镜像作为构建阶段的基础镜像
 FROM golang:1.22-alpine as builder
 
+MAINTAINER K.
+
 ENV GOPROXY=https://goproxy.cn,direct
 ENV GO111MODULE=on
 
