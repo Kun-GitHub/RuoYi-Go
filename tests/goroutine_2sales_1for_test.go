@@ -24,15 +24,15 @@ func placeOrder(items map[string]int) {
 	// 逐个检查库存并扣减
 	for productID, quantity := range items {
 		product := products[productID]
+		product.mu.Lock() // 锁定产品
 		if product.stock-quantity >= 0 {
-			product.mu.Lock() // 锁定产品
 			product.stock -= quantity
 			product.sales += quantity
-			product.mu.Unlock() // 解锁产品
 			fmt.Printf("%v下单成功，剩余库存：%d\n", productID, product.stock)
 		} else {
 			fmt.Printf("%v下单失败，剩余库存：%d\n", productID, product.stock)
 		}
+		product.mu.Unlock() // 解锁产品
 	}
 }
 
