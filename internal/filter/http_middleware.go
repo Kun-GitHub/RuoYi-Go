@@ -28,7 +28,6 @@ type ServerMiddleware struct {
 	redis       *cache.RedisClient
 	logger      *zap.Logger
 	cfg         config.AppConfig
-	authService input.AuthService
 	service     input.SysUserService
 	menuService input.SysMenuService
 	db          *dao.DatabaseStruct
@@ -104,6 +103,7 @@ func (this *ServerMiddleware) MiddlewareHandler(ctx iris.Context) {
 	// 继续执行下一个中间件或处理函数
 	ctx.Next()
 
+	ctx.Values().Reset()
 	this.db.ClearUser()
 }
 
