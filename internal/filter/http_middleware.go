@@ -7,6 +7,7 @@ package filter
 
 import (
 	"RuoYi-Go/config"
+	"RuoYi-Go/internal/adapters/dao"
 	"RuoYi-Go/internal/common"
 	"RuoYi-Go/internal/domain/model"
 	"RuoYi-Go/internal/ports/input"
@@ -27,12 +28,15 @@ type ServerMiddleware struct {
 	redis       *cache.RedisClient
 	logger      *zap.Logger
 	cfg         config.AppConfig
+	authService input.AuthService
 	service     input.SysUserService
 	menuService input.SysMenuService
+	db          *dao.DatabaseStruct
 }
 
-func NewServerMiddleware(r *cache.RedisClient, l *zap.Logger, c config.AppConfig, s input.SysUserService, menuService input.SysMenuService) *ServerMiddleware {
+func NewServerMiddleware(db *dao.DatabaseStruct, r *cache.RedisClient, l *zap.Logger, c config.AppConfig, s input.SysUserService, menuService input.SysMenuService) *ServerMiddleware {
 	return &ServerMiddleware{
+		db:          db,
 		redis:       r,
 		logger:      l,
 		cfg:         c,
@@ -90,6 +94,7 @@ func (this *ServerMiddleware) MiddlewareHandler(ctx iris.Context) {
 		loginUser = &model.UserInfoStruct{}
 	}
 	loginUser.SysUser = sysUser
+	this.db.LoginUser(sysUser)
 	if sysUser.UserID == common.ADMINID {
 		loginUser.Admin = true
 	}
@@ -98,6 +103,8 @@ func (this *ServerMiddleware) MiddlewareHandler(ctx iris.Context) {
 
 	// 继续执行下一个中间件或处理函数
 	ctx.Next()
+
+	this.db.ClearUser()
 }
 
 func skipInterceptor(path string, notInterceptList []string) bool {

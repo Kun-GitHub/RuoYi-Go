@@ -77,6 +77,7 @@ func (this *AuthService) Login(l *model.LoginRequest) (*model.LoginSuccess, erro
 			return nil, fmt.Errorf("生成token失败", zap.Error(err))
 		} else {
 			this.redis.Set(fmt.Sprintf("%s:%s", common.TOKEN, token), sysUser.UserID, 72*time.Hour)
+			this.service.UserLogin(sysUser)
 
 			this.loginService.AddLogininfor(&model.SysLogininfor{
 				Status:    "0",

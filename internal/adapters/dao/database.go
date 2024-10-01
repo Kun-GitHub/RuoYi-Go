@@ -7,6 +7,7 @@ package dao
 
 import (
 	"RuoYi-Go/config"
+	"RuoYi-Go/internal/domain/model"
 	"fmt"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -30,6 +31,7 @@ type DatabaseStruct struct {
 	db     *gorm.DB
 	mu     sync.Mutex
 	logger *zap.Logger
+	user   *model.SysUser
 
 	Gen *Query
 }
@@ -195,6 +197,18 @@ func (ds *DatabaseStruct) Transactional(txFunc func(*gorm.DB) error) error {
 		return err
 	}
 	return tx.Commit().Error
+}
+
+func (ds *DatabaseStruct) LoginUser(user *model.SysUser) {
+	ds.user = user
+}
+
+func (ds *DatabaseStruct) User() *model.SysUser {
+	return ds.user
+}
+
+func (ds *DatabaseStruct) ClearUser() {
+	ds.user = nil
 }
 
 //func (ds *DatabaseStruct) CustomQuery(query string, args []interface{}, processRow func(rows *sql.Rows) error) error {

@@ -153,14 +153,19 @@ func (this *SysUserRepository) QueryUserList(user *model.SysUserRequest) ([]*mod
 
 func (this *SysUserRepository) DeleteUserByUserId(userId int64) (int64, error) {
 	r, err := this.db.Gen.SysUser.WithContext(context.Background()).
-		Where(this.db.Gen.SysUser.UserID.Eq(userId)).Update(this.db.Gen.SysUser.DelFlag, "2")
+		Where(this.db.Gen.SysUser.UserID.Eq(userId)).
+		UpdateSimple(this.db.Gen.SysUser.DelFlag.Value("2"),
+			this.db.Gen.SysUser.UpdateBy.Value(this.db.User().UserName),
+			this.db.Gen.SysUser.UpdateTime.Value(time.Now()))
 	return r.RowsAffected, err
 }
 
 func (this *SysUserRepository) ChangeUserStatus(user *model.ChangeUserStatusRequest) (int64, error) {
 	r, err := this.db.Gen.SysUser.WithContext(context.Background()).
 		Where(this.db.Gen.SysUser.UserID.Eq(user.UserID), this.db.Gen.SysUser.DelFlag.Eq("0")).
-		Update(this.db.Gen.SysUser.Status, user.Status)
+		UpdateSimple(this.db.Gen.SysUser.Status.Value(user.Status),
+			this.db.Gen.SysUser.UpdateBy.Value(this.db.User().UserName),
+			this.db.Gen.SysUser.UpdateTime.Value(time.Now()))
 	return r.RowsAffected, err
 }
 
@@ -172,7 +177,9 @@ func (this *SysUserRepository) ResetUserPwd(user *model.ResetUserPwdRequest) (in
 
 	r, err := this.db.Gen.SysUser.WithContext(context.Background()).
 		Where(this.db.Gen.SysUser.UserID.Eq(user.UserID), this.db.Gen.SysUser.DelFlag.Eq("0")).
-		Update(this.db.Gen.SysUser.Password, string(hashedPassword))
+		UpdateSimple(this.db.Gen.SysUser.Password.Value(string(hashedPassword)),
+			this.db.Gen.SysUser.UpdateBy.Value(this.db.User().UserName),
+			this.db.Gen.SysUser.UpdateTime.Value(time.Now()))
 	return r.RowsAffected, err
 }
 
@@ -196,4 +203,11 @@ func (this *SysUserRepository) CheckUserNameUnique(id int64, name string) (int64
 	r, err := this.db.Gen.SysUser.WithContext(context.Background()).
 		Where(this.db.Gen.SysUser.UserName.Eq(name), this.db.Gen.SysUser.UserID.Neq(id), this.db.Gen.SysUser.DelFlag.Eq("0")).Count()
 	return r, err
+}
+
+func (this *SysUserRepository) UserLogin(user *model.SysUser) (int64, error) {
+	r, err := this.db.Gen.SysUser.WithContext(context.Background()).
+		Where(this.db.Gen.SysUser.UserID.Eq(user.UserID), this.db.Gen.SysUser.DelFlag.Eq("0")).
+		Update(this.db.Gen.SysUser.LoginDate, time.Now())
+	return r.RowsAffected, err
 }

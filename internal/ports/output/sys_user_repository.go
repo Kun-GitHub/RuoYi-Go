@@ -22,4 +22,5 @@ type SysUserRepository interface {
 	AddUser(post *model.SysUser) (*model.SysUser, error)
 	EditUser(post *model.SysUser) (*model.SysUser, int64, error)
 	CheckUserNameUnique(id int64, typeStr string) (int64, error)
+	UserLogin(user *model.SysUser) (int64, error)
 }

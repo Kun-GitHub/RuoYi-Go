@@ -233,3 +233,12 @@ func (this *SysUserService) CheckUserNameUnique(id int64, name string) (int64, e
 	}
 	return result, nil
 }
+
+func (this *SysUserService) UserLogin(user *model.SysUser) (int64, error) {
+	result, err := this.repo.UserLogin(user)
+	if err != nil {
+		this.logger.Error("UserLogin", zap.Error(err))
+		return -1, err
+	}
+	return result, nil
+}

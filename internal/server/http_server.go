@@ -28,7 +28,7 @@ func ResolveServerMiddleware(db *dao.DatabaseStruct, redis *cache.RedisClient, l
 	sysUserService := usecase.NewSysUserService(sysUserRepo, cache, logger)
 	sysMenuRepo := persistence.NewSysMenuRepository(db)
 	sysMenuService := usecase.NewSysMenuService(sysMenuRepo, cache, logger)
-	return filter.NewServerMiddleware(redis, logger, appConfig, sysUserService, sysMenuService)
+	return filter.NewServerMiddleware(db, redis, logger, appConfig, sysUserService, sysMenuService)
 }
 
 func ResolveCaptchaHandler(redis *cache.RedisClient, logger *zap.Logger) *handler.CaptchaHandler {
