@@ -10,6 +10,7 @@ import (
 	"RuoYi-Go/internal/domain/model"
 	"context"
 	"gorm.io/gen/field"
+	"time"
 )
 
 type SysDeptRepository struct {
@@ -89,6 +90,9 @@ func (this *SysDeptRepository) EditDept(post *model.SysDept) (*model.SysDept, in
 
 func (this *SysDeptRepository) DeleteDeptById(id int64) (int64, error) {
 	r, err := this.db.Gen.SysDept.WithContext(context.Background()).
-		Where(this.db.Gen.SysDept.DeptID.Eq(id)).Update(this.db.Gen.SysDept.DelFlag, "2")
+		Where(this.db.Gen.SysDept.DeptID.Eq(id)).
+		UpdateSimple(this.db.Gen.SysDept.DelFlag.Value("2"),
+			this.db.Gen.SysUser.UpdateBy.Value(this.db.User().UserName),
+			this.db.Gen.SysUser.UpdateTime.Value(time.Now()))
 	return r.RowsAffected, err
 }

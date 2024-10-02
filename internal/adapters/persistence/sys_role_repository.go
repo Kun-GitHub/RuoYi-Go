@@ -149,13 +149,18 @@ func (this *SysRoleRepository) EditRole(post *model.SysRole) (*model.SysRole, in
 
 func (this *SysRoleRepository) DeleteRoleById(id int64) (int64, error) {
 	r, err := this.db.Gen.SysRole.WithContext(context.Background()).
-		Where(this.db.Gen.SysRole.RoleID.Eq(id)).Update(this.db.Gen.SysRole.DelFlag, "2")
+		Where(this.db.Gen.SysRole.RoleID.Eq(id)).
+		UpdateSimple(this.db.Gen.SysRole.DelFlag.Value("2"),
+			this.db.Gen.SysUser.UpdateBy.Value(this.db.User().UserName),
+			this.db.Gen.SysUser.UpdateTime.Value(time.Now()))
 	return r.RowsAffected, err
 }
 
 func (this *SysRoleRepository) ChangeRoleStatus(user *model.ChangeRoleStatusRequest) (int64, error) {
 	r, err := this.db.Gen.SysRole.WithContext(context.Background()).
 		Where(this.db.Gen.SysRole.RoleID.Eq(user.RoleId), this.db.Gen.SysRole.DelFlag.Eq("0")).
-		Update(this.db.Gen.SysRole.Status, user.Status)
+		UpdateSimple(this.db.Gen.SysRole.Status.Value(user.Status),
+			this.db.Gen.SysUser.UpdateBy.Value(this.db.User().UserName),
+			this.db.Gen.SysUser.UpdateTime.Value(time.Now()))
 	return r.RowsAffected, err
 }
