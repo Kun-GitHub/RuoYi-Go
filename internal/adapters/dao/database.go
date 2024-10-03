@@ -9,7 +9,6 @@ import (
 	"RuoYi-Go/config"
 	"RuoYi-Go/internal/domain/model"
 	"fmt"
-	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"gorm.io/driver/mysql"
 	"gorm.io/driver/postgres"
@@ -28,10 +27,9 @@ type IDatabase interface {
 }
 
 type DatabaseStruct struct {
-	db     *gorm.DB
-	mu     sync.Mutex
-	logger *zap.Logger
-	user   *model.SysUser
+	db   *gorm.DB
+	mu   sync.Mutex
+	user *model.SysUser
 
 	Gen *Query
 }
@@ -113,66 +111,6 @@ func (ds *DatabaseStruct) CloseDB() error {
 	return nil
 }
 
-//func (ds *DatabaseStruct) Create(tableName string, v interface{}, structEntity any) error {
-//	ds.mu.Lock()
-//	defer ds.mu.Unlock()
-//
-//	if ds.db != nil {
-//		// 运行自动迁移创建表结构（假设structEntity模型对应的表不存在，GORM会尝试创建）
-//		ds.db.AutoMigrate(structEntity)
-//		return ds.db.Table(tableName).Create(v).Error
-//	}
-//	return nil
-//}
-//
-//func (ds *DatabaseStruct) Delete(tableName string, ids []string, structEntity any) error {
-//	ds.mu.Lock()
-//	defer ds.mu.Unlock()
-//
-//	if ds.db != nil && ids != nil {
-//		return ds.db.Table(tableName).Where("id IN ?", ids).Delete(structEntity).Error
-//	}
-//	return nil
-//}
-//
-//func (ds *DatabaseStruct) Find(tableName string, ids []string, structEntity any) error {
-//	ds.mu.Lock()
-//	defer ds.mu.Unlock()
-//
-//	if ds.db != nil {
-//		if ids != nil && len(ids) != 0 {
-//			return ds.db.Table(tableName).Where("id IN ?", ids).Find(structEntity).Error
-//		} else {
-//			return ds.db.Table(tableName).Find(structEntity).Error
-//		}
-//	}
-//	return nil
-//}
-//
-//func (ds *DatabaseStruct) FindColumns(tableName string, structEntity any, query interface{}, args ...interface{}) error {
-//	ds.mu.Lock()
-//	defer ds.mu.Unlock()
-//
-//	if ds.db != nil {
-//		if query != nil && len(args) != 0 {
-//			return ds.db.Table(tableName).Where(query, args...).Find(structEntity).Error
-//		} else {
-//			return fmt.Errorf("没有传查询参数")
-//		}
-//	}
-//	return nil
-//}
-//
-//func (ds *DatabaseStruct) Update(tableName string, id uint, structEntity any) error {
-//	ds.mu.Lock()
-//	defer ds.mu.Unlock()
-//
-//	if ds.db != nil && id != 0 {
-//		return ds.db.Table(tableName).Updates(structEntity).Error
-//	}
-//	return nil
-//}
-
 func (ds *DatabaseStruct) Transactional(txFunc func(*gorm.DB) error) error {
 	ds.mu.Lock()
 	defer ds.mu.Unlock()
@@ -210,63 +148,3 @@ func (ds *DatabaseStruct) User() *model.SysUser {
 func (ds *DatabaseStruct) ClearUser() {
 	ds.user = nil
 }
-
-//func (ds *DatabaseStruct) CustomQuery(query string, args []interface{}, processRow func(rows *sql.Rows) error) error {
-//	var rows *sql.Rows
-//	var err error
-//	if rows, err = ds.db.Raw(query, args...).Rows(); err != nil {
-//		return err
-//	}
-//	defer rows.Close()
-//
-//	for rows.Next() {
-//		if err := processRow(rows); err != nil {
-//			return err
-//		}
-//	}
-//
-//	if err := rows.Err(); err != nil {
-//		return err
-//	}
-//
-//	return nil
-//}
-//
-// 泛型居然在我的电脑不支持
-//func (ds *DatabaseStruct) paginate(pageReq common.PageRequest) (*common.PageResponse[interface{}], error) {
-//	var total int64
-//	ds.db.Model(&T{}).Count(&total)
-//
-//	if pageReq.PageSize == 0 {
-//		pageReq.PageSize = 10 // 默认每页显示10条数据
-//	}
-//
-//	if pageReq.PageNum < 1 {
-//		pageReq.PageNum = 1 // 默认第一页
-//	}
-//
-//	var data []interface{}
-//	ds.db.Offset((pageReq.PageNum - 1) * pageReq.PageSize).Limit(pageReq.PageSize).Find(&data)
-//
-//	return &common.PageResponse[T]{
-//		Total:    int(total),
-//		PageNum:  pageReq.PageNum,
-//		PageSize: pageReq.PageSize,
-//		Data:     data,
-//	}, nil
-//}
-//
-//func (ds *DatabaseStruct) PageQuery(txFunc func(*gorm.DB) *gorm.DB, pageReq common.PageRequest, results any) (int64, error) {
-//	var total int64
-//	err := txFunc(ds.db).Count(&total).Error
-//	if err != nil {
-//		return 0, err
-//	}
-//
-//	err = txFunc(ds.db).Limit(pageReq.PageSize).Offset((pageReq.PageNum - 1) * pageReq.PageSize).Scan(results).Error
-//	if err != nil {
-//		return total, err
-//	}
-//
-//	return total, nil
-//}
