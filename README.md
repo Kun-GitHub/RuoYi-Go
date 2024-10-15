@@ -197,6 +197,17 @@
 <td></td>
 <td>简单而强大的任务调度库，类似于Python的schedule库</td>
 </tr>
+<tr>
+<td  rowspan="2">Excel导入导出</td>
+<td><a href="https://github.com/qax-os/excelize">excelize</a></td>
+<td>✅</td>
+<td>支持读取、写入和管理Excel文件。它支持从Excel 97-2003的.xls格式到现代Excel .xlsx格式的文件。除了基础的数据操作外，还支持样式设置、图表生成等功能</td>
+</tr>
+<tr>
+<td><a href="https://github.com/tealeg/xlsx">xlsx</a></td>
+<td></td>
+<td>支持读写.xlsx格式的文件。它提供了丰富的API来操作Excel文档，如创建、修改和查询单元格数据等</td>
+</tr>
 </tbody>
 </table>
   
