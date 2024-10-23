@@ -89,7 +89,7 @@ function logout() {
     type: 'warning'
   }).then(() => {
     userStore.logOut().then(() => {
-      location.href = '/index';
+      location.href = process.env.VUE_APP_PRE_URL + '/index';
     })
   }).catch(() => { });
 }
