@@ -218,6 +218,78 @@ func (this *SysUserHandler) UserInfo(ctx iris.Context) {
 	ctx.JSON(infoSuccess)
 }
 
+func (this *SysUserHandler) UserProfile(ctx iris.Context) {
+	temp := ctx.Values().Get(common.LOGINUSER)
+	// 类型断言
+	loginUser, ok := temp.(*model.UserInfoStruct)
+	if !ok {
+		ctx.JSON(common.Error(iris.StatusUnauthorized, "请重新登录"))
+		return
+	}
+
+	user, err := this.service.QueryUserByUserId(loginUser.UserID)
+	if err != nil {
+		//this.logger.Debug("login failed", zap.Error(err))
+		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "QueryUserByUserId, error：%s", err.Error()))
+		return
+	}
+	user.Password = ""
+
+	userInfo := &model.UserInfoStruct{}
+	userInfo.SysUser = user
+
+	if user.UserID == common.ADMINID {
+		userInfo.Admin = true
+	}
+
+	roles, err := this.roleService.QueryRolesByUserId(user.UserID)
+	if err != nil {
+		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "QueryRolesByUserId, error：%s", err.Error()))
+		return
+	}
+	userInfo.Roles = roles
+
+	dept, err := this.deptService.QueryDeptById(user.DeptID)
+	if err != nil {
+		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "QueryDeptById, error：%s", err.Error()))
+		return
+	}
+	userInfo.Dept = dept
+
+	var roleIds []int64
+	for _, role := range roles {
+		roleIds = append(roleIds, role.RoleID)
+	}
+
+	//postList, err := this.postService.QueryPostList(nil)
+	//if err != nil {
+	//	ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "QueryPostList, error：%s", err.Error()))
+	//	return
+	//}
+
+	posts, err := this.postService.QueryPostByUserId(user.UserID)
+	if err != nil {
+		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "QueryPostByUserId, error：%s", err.Error()))
+		return
+	}
+	var postIds []int64
+	for _, post := range posts {
+		postIds = append(postIds, post.PostID)
+	}
+
+	infoSuccess := &model.UserProfileSuccess{
+		Code:    common.SUCCESS,
+		User:    userInfo,
+		Message: "操作成功",
+		//RoleIds: roleIds,
+		//Roles:   roles,
+		//Posts:   postList,
+		//PostIds: postIds,
+	}
+
+	ctx.JSON(infoSuccess)
+}
+
 //func (this *SysUserHandler) UserInfoByNoneUserId(ctx iris.Context) {
 //	roles, err := this.roleService.QueryRoleList(nil)
 //	if err != nil {

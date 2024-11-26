@@ -92,3 +92,11 @@ type UserInfoNoneUserIdSuccess struct {
 	Roles   []*SysRole `gorm:"-" json:"roles,omitempty"`
 	Posts   []*SysPost `gorm:"-" json:"posts,omitempty"`
 }
+
+type UserProfileSuccess struct {
+	Code      int             `json:"code"`
+	Message   string          `json:"msg"`
+	User      *UserInfoStruct `json:"data"`
+	PostGroup string          `gorm:"-" json:"postGroup,omitempty"`
+	RoleGroup string          `gorm:"-" json:"roleGroup,omitempty"`
+}

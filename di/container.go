@@ -92,6 +92,7 @@ func NewContainer(c config.AppConfig) (*Container, error) {
 	app.Get("/system/user/list", ms.PermissionMiddleware("system:user:list"), pageSysUserHandler.UserPage)
 	app.Get("/system/user/deptTree", ms.PermissionMiddleware("system:user:list"), pageSysUserHandler.DeptTree)
 	app.Get("/system/user/{userId:uint}", ms.PermissionMiddleware("system:user:query"), pageSysUserHandler.UserInfo)
+	app.Get("/system/user/profile", ms.PermissionMiddleware("system:user:query"), pageSysUserHandler.UserProfile)
 	app.Put("/system/user/changeStatus", ms.PermissionMiddleware("system:user:edit"), pageSysUserHandler.ChangeUserStatus)
 	app.Put("/system/user/resetPwd", ms.PermissionMiddleware("system:user:resetPwd"), pageSysUserHandler.ResetUserPwd)
 	app.Delete("/system/user/*userIds", ms.PermissionMiddleware("system:user:remove"), pageSysUserHandler.DeleteUser)
