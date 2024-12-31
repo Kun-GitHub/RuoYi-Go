@@ -49,7 +49,10 @@ func ResolveAuthHandler(db *dao.DatabaseStruct, redis *cache.RedisClient, logger
 	repo := persistence.NewSysLogininforRepository(db)
 	loginService := usecase.NewSysLogininforService(repo, cache, logger)
 
-	authService := usecase.NewAuthService(sysUserService, sysRoleService, sysDeptService, loginService, redis, logger)
+	sysMenuRepo := persistence.NewSysMenuRepository(db)
+	sysMenuService := usecase.NewSysMenuService(sysMenuRepo, cache, logger)
+
+	authService := usecase.NewAuthService(sysUserService, sysRoleService, sysDeptService, loginService, sysMenuService, redis, logger)
 	return handler.NewAuthHandler(authService, logger)
 }
 

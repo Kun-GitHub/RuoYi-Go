@@ -23,12 +23,13 @@ type AuthService struct {
 	roleService  input.SysRoleService
 	deptService  input.SysDeptService
 	loginService input.SysLogininforService
+	menuService   input.SysMenuService
 	redis        *cache.RedisClient
 	logger       *zap.Logger
 }
 
-func NewAuthService(service input.SysUserService, roleService input.SysRoleService, deptService input.SysDeptService, loginService input.SysLogininforService, redis *cache.RedisClient, logger *zap.Logger) input.AuthService {
-	return &AuthService{service: service, roleService: roleService, deptService: deptService, loginService: loginService, redis: redis, logger: logger}
+func NewAuthService(service input.SysUserService, roleService input.SysRoleService, deptService input.SysDeptService, loginService input.SysLogininforService, menuService input.SysMenuService, redis *cache.RedisClient, logger *zap.Logger) input.AuthService {
+	return &AuthService{service: service, roleService: roleService, deptService: deptService, loginService: loginService, menuService: menuService, redis: redis, logger: logger}
 }
 
 func (this *AuthService) Login(l *model.LoginRequest) (*model.LoginSuccess, error) {
@@ -107,11 +108,7 @@ func (this *AuthService) Logout(token string) error {
 
 func (this *AuthService) GetInfo(loginUser *model.UserInfoStruct) (*model.UserInfoStruct, []string, []string, error) {
 	var p []string
-	if loginUser.UserID == common.ADMINID {
-		p = append(p, "*:*:*")
-	} else {
-	}
-
+	
 	roles, err := this.roleService.QueryRolesByUserId(loginUser.UserID)
 	if err != nil {
 		this.logger.Error("QueryRolesByUserId error,", zap.Error(err))
@@ -130,6 +127,24 @@ func (this *AuthService) GetInfo(loginUser *model.UserInfoStruct) (*model.UserIn
 		return nil, p, roleNames, fmt.Errorf("getInfo error", zap.Error(err))
 	}
 	loginUser.Dept = dept
+
+	if loginUser.UserID == common.ADMINID {
+		p = append(p, "*:*:*")
+	} else {
+		// 通过用户id查询权限，并赋值给p（用逗号隔开）
+		menus, err := this.menuService.QueryMenuList(&model.SysMenuRequest{
+			UserId: loginUser.UserID,
+		})
+		if err != nil {
+			this.logger.Error("查询用户菜单权限失败", zap.Error(err))
+			return nil, p, roleNames, err
+		}
+		for _, menu := range menus {
+			if menu.Perms != "" {
+				p = append(p, menu.Perms)
+			}
+		}
+	}
 
 	return loginUser, p, roleNames, nil
 }
