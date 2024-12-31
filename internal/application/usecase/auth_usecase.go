@@ -26,75 +26,85 @@ type AuthService struct {
 	menuService   input.SysMenuService
 	redis        *cache.RedisClient
 	logger       *zap.Logger
+	configService input.SysConfigService
 }
 
-func NewAuthService(service input.SysUserService, roleService input.SysRoleService, deptService input.SysDeptService, loginService input.SysLogininforService, menuService input.SysMenuService, redis *cache.RedisClient, logger *zap.Logger) input.AuthService {
-	return &AuthService{service: service, roleService: roleService, deptService: deptService, loginService: loginService, menuService: menuService, redis: redis, logger: logger}
+func NewAuthService(service input.SysUserService, roleService input.SysRoleService, deptService input.SysDeptService, configService input.SysConfigService, loginService input.SysLogininforService, menuService input.SysMenuService, redis *cache.RedisClient, logger *zap.Logger) input.AuthService {
+	return &AuthService{service: service, roleService: roleService, deptService: deptService, configService: configService, loginService: loginService, menuService: menuService, redis: redis, logger: logger}
 }
 
 func (this *AuthService) Login(l *model.LoginRequest) (*model.LoginSuccess, error) {
-	v, err := this.redis.Get(fmt.Sprintf("%s:%v", common.CAPTCHA, l.Uuid))
-	if err != nil || v == "" {
-		return nil, fmt.Errorf("验证码错误或已失效")
+	// 查询验证码是否开启
+	captchaEnabled := "true"
+	config, err := this.configService.QueryConfigByKey("sys.account.captchaEnabled")
+	if err == nil {
+		captchaEnabled = config.ConfigValue
 	}
-	this.redis.Del(fmt.Sprintf("%s:%v", common.CAPTCHA, l.Uuid))
-
-	if strings.EqualFold(v, l.Code) {
-		sysUser := &model.SysUser{}
-		sysUser, err = this.service.QueryUserByUserName(l.Username)
-		if err != nil {
-			return nil, err
+	// 如果验证码已开启
+	if captchaEnabled == "true" {
+		v, err := this.redis.Get(fmt.Sprintf("%s:%v", common.CAPTCHA, l.Uuid))
+		if err != nil || v == "" {
+			return nil, fmt.Errorf("验证码错误或已失效")
 		}
-		if sysUser.UserID == 0 {
-			this.loginService.AddLogininfor(&model.SysLogininfor{
-				Status:    "1",
-				UserName:  l.Username,
-				LoginTime: time.Now(),
-			})
+		this.redis.Del(fmt.Sprintf("%s:%v", common.CAPTCHA, l.Uuid))
 
-			return nil, fmt.Errorf("用户名或密码错误")
+		if !strings.EqualFold(v, l.Code) {
+			return nil, fmt.Errorf("验证码错误或已失效")
 		}
+	}
 
-		if err = bcrypt.CompareHashAndPassword([]byte(sysUser.Password), []byte(l.Password)); err != nil {
-			this.loginService.AddLogininfor(&model.SysLogininfor{
-				Status:    "1",
-				UserName:  l.Username,
-				LoginTime: time.Now(),
-			})
+	sysUser := &model.SysUser{}
+	sysUser, err = this.service.QueryUserByUserName(l.Username)
+	if err != nil {
+		return nil, err
+	}
+	if sysUser.UserID == 0 {
+		this.loginService.AddLogininfor(&model.SysLogininfor{
+			Status:    "1",
+			UserName:  l.Username,
+			LoginTime: time.Now(),
+		})
 
-			return nil, fmt.Errorf("用户名或密码错误", zap.Error(err))
-		}
+		return nil, fmt.Errorf("用户名或密码错误")
+	}
 
-		var token = ""
-		token, err = ryjwt.Sign(common.USER_ID, fmt.Sprintf("%d", sysUser.UserID), 72)
-		if err != nil {
-			this.loginService.AddLogininfor(&model.SysLogininfor{
-				Status:    "1",
-				UserName:  l.Username,
-				LoginTime: time.Now(),
-			})
+	if err = bcrypt.CompareHashAndPassword([]byte(sysUser.Password), []byte(l.Password)); err != nil {
+		this.loginService.AddLogininfor(&model.SysLogininfor{
+			Status:    "1",
+			UserName:  l.Username,
+			LoginTime: time.Now(),
+		})
 
-			this.logger.Error("生成token失败", zap.Error(err))
-			return nil, fmt.Errorf("生成token失败", zap.Error(err))
-		} else {
-			this.redis.Set(fmt.Sprintf("%s:%s", common.TOKEN, token), sysUser.UserID, 72*time.Hour)
-			this.service.UserLogin(sysUser)
+		return nil, fmt.Errorf("用户名或密码错误", zap.Error(err))
+	}
 
-			this.loginService.AddLogininfor(&model.SysLogininfor{
-				Status:    "0",
-				UserName:  sysUser.UserName,
-				LoginTime: time.Now(),
-			})
+	var token = ""
+	token, err = ryjwt.Sign(common.USER_ID, fmt.Sprintf("%d", sysUser.UserID), 72)
+	if err != nil {
+		this.loginService.AddLogininfor(&model.SysLogininfor{
+			Status:    "1",
+			UserName:  l.Username,
+			LoginTime: time.Now(),
+		})
 
-			loginSuccess := &model.LoginSuccess{
-				Code:    common.SUCCESS,
-				Token:   token,
-				Message: "操作成功",
-			}
-			return loginSuccess, nil
-		}
+		this.logger.Error("生成token失败", zap.Error(err))
+		return nil, fmt.Errorf("生成token失败", zap.Error(err))
 	} else {
-		return nil, fmt.Errorf("验证码错误或已失效")
+		this.redis.Set(fmt.Sprintf("%s:%s", common.TOKEN, token), sysUser.UserID, 72*time.Hour)
+		this.service.UserLogin(sysUser)
+
+		this.loginService.AddLogininfor(&model.SysLogininfor{
+			Status:    "0",
+			UserName:  sysUser.UserName,
+			LoginTime: time.Now(),
+		})
+
+		loginSuccess := &model.LoginSuccess{
+			Code:    common.SUCCESS,
+			Token:   token,
+			Message: "操作成功",
+		}
+		return loginSuccess, nil
 	}
 }
 

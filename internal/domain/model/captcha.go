@@ -9,6 +9,6 @@ type CaptchaImage struct {
 	Code           int    `json:"code"`
 	Message        string `json:"msg"`
 	Uuid           string `json:"uuid"`
-	CaptchaEnabled bool   `json:"captchaEnabled,omitempty"`
+	CaptchaEnabled bool   `json:"captchaEnabled"`
 	Img            string `json:"img"`
 }
