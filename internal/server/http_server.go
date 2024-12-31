@@ -14,6 +14,7 @@ import (
 	"RuoYi-Go/internal/filter"
 	"RuoYi-Go/pkg/cache"
 	"RuoYi-Go/pkg/task"
+
 	"go.uber.org/zap"
 )
 
@@ -31,8 +32,9 @@ func ResolveServerMiddleware(db *dao.DatabaseStruct, redis *cache.RedisClient, l
 	return filter.NewServerMiddleware(db, redis, logger, appConfig, sysUserService, sysMenuService)
 }
 
-func ResolveCaptchaHandler(redis *cache.RedisClient, logger *zap.Logger) *handler.CaptchaHandler {
-	demoService := usecase.NewCaptchaService(redis, logger)
+func ResolveCaptchaHandler(db *dao.DatabaseStruct, redis *cache.RedisClient, logger *zap.Logger) *handler.CaptchaHandler {
+	repo := persistence.NewSysConfigRepository(db)
+	demoService := usecase.NewCaptchaService(repo, redis, logger)
 	return handler.NewCaptchaHandler(demoService)
 }
 
@@ -49,7 +51,13 @@ func ResolveAuthHandler(db *dao.DatabaseStruct, redis *cache.RedisClient, logger
 	repo := persistence.NewSysLogininforRepository(db)
 	loginService := usecase.NewSysLogininforService(repo, cache, logger)
 
-	authService := usecase.NewAuthService(sysUserService, sysRoleService, sysDeptService, loginService, redis, logger)
+	sysMenuRepo := persistence.NewSysMenuRepository(db)
+	sysMenuService := usecase.NewSysMenuService(sysMenuRepo, cache, logger)
+
+	sysConfigRepo := persistence.NewSysConfigRepository(db)
+	sysConfigservice := usecase.NewSysConfigService(sysConfigRepo, cache, logger)
+
+	authService := usecase.NewAuthService(sysUserService, sysRoleService, sysDeptService, sysConfigservice, loginService, sysMenuService, redis, logger)
 	return handler.NewAuthHandler(authService, logger)
 }
 

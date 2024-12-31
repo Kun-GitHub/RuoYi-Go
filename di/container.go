@@ -69,7 +69,7 @@ func NewContainer(c config.AppConfig) (*Container, error) {
 	//app.Get("/demos/{id:uint}", demoHandler.GetDemoByID)
 	//app.Get("/generate-code", demoHandler.GenerateRandomCode)
 
-	captchaHandler := ryserver.ResolveCaptchaHandler(redis, log)
+	captchaHandler := ryserver.ResolveCaptchaHandler(db, redis, log)
 	app.Get("/captchaImage", captchaHandler.GenerateCaptchaImage)
 
 	authHandler := ryserver.ResolveAuthHandler(db, redis, log, freeCache)
