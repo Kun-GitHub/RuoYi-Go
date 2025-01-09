@@ -10,7 +10,7 @@ import (
 	"RuoYi-Go/internal/adapters/dao"
 	"RuoYi-Go/internal/jobs"
 	"RuoYi-Go/internal/server"
-	"RuoYi-Go/internal/websocket"
+	ryws "RuoYi-Go/internal/websocket"
 	"RuoYi-Go/pkg/cache"
 	"RuoYi-Go/pkg/i18n"
 	"RuoYi-Go/pkg/logger"
@@ -32,6 +32,7 @@ type Container struct {
 	app       *iris.Application
 	freeCache *cache.FreeCacheClient
 	jobs      *task.TaskManager
+	ws        *ryws.WebsocketServer
 }
 
 func NewContainer(c config.AppConfig) (*Container, error) {
@@ -58,6 +59,7 @@ func NewContainer(c config.AppConfig) (*Container, error) {
 	freeCache := cache.NewFreeCacheClient(100 * 1024 * 1024)
 
 	app := iris.New()
+	ws := ryws.StartWebSocket(app, log)
 	ms := ryserver.ResolveServerMiddleware(db, redis, log, freeCache, c)
 	app.Use(ms.MiddlewareHandler)
 
@@ -183,6 +185,7 @@ func NewContainer(c config.AppConfig) (*Container, error) {
 		app:       app,
 		freeCache: freeCache,
 		jobs:      task,
+		ws:        ws,
 	}, nil
 }
 
@@ -199,8 +202,6 @@ func (c *Container) InitJob() {
 }
 
 func (c *Container) StartServer() error {
-	ryws.StartWebSocket(c.app, c.logger)
-
 	c.logger.Info("http server started", zap.Int("port", c.appConfig.Server.Port))
 	err := c.app.Run(iris.Addr(fmt.Sprintf(":%d", c.appConfig.Server.Port)))
 	if err != nil {
