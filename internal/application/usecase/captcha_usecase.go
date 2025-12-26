@@ -55,6 +55,7 @@ func (this *CaptchaService) GenerateCaptchaImage() (model.CaptchaImage, error) {
 	c := model.CaptchaImage{
 		Code:    common.SUCCESS,
 		Uuid:    id,
+		CaptchaEnabled: true,
 		Img:     b64s[strings.Index(b64s, ",")+1:],
 		Message: "操作成功",
 	}
