@@ -19,4 +19,10 @@ type SysRoleRepository interface {
 	EditRole(post *model.SysRole) (*model.SysRole, int64, error)
 	DeleteRoleById(id int64) (int64, error)
 	ChangeRoleStatus(user *model.ChangeRoleStatusRequest) (int64, error)
+	QueryAllocatedList(roleId int64, userName, phonenumber string, pageReq common.PageRequest) ([]*model.SysUser, int64, error)
+	QueryUnallocatedList(roleId int64, userName, phonenumber string, pageReq common.PageRequest) ([]*model.SysUser, int64, error)
+	SelectRoleAll() ([]*model.SysRole, error)
+	InsertAuthUsers(roleId int64, userIds []int64) error
+	DeleteAuthUser(userRole *model.SysUserRole) int64
+	DeleteAuthUsers(roleId int64, userIds []int64) int64
 }

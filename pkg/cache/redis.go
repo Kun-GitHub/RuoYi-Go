@@ -8,11 +8,13 @@ package cache
 import (
 	"context"
 	"fmt"
-	"go.uber.org/zap"
 	"sync"
 	"time"
 
+	"go.uber.org/zap"
+
 	"RuoYi-Go/config"
+
 	"github.com/redis/go-redis/v9"
 )
 
@@ -77,4 +79,11 @@ func (rs *RedisClient) CloseRedis() error {
 		return rs.client.Close()
 	}
 	return nil
+}
+
+func (rs *RedisClient) Keys(pattern string) ([]string, error) {
+	rs.mu.Lock()
+	defer rs.mu.Unlock()
+
+	return rs.client.Keys(context.Background(), pattern).Result()
 }

@@ -126,4 +126,3 @@ require (
 	gorm.io/datatypes v1.2.0 // indirect
 	gorm.io/hints v1.1.2 // indirect
 )
-

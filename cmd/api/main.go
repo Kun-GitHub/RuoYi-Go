@@ -16,6 +16,7 @@ func main() {
 	// 加载配置
 	cfg, err := config.LoadConfig()
 	if err != nil {
+		println("LoadConfig error: " + err.Error())
 		os.Exit(2)
 	}
 

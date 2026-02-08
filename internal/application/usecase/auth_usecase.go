@@ -11,21 +11,23 @@ import (
 	"RuoYi-Go/internal/ports/input"
 	"RuoYi-Go/pkg/cache"
 	ryjwt "RuoYi-Go/pkg/jwt"
+	"encoding/json"
 	"fmt"
-	"go.uber.org/zap"
-	"golang.org/x/crypto/bcrypt"
 	"strings"
 	"time"
+
+	"go.uber.org/zap"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type AuthService struct {
-	service      input.SysUserService
-	roleService  input.SysRoleService
-	deptService  input.SysDeptService
-	loginService input.SysLogininforService
+	service       input.SysUserService
+	roleService   input.SysRoleService
+	deptService   input.SysDeptService
+	loginService  input.SysLogininforService
 	menuService   input.SysMenuService
-	redis        *cache.RedisClient
-	logger       *zap.Logger
+	redis         *cache.RedisClient
+	logger        *zap.Logger
 	configService input.SysConfigService
 }
 
@@ -90,7 +92,33 @@ func (this *AuthService) Login(l *model.LoginRequest) (*model.LoginSuccess, erro
 		this.logger.Error("生成token失败", zap.Error(err))
 		return nil, fmt.Errorf("生成token失败", zap.Error(err))
 	} else {
-		this.redis.Set(fmt.Sprintf("%s:%s", common.TOKEN, token), sysUser.UserID, 72*time.Hour)
+		// Store Online User Info in Redis
+		userOnline := &model.SysUserOnline{
+			TokenID:  token, // Or uuid if we want separate token id
+			DeptName: "",    // Need to fill this if available
+			UserName: sysUser.UserName,
+			Ipaddr:   sysUser.LoginIP, // Assuming this was set somewhere? actually DB has it.
+			// But Login ip should come from request context...
+			// However request context is not passed here efficiently.
+			// For now let's use what we have or empty.
+			// SysUser from DB has LoginIP which is "last login ip".
+			LoginLocation: "",
+			Browser:       "",
+			Os:            "",
+			LoginTime:     time.Now(),
+			UserID:        sysUser.UserID,
+		}
+
+		// Fill DeptName if possible
+		if sysUser.DeptID != 0 {
+			dept, err := this.deptService.QueryDeptById(sysUser.DeptID)
+			if err == nil && dept != nil {
+				userOnline.DeptName = dept.DeptName
+			}
+		}
+
+		userOnlineJson, _ := json.Marshal(userOnline)
+		this.redis.Set(fmt.Sprintf("%s:%s", common.TOKEN, token), string(userOnlineJson), 72*time.Hour)
 		this.service.UserLogin(sysUser)
 
 		this.loginService.AddLogininfor(&model.SysLogininfor{
@@ -118,7 +146,7 @@ func (this *AuthService) Logout(token string) error {
 
 func (this *AuthService) GetInfo(loginUser *model.UserInfoStruct) (*model.UserInfoStruct, []string, []string, error) {
 	var p []string
-	
+
 	roles, err := this.roleService.QueryRolesByUserId(loginUser.UserID)
 	if err != nil {
 		this.logger.Error("QueryRolesByUserId error,", zap.Error(err))

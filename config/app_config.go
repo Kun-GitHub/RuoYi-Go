@@ -13,6 +13,13 @@ type AppConfig struct {
 	Server   ServerConfig   `mapstructure:"server"`    // 服务器配置
 	Database DatabaseConfig `mapstructure:"database"`  // 数据库配置
 	Redis    RedisConfig    `mapstructure:"redis"`     // redis配置
+	RuoYi    RuoYiConfig    `mapstructure:"ruoyi"`     // 若依配置
+}
+
+type RuoYiConfig struct {
+	Name    string `mapstructure:"name"`
+	Version string `mapstructure:"version"`
+	Profile string `mapstructure:"profile"` // 上传路径
 }
 
 type AppInfo struct {

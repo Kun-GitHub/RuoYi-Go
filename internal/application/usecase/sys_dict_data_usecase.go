@@ -6,10 +6,12 @@
 package usecase
 
 import (
+	"RuoYi-Go/internal/common"
 	"RuoYi-Go/internal/domain/model"
 	"RuoYi-Go/internal/ports/input"
 	"RuoYi-Go/internal/ports/output"
 	"RuoYi-Go/pkg/cache"
+
 	"go.uber.org/zap"
 )
 
@@ -24,13 +26,31 @@ func NewSysDictDataService(repo output.SysDictDataRepository, cache *cache.FreeC
 }
 
 func (this *SysDictDataService) QueryDictDatasByType(typeStr string) ([]*model.SysDictDatum, error) {
-	structEntity := make([]*model.SysDictDatum, 0)
-
 	structEntity, err := this.repo.QueryDictDatasByType(typeStr)
 	if err != nil {
-		this.logger.Error("查询信息失败", zap.Error(err))
+		this.logger.Error("QueryDictDatasByType failed", zap.Error(err))
 		return nil, err
-	} else {
-		return structEntity, nil
 	}
+	return structEntity, nil
+}
+
+func (this *SysDictDataService) Get(id uint) (*model.SysDictDatum, error) {
+	return this.repo.Get(id)
+}
+
+func (this *SysDictDataService) List(page, size int, dictLabel, dictType, status string) ([]*model.SysDictDatum, int64, error) {
+	return this.repo.List(page, size, dictLabel, dictType, status)
+}
+
+func (this *SysDictDataService) Create(data *model.SysDictDatum) error {
+	return this.repo.Create(data)
+}
+
+func (this *SysDictDataService) Update(data *model.SysDictDatum) error {
+	return this.repo.Update(data)
+}
+
+func (this *SysDictDataService) Delete(ids string) error {
+	idList := common.SplitInt64(ids)
+	return this.repo.Delete(idList)
 }

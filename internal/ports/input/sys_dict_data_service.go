@@ -10,4 +10,9 @@ import "RuoYi-Go/internal/domain/model"
 // SysDictDataService 输入端口接口
 type SysDictDataService interface {
 	QueryDictDatasByType(typeStr string) ([]*model.SysDictDatum, error)
+	Get(id uint) (*model.SysDictDatum, error)
+	List(page, size int, dictLabel, dictType, status string) ([]*model.SysDictDatum, int64, error)
+	Create(data *model.SysDictDatum) error
+	Update(data *model.SysDictDatum) error
+	Delete(ids string) error
 }

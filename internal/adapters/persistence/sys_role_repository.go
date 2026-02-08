@@ -10,9 +10,11 @@ import (
 	"RuoYi-Go/internal/common"
 	"RuoYi-Go/internal/domain/model"
 	"context"
+	"time"
+
+	"gorm.io/gen"
 	"gorm.io/gen/field"
 	"gorm.io/gorm"
-	"time"
 )
 
 type SysRoleRepository struct {
@@ -163,4 +165,124 @@ func (this *SysRoleRepository) ChangeRoleStatus(user *model.ChangeRoleStatusRequ
 			this.db.Gen.SysUser.UpdateBy.Value(this.db.User().UserName),
 			this.db.Gen.SysUser.UpdateTime.Value(time.Now()))
 	return r.RowsAffected, err
+}
+
+func (this *SysRoleRepository) SelectRoleAll() ([]*model.SysRole, error) {
+	roles := make([]*model.SysRole, 0)
+	err := this.db.Gen.SysRole.WithContext(context.Background()).Where(this.db.Gen.SysRole.DelFlag.Eq("0")).Scan(&roles)
+	if err != nil {
+		return nil, err
+	}
+	return roles, nil
+}
+
+func (this *SysRoleRepository) QueryAllocatedList(roleId int64, userName, phonenumber string, pageReq common.PageRequest) ([]*model.SysUser, int64, error) {
+	users := make([]*model.SysUser, 0)
+
+	// Prepare conditions
+	conditions := []gen.Condition{
+		this.db.Gen.SysUser.DelFlag.Eq("0"),
+		this.db.Gen.SysUserRole.RoleID.Eq(roleId),
+	}
+	if userName != "" {
+		conditions = append(conditions, this.db.Gen.SysUser.UserName.Like("%"+userName+"%"))
+	}
+	if phonenumber != "" {
+		conditions = append(conditions, this.db.Gen.SysUser.Phonenumber.Like("%"+phonenumber+"%"))
+	}
+
+	// Count total
+	count, err := this.db.Gen.SysUser.WithContext(context.Background()).
+		Join(this.db.Gen.SysUserRole, this.db.Gen.SysUser.UserID.EqCol(this.db.Gen.SysUserRole.UserID)).
+		Where(conditions...).
+		Count()
+	if err != nil {
+		return nil, 0, err
+	}
+
+	// Query data
+	err = this.db.Gen.SysUser.WithContext(context.Background()).
+		Select(this.db.Gen.SysUser.ALL).
+		Join(this.db.Gen.SysUserRole, this.db.Gen.SysUser.UserID.EqCol(this.db.Gen.SysUserRole.UserID)).
+		Where(conditions...).
+		Limit(pageReq.PageSize).
+		Offset((pageReq.PageNum - 1) * pageReq.PageSize).
+		Scan(&users)
+
+	if err != nil {
+		return nil, 0, err
+	}
+
+	return users, count, nil
+}
+
+func (this *SysRoleRepository) QueryUnallocatedList(roleId int64, userName, phonenumber string, pageReq common.PageRequest) ([]*model.SysUser, int64, error) {
+	users := make([]*model.SysUser, 0)
+
+	// Prepare conditions
+	conditions := []gen.Condition{
+		this.db.Gen.SysUser.DelFlag.Eq("0"),
+		this.db.Gen.SysUser.UserID.Neq(common.ADMINID), // Exclude admin
+		this.db.Gen.SysUserRole.UserID.IsNull(),        // UserID in join table is null (meaning no match)
+	}
+	if userName != "" {
+		conditions = append(conditions, this.db.Gen.SysUser.UserName.Like("%"+userName+"%"))
+	}
+	if phonenumber != "" {
+		conditions = append(conditions, this.db.Gen.SysUser.Phonenumber.Like("%"+phonenumber+"%"))
+	}
+
+	// Count total
+	count, err := this.db.Gen.SysUser.WithContext(context.Background()).
+		LeftJoin(this.db.Gen.SysUserRole,
+			this.db.Gen.SysUser.UserID.EqCol(this.db.Gen.SysUserRole.UserID),
+			this.db.Gen.SysUserRole.RoleID.Eq(roleId)).
+		Where(conditions...).
+		Count()
+
+	if err != nil {
+		return nil, 0, err
+	}
+
+	// Query data
+	err = this.db.Gen.SysUser.WithContext(context.Background()).
+		Select(this.db.Gen.SysUser.ALL).
+		LeftJoin(this.db.Gen.SysUserRole,
+			this.db.Gen.SysUser.UserID.EqCol(this.db.Gen.SysUserRole.UserID),
+			this.db.Gen.SysUserRole.RoleID.Eq(roleId)).
+		Where(conditions...).
+		Limit(pageReq.PageSize).
+		Offset((pageReq.PageNum - 1) * pageReq.PageSize).
+		Scan(&users)
+
+	if err != nil {
+		return nil, 0, err
+	}
+
+	return users, count, nil
+}
+
+func (this *SysRoleRepository) InsertAuthUsers(roleId int64, userIds []int64) error {
+	userRoles := make([]*model.SysUserRole, 0)
+	for _, userId := range userIds {
+		userRoles = append(userRoles, &model.SysUserRole{
+			UserID: userId,
+			RoleID: roleId,
+		})
+	}
+	return this.db.Gen.SysUserRole.WithContext(context.Background()).Create(userRoles...)
+}
+
+func (this *SysRoleRepository) DeleteAuthUser(userRole *model.SysUserRole) int64 {
+	info, _ := this.db.Gen.SysUserRole.WithContext(context.Background()).
+		Where(this.db.Gen.SysUserRole.RoleID.Eq(userRole.RoleID), this.db.Gen.SysUserRole.UserID.Eq(userRole.UserID)).
+		Delete()
+	return info.RowsAffected
+}
+
+func (this *SysRoleRepository) DeleteAuthUsers(roleId int64, userIds []int64) int64 {
+	info, _ := this.db.Gen.SysUserRole.WithContext(context.Background()).
+		Where(this.db.Gen.SysUserRole.RoleID.Eq(roleId), this.db.Gen.SysUserRole.UserID.In(userIds...)).
+		Delete()
+	return info.RowsAffected
 }

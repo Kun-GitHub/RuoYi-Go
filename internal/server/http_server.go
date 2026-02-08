@@ -157,3 +157,25 @@ func ResolveSysJobHandler(db *dao.DatabaseStruct, logger *zap.Logger, cache *cac
 	service := usecase.NewSysJobService(repo, cache, logger)
 	return handler.NewSysJobHandler(service, task)
 }
+
+func ResolveSysOperLogHandler(db *dao.DatabaseStruct, logger *zap.Logger, cache *cache.FreeCacheClient) *handler.SysOperLogHandler {
+	repo := persistence.NewSysOperLogRepository(db)
+	service := usecase.NewSysOperLogService(repo, cache, logger)
+	return handler.NewSysOperLogHandler(service)
+}
+
+func ResolveSysJobLogHandler(db *dao.DatabaseStruct, logger *zap.Logger, cache *cache.FreeCacheClient) *handler.SysJobLogHandler {
+	repo := persistence.NewSysJobLogRepository(db)
+	service := usecase.NewSysJobLogService(repo, cache, logger)
+	return handler.NewSysJobLogHandler(service)
+}
+
+func ResolveSysUserOnlineHandler(redis *cache.RedisClient, logger *zap.Logger) *handler.SysUserOnlineHandler {
+	service := usecase.NewSysUserOnlineService(redis, logger)
+	return handler.NewSysUserOnlineHandler(service)
+}
+
+func ResolveCommonHandler(logger *zap.Logger, c config.AppConfig) *handler.CommonHandler {
+	service := usecase.NewCommonService(logger, c)
+	return handler.NewCommonHandler(service)
+}

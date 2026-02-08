@@ -9,4 +9,9 @@ import "RuoYi-Go/internal/domain/model"
 
 type SysDictDataRepository interface {
 	QueryDictDatasByType(typeStr string) ([]*model.SysDictDatum, error)
+	Get(id uint) (*model.SysDictDatum, error)
+	List(page, size int, dictLabel, dictType, status string) ([]*model.SysDictDatum, int64, error)
+	Create(data *model.SysDictDatum) error
+	Update(data *model.SysDictDatum) error
+	Delete(ids []int64) error
 }

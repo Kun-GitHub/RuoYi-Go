@@ -13,6 +13,7 @@ import (
 	"RuoYi-Go/pkg/cache"
 	"encoding/json"
 	"fmt"
+
 	"go.uber.org/zap"
 )
 
@@ -174,4 +175,58 @@ func (this *SysRoleService) ChangeRoleStatus(user *model.ChangeRoleStatusRequest
 		}
 	}
 	return result, nil
+}
+
+func (this *SysRoleService) QueryAllocatedList(roleId int64, userName, phonenumber string, pageReq common.PageRequest) ([]*model.SysUser, int64, error) {
+	data, total, err := this.repo.QueryAllocatedList(roleId, userName, phonenumber, pageReq)
+	if err != nil {
+		this.logger.Error("QueryAllocatedList", zap.Error(err))
+		return nil, 0, err
+	}
+	return data, total, nil
+}
+
+func (this *SysRoleService) QueryUnallocatedList(roleId int64, userName, phonenumber string, pageReq common.PageRequest) ([]*model.SysUser, int64, error) {
+	data, total, err := this.repo.QueryUnallocatedList(roleId, userName, phonenumber, pageReq)
+	if err != nil {
+		this.logger.Error("QueryUnallocatedList", zap.Error(err))
+		return nil, 0, err
+	}
+	return data, total, nil
+}
+
+func (this *SysRoleService) SelectRoleAll() ([]*model.SysRole, error) {
+	data, err := this.repo.SelectRoleAll()
+	if err != nil {
+		this.logger.Error("SelectRoleAll", zap.Error(err))
+		return nil, err
+	}
+	return data, nil
+}
+
+func (this *SysRoleService) InsertAuthUsers(roleId int64, userIdsStr string) error {
+	userIds := common.SplitInt64(userIdsStr)
+	err := this.repo.InsertAuthUsers(roleId, userIds)
+	if err != nil {
+		this.logger.Error("InsertAuthUsers", zap.Error(err))
+		return err
+	}
+	return nil
+}
+
+func (this *SysRoleService) DeleteAuthUser(userRole *model.SysUserRole) error {
+	rows := this.repo.DeleteAuthUser(userRole)
+	if rows == 0 {
+		return fmt.Errorf("delete failed")
+	}
+	return nil
+}
+
+func (this *SysRoleService) DeleteAuthUsers(roleId int64, userIdsStr string) error {
+	userIds := common.SplitInt64(userIdsStr)
+	rows := this.repo.DeleteAuthUsers(roleId, userIds)
+	if rows == 0 {
+		return fmt.Errorf("delete failed")
+	}
+	return nil
 }

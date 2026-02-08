@@ -10,10 +10,11 @@ import (
 	"RuoYi-Go/internal/domain/model"
 	"RuoYi-Go/internal/filter"
 	"RuoYi-Go/internal/ports/input"
-	"github.com/kataras/iris/v12"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/kataras/iris/v12"
 )
 
 type SysRoleHandler struct {
@@ -230,4 +231,115 @@ func (this *SysRoleHandler) DeptTree(ctx iris.Context) {
 
 	data = buildDeptTree(data)
 	ctx.JSON(common.Success(data))
+}
+
+func (this *SysRoleHandler) OptionSelect(ctx iris.Context) {
+	data, err := this.service.SelectRoleAll()
+	if err != nil {
+		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "OptionSelect, error：%s", err.Error()))
+		return
+	}
+	ctx.JSON(common.Success(data))
+}
+
+func (this *SysRoleHandler) AllocatedList(ctx iris.Context) {
+	pageNumStr := ctx.URLParamDefault("pageNum", "1")
+	pageSizeStr := ctx.URLParamDefault("pageSize", "10")
+	pageNum, _ := strconv.Atoi(pageNumStr)
+	pageSize, _ := strconv.Atoi(pageSizeStr)
+	pageReq := common.PageRequest{pageNum, pageSize}
+
+	roleIdStr := ctx.URLParam("roleId")
+	roleId, _ := strconv.ParseInt(roleIdStr, 10, 64)
+	userName := ctx.URLParam("userName")
+	phonenumber := ctx.URLParam("phonenumber")
+
+	data, total, err := this.service.QueryAllocatedList(roleId, userName, phonenumber, pageReq)
+	if err != nil {
+		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "AllocatedList, error：%s", err.Error()))
+		return
+	}
+
+	ctx.JSON(&common.PageResponse{
+		Rows:    data,
+		Total:   total,
+		Message: "操作成功",
+		Code:    iris.StatusOK,
+	})
+}
+
+func (this *SysRoleHandler) UnallocatedList(ctx iris.Context) {
+	pageNumStr := ctx.URLParamDefault("pageNum", "1")
+	pageSizeStr := ctx.URLParamDefault("pageSize", "10")
+	pageNum, _ := strconv.Atoi(pageNumStr)
+	pageSize, _ := strconv.Atoi(pageSizeStr)
+	pageReq := common.PageRequest{pageNum, pageSize}
+
+	roleIdStr := ctx.URLParam("roleId")
+	roleId, _ := strconv.ParseInt(roleIdStr, 10, 64)
+	userName := ctx.URLParam("userName")
+	phonenumber := ctx.URLParam("phonenumber")
+
+	data, total, err := this.service.QueryUnallocatedList(roleId, userName, phonenumber, pageReq)
+	if err != nil {
+		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "UnallocatedList, error：%s", err.Error()))
+		return
+	}
+
+	ctx.JSON(&common.PageResponse{
+		Rows:    data,
+		Total:   total,
+		Message: "操作成功",
+		Code:    iris.StatusOK,
+	})
+}
+
+func (this *SysRoleHandler) CancelAuthUser(ctx iris.Context) {
+	u := &model.SysUserRole{}
+	if err := filter.ValidateRequest(ctx, u); err != nil {
+		return
+	}
+
+	err := this.service.DeleteAuthUser(u)
+	if err != nil {
+		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "CancelAuthUser error：%s", err.Error()))
+		return
+	}
+	ctx.JSON(common.Success(nil))
+}
+
+func (this *SysRoleHandler) CancelAuthUserAll(ctx iris.Context) {
+	roleIdStr := ctx.URLParam("roleId")
+	roleId, _ := strconv.ParseInt(roleIdStr, 10, 64)
+	userIds := ctx.URLParam("userIds")
+
+	if roleIdStr == "" || userIds == "" {
+		ctx.JSON(common.ErrorFormat(iris.StatusBadRequest, "Invalid params"))
+		return
+	}
+
+	err := this.service.DeleteAuthUsers(roleId, userIds)
+	if err != nil {
+		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "CancelAuthUserAll error：%s", err.Error()))
+		return
+	}
+	ctx.JSON(common.Success(nil))
+}
+
+func (this *SysRoleHandler) SelectAuthUserAll(ctx iris.Context) {
+	roleIdStr := ctx.URLParam("roleId")
+	roleId, _ := strconv.ParseInt(roleIdStr, 10, 64)
+	userIds := ctx.URLParam("userIds")
+
+	if roleIdStr == "" || userIds == "" {
+		ctx.JSON(common.ErrorFormat(iris.StatusBadRequest, "Invalid params"))
+		return
+	}
+
+	err := this.service.InsertAuthUsers(roleId, userIds)
+	if err != nil {
+		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "SelectAuthUserAll error：%s", err.Error()))
+		return
+	}
+	ctx.JSON(common.Success(nil))
 }

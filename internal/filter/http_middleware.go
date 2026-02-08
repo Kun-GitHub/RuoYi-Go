@@ -12,14 +12,16 @@ import (
 	"RuoYi-Go/internal/domain/model"
 	"RuoYi-Go/internal/ports/input"
 	"RuoYi-Go/pkg/cache"
-	"RuoYi-Go/pkg/jwt"
+	ryjwt "RuoYi-Go/pkg/jwt"
+	"encoding/json"
 	"fmt"
-	"github.com/kataras/iris/v12"
-	"go.uber.org/zap"
 	"net/http"
 	"regexp"
 	"strconv"
 	"strings"
+
+	"github.com/kataras/iris/v12"
+	"go.uber.org/zap"
 )
 
 var loginUser = &model.UserInfoStruct{}
@@ -68,8 +70,22 @@ func (this *ServerMiddleware) MiddlewareHandler(ctx iris.Context) {
 		ctx.JSON(common.Error(iris.StatusUnauthorized, "请重新登录"))
 		return
 	}
-	redis_id, err := this.redis.Get(fmt.Sprintf("%s:%s", common.TOKEN, token))
-	if err != nil || redis_id == "" || jwt_id != redis_id {
+	redis_val, err := this.redis.Get(fmt.Sprintf("%s:%s", common.TOKEN, token))
+	if err != nil || redis_val == "" {
+		ctx.JSON(common.Error(iris.StatusUnauthorized, "请重新登录"))
+		return
+	}
+
+	var userOnline model.SysUserOnline
+	if err := json.Unmarshal([]byte(redis_val), &userOnline); err != nil {
+		// Fallback for backward compatibility or error
+		// Try to parse as int if it was old format? No, let's just fail.
+		ctx.JSON(common.Error(iris.StatusUnauthorized, "请重新登录"))
+		return
+	}
+
+	// jwt_id is user_id string
+	if fmt.Sprintf("%d", userOnline.UserID) != jwt_id {
 		ctx.JSON(common.Error(iris.StatusUnauthorized, "请重新登录"))
 		return
 	}

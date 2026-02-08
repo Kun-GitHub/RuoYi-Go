@@ -9,18 +9,19 @@ import (
 	"RuoYi-Go/config"
 	"RuoYi-Go/internal/adapters/dao"
 	"RuoYi-Go/internal/jobs"
-	"RuoYi-Go/internal/server"
+	ryserver "RuoYi-Go/internal/server"
 	ryws "RuoYi-Go/internal/websocket"
 	"RuoYi-Go/pkg/cache"
-	"RuoYi-Go/pkg/i18n"
+	ryi18n "RuoYi-Go/pkg/i18n"
 	"RuoYi-Go/pkg/logger"
 	"RuoYi-Go/pkg/task"
 	"context"
 	"fmt"
+	"time"
+
 	"github.com/kataras/iris/v12"
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 	"go.uber.org/zap"
-	"time"
 )
 
 type Container struct {
@@ -105,6 +106,11 @@ func NewContainer(c config.AppConfig) (*Container, error) {
 
 	sysDictDataHandler := ryserver.ResolveSysDictDataHandler(db, log, freeCache)
 	app.Get("/system/dict/data/type/{dictType:string}", sysDictDataHandler.DictType)
+	app.Get("/system/dict/data/list", ms.PermissionMiddleware("system:dict:list"), sysDictDataHandler.List)
+	app.Get("/system/dict/data/{dictCode:string}", ms.PermissionMiddleware("system:dict:query"), sysDictDataHandler.Get)
+	app.Post("/system/dict/data", ms.PermissionMiddleware("system:dict:add"), sysDictDataHandler.Add)
+	app.Put("/system/dict/data", ms.PermissionMiddleware("system:dict:edit"), sysDictDataHandler.Edit)
+	app.Delete("/system/dict/data/*dictCodes", ms.PermissionMiddleware("system:dict:remove"), sysDictDataHandler.Delete)
 
 	sysDeptHandler := ryserver.ResolveSysDeptHandler(db, log, freeCache)
 	app.Get("/system/dept/list", ms.PermissionMiddleware("system:dept:list"), sysDeptHandler.DeptList)
@@ -122,6 +128,12 @@ func NewContainer(c config.AppConfig) (*Container, error) {
 	app.Delete("/system/role/*roleIds", ms.PermissionMiddleware("system:role:remove"), sysRoleHandler.DeleteRoleInfo)
 	app.Put("/system/role/changeStatus", ms.PermissionMiddleware("system:role:edit"), sysRoleHandler.ChangeRoleStatus)
 	app.Get("/system/role/deptTree/{roleId:uint}", ms.PermissionMiddleware("system:role:query"), sysRoleHandler.DeptTree)
+	app.Get("/system/role/optionselect", ms.PermissionMiddleware("system:role:query"), sysRoleHandler.OptionSelect)
+	app.Get("/system/role/authUser/allocatedList", ms.PermissionMiddleware("system:role:list"), sysRoleHandler.AllocatedList)
+	app.Get("/system/role/authUser/unallocatedList", ms.PermissionMiddleware("system:role:list"), sysRoleHandler.UnallocatedList)
+	app.Put("/system/role/authUser/cancel", ms.PermissionMiddleware("system:role:edit"), sysRoleHandler.CancelAuthUser)
+	app.Put("/system/role/authUser/cancelAll", ms.PermissionMiddleware("system:role:edit"), sysRoleHandler.CancelAuthUserAll)
+	app.Put("/system/role/authUser/selectAll", ms.PermissionMiddleware("system:role:edit"), sysRoleHandler.SelectAuthUserAll)
 
 	sysPostHandler := ryserver.ResolveSysPostHandler(db, log, freeCache)
 	app.Get("/system/post/list", ms.PermissionMiddleware("system:post:list"), sysPostHandler.PostPage)
@@ -175,6 +187,26 @@ func NewContainer(c config.AppConfig) (*Container, error) {
 	app.Put("/monitor/job", ms.PermissionMiddleware("monitor:job:edit"), sysJobHandler.EditJobInfo)
 	app.Delete("/monitor/job/*jobIds", ms.PermissionMiddleware("monitor:job:remove"), sysJobHandler.DeleteJobInfo)
 	app.Put("/monitor/job/changeStatus", ms.PermissionMiddleware("monitor:job:edit"), sysJobHandler.ChangeJobStatus)
+
+	sysOperLogHandler := ryserver.ResolveSysOperLogHandler(db, log, freeCache)
+	app.Get("/monitor/operlog/list", ms.PermissionMiddleware("monitor:operlog:list"), sysOperLogHandler.List)
+	app.Delete("/monitor/operlog/clean", ms.PermissionMiddleware("monitor:operlog:remove"), sysOperLogHandler.Clean)
+	app.Delete("/monitor/operlog/*operIds", ms.PermissionMiddleware("monitor:operlog:remove"), sysOperLogHandler.Delete)
+
+	sysJobLogHandler := ryserver.ResolveSysJobLogHandler(db, log, freeCache)
+	app.Get("/monitor/jobLog/list", ms.PermissionMiddleware("monitor:job:list"), sysJobLogHandler.List)
+	app.Delete("/monitor/jobLog/clean", ms.PermissionMiddleware("monitor:job:remove"), sysJobLogHandler.Clean)
+	app.Delete("/monitor/jobLog/*jobLogIds", ms.PermissionMiddleware("monitor:job:remove"), sysJobLogHandler.Delete)
+
+	sysUserOnlineHandler := ryserver.ResolveSysUserOnlineHandler(redis, log)
+	app.Get("/monitor/online/list", ms.PermissionMiddleware("monitor:online:list"), sysUserOnlineHandler.List)
+	app.Delete("/monitor/online/{tokenId:string}", ms.PermissionMiddleware("monitor:online:forceLogout"), sysUserOnlineHandler.ForceLogout)
+
+	commonHandler := ryserver.ResolveCommonHandler(log, c)
+	app.Post("/common/upload", ms.PermissionMiddleware("common"), commonHandler.UploadFile) // Permission? Usually any logged in user can upload.
+	app.Get("/common/download/resource", commonHandler.GetResource)                         // Public or authenticated?
+	// RuoYi-Vue resource download usually requires token if it's protected, but here we made it public or check in Middleware?
+	// The resource path logic checks if it's in /profile which is safe.
 
 	return &Container{
 		appConfig: c,
