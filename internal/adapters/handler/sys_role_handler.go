@@ -17,17 +17,29 @@ import (
 	"github.com/kataras/iris/v12"
 )
 
+// SysRoleHandler 角色处理器
+// 负责处理HTTP角色管理相关的请求，包括角色查询、增删改查、权限分配等
 type SysRoleHandler struct {
 	service         input.SysRoleService
 	roleMenuService input.SysRoleMenuService
 	deptService     input.SysDeptService
 }
 
+// NewSysRoleHandler 创建角色处理器实例
+// 参数:
+//   - service: 角色服务接口
+//   - roleMenuService: 角色菜单服务接口
+//   - deptService: 部门服务接口
+//
+// 返回值: 角色处理器
 func NewSysRoleHandler(service input.SysRoleService, roleMenuService input.SysRoleMenuService, deptService input.SysDeptService) *SysRoleHandler {
 	return &SysRoleHandler{service: service, roleMenuService: roleMenuService, deptService: deptService}
 }
 
-// GenerateCaptchaImage
+// RolePage 分页查询角色列表
+// 支持多种筛选条件的角色分页查询
+// 参数:
+//   - ctx: Iris上下文对象
 func (h *SysRoleHandler) RolePage(ctx iris.Context) {
 	// 获取查询参数
 	pageNumStr := ctx.URLParamDefault("pageNum", "1")
@@ -83,6 +95,10 @@ func (h *SysRoleHandler) RolePage(ctx iris.Context) {
 	ctx.JSON(data)
 }
 
+// RoleInfo 根据ID查询角色详情
+// 获取指定角色的详细信息
+// 参数:
+//   - ctx: Iris上下文对象
 func (this *SysRoleHandler) RoleInfo(ctx iris.Context) {
 	idStr := ctx.Params().GetString("roleId")
 	if idStr == "" {
@@ -107,6 +123,10 @@ func (this *SysRoleHandler) RoleInfo(ctx iris.Context) {
 	ctx.JSON(common.Success(info))
 }
 
+// AddRoleInfo 添加新角色
+// 创建新角色记录，并关联菜单权限
+// 参数:
+//   - ctx: Iris上下文对象
 func (this *SysRoleHandler) AddRoleInfo(ctx iris.Context) {
 	post := &model.SysRole{}
 	// Attempt to read and bind the JSON request body to the 'user' variable
@@ -144,6 +164,10 @@ func (this *SysRoleHandler) AddRoleInfo(ctx iris.Context) {
 	ctx.JSON(common.Success(info))
 }
 
+// ChangeRoleStatus 修改角色状态
+// 启用或禁用角色
+// 参数:
+//   - ctx: Iris上下文对象
 func (this *SysRoleHandler) ChangeRoleStatus(ctx iris.Context) {
 	u := &model.ChangeRoleStatusRequest{}
 	// Attempt to read and bind the JSON request body to the 'user' variable
@@ -160,6 +184,10 @@ func (this *SysRoleHandler) ChangeRoleStatus(ctx iris.Context) {
 	ctx.JSON(common.Success(nil))
 }
 
+// EditRoleInfo 编辑角色信息
+// 更新现有角色信息，并重新分配菜单权限
+// 参数:
+//   - ctx: Iris上下文对象
 func (this *SysRoleHandler) EditRoleInfo(ctx iris.Context) {
 	post := &model.SysRole{}
 	// Attempt to read and bind the JSON request body to the 'user' variable

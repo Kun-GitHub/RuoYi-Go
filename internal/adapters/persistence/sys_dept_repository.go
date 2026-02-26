@@ -107,13 +107,6 @@ func (this *SysDeptRepository) QueryChildIdListById(id int64) ([]int64, error) {
 	// 查询所有子部门ID（包括直接子部门和间接子部门）
 	var childIds []int64
 
-	// 使用精确匹配避免ID误匹配问题
-	// Ancestors格式为: "0" 或 "0,100" 或 "0,100,101"
-	// 需要匹配以下四种情况：
-	// 1. 开头匹配: id + ",%"  (如: 100,101,102)
-	// 2. 结尾匹配: "%," + id  (如: 0,100)
-	// 3. 中间匹配: "%," + id + ",%" (如: 0,100,101)
-	// 4. 完全匹配: id (当id就是根节点时)
 	// 使用原生SQL进行精确匹配，避免ID误匹配问题
 	// Ancestors格式为: "0" 或 "0,100" 或 "0,100,101"
 	// 需要匹配以下四种情况：
@@ -126,37 +119,27 @@ func (this *SysDeptRepository) QueryChildIdListById(id int64) ([]int64, error) {
 	var err error
 
 	// 根据不同情况构建不同的查询条件
-	if id == 0 {
-		// 特殊处理根节点情况
-		structEntities, err = this.db.Gen.SysDept.WithContext(context.Background()).
-			Select(this.db.Gen.SysDept.DeptID).
-			Where(this.db.Gen.SysDept.Ancestors.Eq("0"),
-				this.db.Gen.SysDept.DelFlag.Eq("0")).
-			Order(this.db.Gen.SysDept.DeptID).
-			Find()
-	} else {
-		// 对于非根节点，使用复杂的OR条件
-		structEntities, err = this.db.Gen.SysDept.WithContext(context.Background()).
-			Select(this.db.Gen.SysDept.DeptID, this.db.Gen.SysDept.Ancestors).
-			Where(this.db.Gen.SysDept.DelFlag.Eq("0")).
-			Order(this.db.Gen.SysDept.DeptID).
-			Find()
+	// 对于非根节点，使用复杂的OR条件
+	structEntities, err = this.db.Gen.SysDept.WithContext(context.Background()).
+		Select(this.db.Gen.SysDept.DeptID, this.db.Gen.SysDept.Ancestors).
+		Where(this.db.Gen.SysDept.DelFlag.Eq("0")).
+		Order(this.db.Gen.SysDept.DeptID).
+		Find()
 
-		// 在内存中过滤，确保精确匹配
-		filteredEntities := make([]*model.SysDept, 0)
-		idStr := fmt.Sprintf("%d", id)
-		for _, entity := range structEntities {
-			ancestors := entity.Ancestors
-			// 精确匹配四种情况
-			if ancestors == idStr || // 完全匹配
-				strings.HasPrefix(ancestors, idStr+",") || // 开头匹配
-				strings.HasSuffix(ancestors, ","+idStr) || // 结尾匹配
-				strings.Contains(ancestors, ","+idStr+",") { // 中间匹配
-				filteredEntities = append(filteredEntities, entity)
-			}
+	// 在内存中过滤，确保精确匹配
+	filteredEntities := make([]*model.SysDept, 0)
+	idStr := fmt.Sprintf("%d", id)
+	for _, entity := range structEntities {
+		ancestors := entity.Ancestors
+		// 精确匹配四种情况
+		if ancestors == idStr || // 完全匹配
+			strings.HasPrefix(ancestors, idStr+",") || // 开头匹配
+			strings.HasSuffix(ancestors, ","+idStr) || // 结尾匹配
+			strings.Contains(ancestors, ","+idStr+",") { // 中间匹配
+			filteredEntities = append(filteredEntities, entity)
 		}
-		structEntities = filteredEntities
 	}
+	structEntities = filteredEntities
 
 	if err != nil {
 		return nil, err

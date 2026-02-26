@@ -5,14 +5,27 @@
 
 package ryjwt
 
+// JWT工具包
+// 提供JWT令牌的生成和验证功能
+
 import (
 	"fmt"
 	"github.com/golang-jwt/jwt/v5"
 	"time"
 )
 
+// JWT签名密钥
 const key = "j17GjwcQfeFVDxlSx7RW"
 
+// Sign 生成JWT令牌
+// 根据指定的键值对生成带有过期时间的JWT令牌
+// 参数:
+//   - k: 键名
+//   - v: 键值
+//   - exp: 过期时间（小时），默认72小时
+// 返回值:
+//   - string: 生成的JWT令牌
+//   - error: 错误信息
 func Sign(k, v string, exp int64) (string, error) {
 	if exp == 0 {
 		exp = 72
@@ -35,6 +48,14 @@ func Sign(k, v string, exp int64) (string, error) {
 	return tokenStr, err
 }
 
+// Valid 验证JWT令牌
+// 验证JWT令牌的有效性并提取指定键的值
+// 参数:
+//   - k: 要提取的键名
+//   - tokenStr: JWT令牌字符串
+// 返回值:
+//   - string: 提取的键值
+//   - error: 错误信息（令牌无效或过期）
 func Valid(k, tokenStr string) (string, error) {
 	// 定义签名密钥，需要与生成Token时使用的密钥一致
 	signingKey := []byte(key)

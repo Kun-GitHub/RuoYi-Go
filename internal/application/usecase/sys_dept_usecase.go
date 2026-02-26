@@ -16,16 +16,33 @@ import (
 	"go.uber.org/zap"
 )
 
+// SysDeptService 部门服务实现类
+// 负责处理部门相关的业务逻辑，包括部门查询、增删改查、父子关系处理等
 type SysDeptService struct {
 	repo   output.SysDeptRepository
 	cache  *cache.FreeCacheClient
 	logger *zap.Logger
 }
 
+// NewSysDeptService 创建部门服务实例
+// 参数:
+//   - repo: 部门仓储接口
+//   - cache: 缓存客户端
+//   - logger: 日志记录器
+//
+// 返回值: 部门服务接口
 func NewSysDeptService(repo output.SysDeptRepository, cache *cache.FreeCacheClient, logger *zap.Logger) input.SysDeptService {
 	return &SysDeptService{repo: repo, cache: cache, logger: logger}
 }
 
+// QueryDeptList 查询部门列表
+// 根据条件查询部门信息列表
+// 参数:
+//   - dept: 部门查询条件
+//
+// 返回值:
+//   - []*model.SysDept: 部门列表
+//   - error: 错误信息
 func (this *SysDeptService) QueryDeptList(dept *model.SysDept) ([]*model.SysDept, error) {
 	structEntity := make([]*model.SysDept, 0)
 
@@ -38,6 +55,14 @@ func (this *SysDeptService) QueryDeptList(dept *model.SysDept) ([]*model.SysDept
 	}
 }
 
+// QueryDeptListExcludeById 查询排除指定ID的部门列表
+// 查询所有部门，排除指定ID的部门
+// 参数:
+//   - id: 要排除的部门ID
+//
+// 返回值:
+//   - []*model.SysDept: 部门列表
+//   - error: 错误信息
 func (this *SysDeptService) QueryDeptListExcludeById(id int64) ([]*model.SysDept, error) {
 	structEntity := make([]*model.SysDept, 0)
 
@@ -50,6 +75,14 @@ func (this *SysDeptService) QueryDeptListExcludeById(id int64) ([]*model.SysDept
 	}
 }
 
+// QueryDeptById 根据ID查询部门信息
+// 支持缓存机制，优先从缓存获取，缓存未命中则查询数据库并更新缓存
+// 参数:
+//   - id: 部门ID
+//
+// 返回值:
+//   - *model.SysDept: 部门信息
+//   - error: 错误信息
 func (this *SysDeptService) QueryDeptById(id int64) (*model.SysDept, error) {
 	structEntity := &model.SysDept{}
 	// 尝试从缓存中获取
@@ -80,6 +113,14 @@ func (this *SysDeptService) QueryDeptById(id int64) (*model.SysDept, error) {
 	return nil, fmt.Errorf("查询信息失败", zap.Error(err))
 }
 
+// AddDept 添加新部门
+// 创建新部门记录，并将部门信息缓存
+// 参数:
+//   - post: 部门信息
+//
+// 返回值:
+//   - *model.SysDept: 创建的部门信息
+//   - error: 错误信息
 func (this *SysDeptService) AddDept(post *model.SysDept) (*model.SysDept, error) {
 	data, err := this.repo.AddDept(post)
 	if err != nil {
@@ -96,6 +137,15 @@ func (this *SysDeptService) AddDept(post *model.SysDept) (*model.SysDept, error)
 	return data, nil
 }
 
+// EditDept 编辑部门信息
+// 更新现有部门的信息，并同步更新缓存
+// 参数:
+//   - post: 更新后的部门信息
+//
+// 返回值:
+//   - *model.SysDept: 更新后的部门信息
+//   - int64: 影响的行数
+//   - error: 错误信息
 func (this *SysDeptService) EditDept(post *model.SysDept) (*model.SysDept, int64, error) {
 	data, result, err := this.repo.EditDept(post)
 	if err != nil {
@@ -112,6 +162,14 @@ func (this *SysDeptService) EditDept(post *model.SysDept) (*model.SysDept, int64
 	return data, result, nil
 }
 
+// DeleteDeptById 根据ID删除部门
+// 逻辑删除部门，并清除相关缓存
+// 参数:
+//   - id: 部门ID
+//
+// 返回值:
+//   - int64: 影响的行数
+//   - error: 错误信息
 func (this *SysDeptService) DeleteDeptById(id int64) (int64, error) {
 	result, err := this.repo.DeleteDeptById(id)
 	if err != nil {
@@ -124,6 +182,14 @@ func (this *SysDeptService) DeleteDeptById(id int64) (int64, error) {
 	return result, nil
 }
 
+// QueryChildIdListById 查询子部门ID列表
+// 根据父部门ID查询所有子孙部门的ID列表
+// 参数:
+//   - id: 父部门ID
+//
+// 返回值:
+//   - []int64: 子部门ID列表
+//   - error: 错误信息
 func (this *SysDeptService) QueryChildIdListById(id int64) ([]int64, error) {
 	result, err := this.repo.QueryChildIdListById(id)
 	if err != nil {

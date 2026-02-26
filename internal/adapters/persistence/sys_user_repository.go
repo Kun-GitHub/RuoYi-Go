@@ -15,14 +15,29 @@ import (
 	"time"
 )
 
+// SysUserRepository 用户仓储实现类
+// 负责用户数据的持久化操作，基于GORM Gen框架实现
 type SysUserRepository struct {
 	db *dao.DatabaseStruct
 }
 
+// NewSysUserRepository 创建用户仓储实例
+// 参数:
+//   - db: 数据库结构体
+//
+// 返回值: 用户仓储
 func NewSysUserRepository(db *dao.DatabaseStruct) *SysUserRepository {
 	return &SysUserRepository{db: db}
 }
 
+// QueryUserByUserName 根据用户名查询用户
+// 从数据库中查询未被删除的指定用户名的用户信息
+// 参数:
+//   - username: 用户名
+//
+// 返回值:
+//   - *model.SysUser: 用户信息
+//   - error: 错误信息
 func (this *SysUserRepository) QueryUserByUserName(username string) (*model.SysUser, error) {
 	structEntity := &model.SysUser{}
 	err := this.db.Gen.SysUser.WithContext(context.Background()).
@@ -34,6 +49,14 @@ func (this *SysUserRepository) QueryUserByUserName(username string) (*model.SysU
 	return structEntity, nil
 }
 
+// QueryUserLikeUserName 模糊查询用户名
+// 根据用户名关键字进行模糊匹配，查询正常的未删除用户
+// 参数:
+//   - username: 用户名关键字
+//
+// 返回值:
+//   - []*model.SysUser: 符合条件的用户列表
+//   - error: 错误信息
 func (this *SysUserRepository) QueryUserLikeUserName(username string) ([]*model.SysUser, error) {
 	structEntity := make([]*model.SysUser, 0)
 	structEntity, err := this.db.Gen.SysUser.WithContext(context.Background()).
@@ -45,6 +68,14 @@ func (this *SysUserRepository) QueryUserLikeUserName(username string) ([]*model.
 	return structEntity, nil
 }
 
+// QueryUserByUserId 根据用户ID查询用户
+// 从数据库中查询未被删除的指定ID的用户信息
+// 参数:
+//   - userId: 用户ID
+//
+// 返回值:
+//   - *model.SysUser: 用户信息
+//   - error: 错误信息
 func (this *SysUserRepository) QueryUserByUserId(userId int64) (*model.SysUser, error) {
 	structEntity := &model.SysUser{}
 	err := this.db.Gen.SysUser.WithContext(context.Background()).
@@ -56,6 +87,16 @@ func (this *SysUserRepository) QueryUserByUserId(userId int64) (*model.SysUser, 
 	return structEntity, nil
 }
 
+// QueryUserPage 分页查询用户列表
+// 支持多种筛选条件的分页查询，返回用户列表和总记录数
+// 参数:
+//   - pageReq: 分页请求参数
+//   - user: 用户查询条件
+//
+// 返回值:
+//   - []*model.SysUser: 用户列表
+//   - int64: 总记录数
+//   - error: 错误信息
 func (this *SysUserRepository) QueryUserPage(pageReq common.PageRequest, user *model.SysUserRequest) ([]*model.SysUser, int64, error) {
 	structEntity := make([]*model.SysUser, 0)
 
@@ -109,6 +150,14 @@ func (this *SysUserRepository) QueryUserPage(pageReq common.PageRequest, user *m
 	return structEntity, total, err
 }
 
+// QueryUserList 查询用户列表
+// 不分页的用户列表查询，支持多种筛选条件
+// 参数:
+//   - user: 用户查询条件
+//
+// 返回值:
+//   - []*model.SysUser: 用户列表
+//   - error: 错误信息
 func (this *SysUserRepository) QueryUserList(user *model.SysUserRequest) ([]*model.SysUser, error) {
 	structEntity := make([]*model.SysUser, 0)
 
@@ -155,6 +204,14 @@ func (this *SysUserRepository) QueryUserList(user *model.SysUserRequest) ([]*mod
 	return structEntity, err
 }
 
+// DeleteUserByUserId 逻辑删除用户
+// 将用户标记为删除状态（del_flag=2），并更新操作信息
+// 参数:
+//   - userId: 用户ID
+//
+// 返回值:
+//   - int64: 影响的行数
+//   - error: 错误信息
 func (this *SysUserRepository) DeleteUserByUserId(userId int64) (int64, error) {
 	r, err := this.db.Gen.SysUser.WithContext(context.Background()).
 		Where(this.db.Gen.SysUser.UserID.Eq(userId)).
@@ -164,6 +221,14 @@ func (this *SysUserRepository) DeleteUserByUserId(userId int64) (int64, error) {
 	return r.RowsAffected, err
 }
 
+// ChangeUserStatus 修改用户状态
+// 启用或禁用用户账户，更新用户状态和操作信息
+// 参数:
+//   - user: 用户状态修改请求
+//
+// 返回值:
+//   - int64: 影响的行数
+//   - error: 错误信息
 func (this *SysUserRepository) ChangeUserStatus(user *model.ChangeUserStatusRequest) (int64, error) {
 	r, err := this.db.Gen.SysUser.WithContext(context.Background()).
 		Where(this.db.Gen.SysUser.UserID.Eq(user.UserID), this.db.Gen.SysUser.DelFlag.Eq("0")).
@@ -173,6 +238,14 @@ func (this *SysUserRepository) ChangeUserStatus(user *model.ChangeUserStatusRequ
 	return r.RowsAffected, err
 }
 
+// ResetUserPwd 重置用户密码
+// 为用户设置新的加密密码，并更新操作信息
+// 参数:
+//   - user: 密码重置请求
+//
+// 返回值:
+//   - int64: 影响的行数
+//   - error: 错误信息
 func (this *SysUserRepository) ResetUserPwd(user *model.ResetUserPwdRequest) (int64, error) {
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
 	if err != nil {
@@ -187,6 +260,14 @@ func (this *SysUserRepository) ResetUserPwd(user *model.ResetUserPwdRequest) (in
 	return r.RowsAffected, err
 }
 
+// AddUser 添加新用户
+// 创建新的用户记录，设置默认状态和删除标记
+// 参数:
+//   - post: 用户信息
+//
+// 返回值:
+//   - *model.SysUser: 创建的用户信息
+//   - error: 错误信息
 func (this *SysUserRepository) AddUser(post *model.SysUser) (*model.SysUser, error) {
 	post.Status = "0"
 	post.DelFlag = "0"
@@ -196,6 +277,15 @@ func (this *SysUserRepository) AddUser(post *model.SysUser) (*model.SysUser, err
 	return post, err
 }
 
+// EditUser 编辑用户信息
+// 更新现有用户的完整信息
+// 参数:
+//   - post: 更新后的用户信息
+//
+// 返回值:
+//   - *model.SysUser: 更新后的用户信息
+//   - int64: 影响的行数
+//   - error: 错误信息
 func (this *SysUserRepository) EditUser(post *model.SysUser) (*model.SysUser, int64, error) {
 	r, err := this.db.Gen.SysUser.WithContext(context.Background()).
 		Where(this.db.Gen.SysUser.UserID.Eq(post.UserID), this.db.Gen.SysUser.DelFlag.Eq("0")).
@@ -203,12 +293,29 @@ func (this *SysUserRepository) EditUser(post *model.SysUser) (*model.SysUser, in
 	return post, r.RowsAffected, err
 }
 
+// CheckUserNameUnique 检查用户名唯一性
+// 验证指定用户名是否已被其他未删除用户使用
+// 参数:
+//   - id: 排除的用户ID（编辑时使用）
+//   - name: 待检查的用户名
+//
+// 返回值:
+//   - int64: 重复数量
+//   - error: 错误信息
 func (this *SysUserRepository) CheckUserNameUnique(id int64, name string) (int64, error) {
 	r, err := this.db.Gen.SysUser.WithContext(context.Background()).
 		Where(this.db.Gen.SysUser.UserName.Eq(name), this.db.Gen.SysUser.UserID.Neq(id), this.db.Gen.SysUser.DelFlag.Eq("0")).Count()
 	return r, err
 }
 
+// UserLogin 记录用户登录
+// 更新用户的最后登录时间
+// 参数:
+//   - user: 用户信息
+//
+// 返回值:
+//   - int64: 影响的行数
+//   - error: 错误信息
 func (this *SysUserRepository) UserLogin(user *model.SysUser) (int64, error) {
 	r, err := this.db.Gen.SysUser.WithContext(context.Background()).
 		Where(this.db.Gen.SysUser.UserID.Eq(user.UserID), this.db.Gen.SysUser.DelFlag.Eq("0")).

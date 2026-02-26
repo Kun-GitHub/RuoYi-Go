@@ -26,6 +26,8 @@ import (
 
 var loginUser = &model.UserInfoStruct{}
 
+// ServerMiddleware 服务器中间件
+// 负责HTTP请求的认证拦截、权限验证等前置处理
 type ServerMiddleware struct {
 	redis       *cache.RedisClient
 	logger      *zap.Logger
@@ -35,6 +37,17 @@ type ServerMiddleware struct {
 	db          *dao.DatabaseStruct
 }
 
+// NewServerMiddleware 创建服务器中间件实例
+// 参数:
+//   - db: 数据库结构体
+//   - r: Redis客户端
+//   - l: 日志记录器
+//   - c: 应用配置
+//   - s: 用户服务接口
+//   - menuService: 菜单服务接口
+//
+// 返回值: 服务器
+// 返回值: 服务器中间件
 func NewServerMiddleware(db *dao.DatabaseStruct, r *cache.RedisClient, l *zap.Logger, c config.AppConfig, s input.SysUserService, menuService input.SysMenuService) *ServerMiddleware {
 	return &ServerMiddleware{
 		db:          db,
@@ -46,6 +59,10 @@ func NewServerMiddleware(db *dao.DatabaseStruct, r *cache.RedisClient, l *zap.Lo
 	}
 }
 
+// MiddlewareHandler 认证中间件处理器
+// 验证请求的JWT令牌和Redis会话信息，设置用户上下文
+// 参数:
+//   - ctx: Iris上下文对象
 func (this *ServerMiddleware) MiddlewareHandler(ctx iris.Context) {
 	uri := ctx.Request().RequestURI
 	// 检查当前请求路径是否在跳过列表中
@@ -123,6 +140,15 @@ func (this *ServerMiddleware) MiddlewareHandler(ctx iris.Context) {
 	this.db.ClearUser()
 }
 
+// skipInterceptor 检查路径是否需要跳过拦截
+// 根据配置的白名单判断是否跳过认证检查
+// 参数:
+//   - path: 请求路径
+terceptList: 不拦截的路径列表
+//
+// 返回值: 
+//   - notInterceptList: 不拦截的路径列表
+// 返回值: bool 是否跳过拦截
 func skipInterceptor(path string, notInterceptList []string) bool {
 	for _, pattern := range notInterceptList {
 		matched, _ := regexp.MatchString(pattern, path)
@@ -133,7 +159,13 @@ func skipInterceptor(path string, notInterceptList []string) bool {
 	return false
 }
 
-// 定义一个权限检查函数
+// hasPermission 检查用户是否具有指定权限
+// 验证当前登录用户是否拥有指定的操作权限
+ion: 权
+// 参数:
+//   - ctx: Iris上下文对象
+//   - permission: 权限标识
+// 返回值: bool 是否具有权限
 func (this *ServerMiddleware) hasPermission(ctx iris.Context, permission string) bool {
 	if loginUser == nil {
 		return false
@@ -156,7 +188,14 @@ func (this *ServerMiddleware) hasPermission(ctx iris.Context, permission string)
 	return false
 }
 
-// 定义一个权限检查的中间件
+// PermissionMiddleware 权限检查中间件
+ssion: 需要验证的权限标识
+//
+// 返回值:
+// 创建指定权限的检查中间件，用于路由级别的权限控制
+// 参数:
+//   - permission: 需要验证的权限标识
+// 返回值: iris.Handler 权限检查处理器
 func (this *ServerMiddleware) PermissionMiddleware(permission string) iris.Handler {
 	return func(ctx iris.Context) {
 		if !this.hasPermission(ctx, permission) {
