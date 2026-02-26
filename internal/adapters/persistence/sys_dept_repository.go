@@ -9,7 +9,9 @@ import (
 	"RuoYi-Go/internal/adapters/dao"
 	"RuoYi-Go/internal/domain/model"
 	"context"
+	"fmt"
 	"gorm.io/gen/field"
+	"strings"
 	"time"
 )
 
@@ -95,4 +97,84 @@ func (this *SysDeptRepository) DeleteDeptById(id int64) (int64, error) {
 			this.db.Gen.SysUser.UpdateBy.Value(this.db.User().UserName),
 			this.db.Gen.SysUser.UpdateTime.Value(time.Now()))
 	return r.RowsAffected, err
+}
+
+func (this *SysDeptRepository) QueryChildIdListById(id int64) ([]int64, error) {
+	if id == 0 {
+		return []int64{}, nil
+	}
+
+	// 查询所有子部门ID（包括直接子部门和间接子部门）
+	var childIds []int64
+
+	// 使用精确匹配避免ID误匹配问题
+	// Ancestors格式为: "0" 或 "0,100" 或 "0,100,101"
+	// 需要匹配以下四种情况：
+	// 1. 开头匹配: id + ",%"  (如: 100,101,102)
+	// 2. 结尾匹配: "%," + id  (如: 0,100)
+	// 3. 中间匹配: "%," + id + ",%" (如: 0,100,101)
+	// 4. 完全匹配: id (当id就是根节点时)
+	// 使用原生SQL进行精确匹配，避免ID误匹配问题
+	// Ancestors格式为: "0" 或 "0,100" 或 "0,100,101"
+	// 需要匹配以下四种情况：
+	// 1. 完全匹配: id (当id就是根节点时)
+	// 2. 开头匹配: id + ",%"  (如: 100,101,102)
+	// 3. 结尾匹配: "%," + id  (如: 0,100)
+	// 4. 中间匹配: "%," + id + ",%" (如: 0,100,101)
+
+	var structEntities []*model.SysDept
+	var err error
+
+	// 根据不同情况构建不同的查询条件
+	if id == 0 {
+		// 特殊处理根节点情况
+		structEntities, err = this.db.Gen.SysDept.WithContext(context.Background()).
+			Select(this.db.Gen.SysDept.DeptID).
+			Where(this.db.Gen.SysDept.Ancestors.Eq("0"),
+				this.db.Gen.SysDept.DelFlag.Eq("0")).
+			Order(this.db.Gen.SysDept.DeptID).
+			Find()
+	} else {
+		// 对于非根节点，使用复杂的OR条件
+		structEntities, err = this.db.Gen.SysDept.WithContext(context.Background()).
+			Select(this.db.Gen.SysDept.DeptID, this.db.Gen.SysDept.Ancestors).
+			Where(this.db.Gen.SysDept.DelFlag.Eq("0")).
+			Order(this.db.Gen.SysDept.DeptID).
+			Find()
+
+		// 在内存中过滤，确保精确匹配
+		filteredEntities := make([]*model.SysDept, 0)
+		idStr := fmt.Sprintf("%d", id)
+		for _, entity := range structEntities {
+			ancestors := entity.Ancestors
+			// 精确匹配四种情况
+			if ancestors == idStr || // 完全匹配
+				strings.HasPrefix(ancestors, idStr+",") || // 开头匹配
+				strings.HasSuffix(ancestors, ","+idStr) || // 结尾匹配
+				strings.Contains(ancestors, ","+idStr+",") { // 中间匹配
+				filteredEntities = append(filteredEntities, entity)
+			}
+		}
+		structEntities = filteredEntities
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	// 提取ID列表
+	childIds = make([]int64, len(structEntities))
+	for i, entity := range structEntities {
+		childIds[i] = entity.DeptID
+	}
+
+	// 过滤掉自身ID（如果在结果中）
+	filteredIds := make([]int64, 0, len(childIds))
+	for _, childId := range childIds {
+		if childId != id {
+			filteredIds = append(filteredIds, childId)
+		}
+	}
+
+	return filteredIds, nil
 }

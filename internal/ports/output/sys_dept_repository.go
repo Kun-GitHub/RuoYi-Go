@@ -16,4 +16,5 @@ type SysDeptRepository interface {
 	AddDept(post *model.SysDept) (*model.SysDept, error)
 	EditDept(post *model.SysDept) (*model.SysDept, int64, error)
 	DeleteDeptById(id int64) (int64, error)
+	QueryChildIdListById(id int64) ([]int64, error)
 }

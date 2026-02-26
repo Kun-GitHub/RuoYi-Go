@@ -81,6 +81,13 @@ func (this *SysUserHandler) UserPage(ctx iris.Context) {
 		EndTime:     endTime,
 	}
 
+	ids, err := this.deptService.QueryChildIdListById(deptId)
+	if err != nil {
+		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "QueryChildIdListById, error：%s", err.Error()))
+		return
+	}
+
+	u.DeptIDs = ids
 	d, t, err := this.service.QueryUserPage(l, u)
 	if err != nil {
 		//this.logger.Debug("login failed", zap.Error(err))

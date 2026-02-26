@@ -123,3 +123,12 @@ func (this *SysDeptService) DeleteDeptById(id int64) (int64, error) {
 	}
 	return result, nil
 }
+
+func (this *SysDeptService) QueryChildIdListById(id int64) ([]int64, error) {
+	result, err := this.repo.QueryChildIdListById(id)
+	if err != nil {
+		this.logger.Error("查询用户信息失败", zap.Error(err))
+		return nil, err
+	}
+	return result, nil
+}

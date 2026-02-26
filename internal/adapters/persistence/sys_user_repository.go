@@ -65,6 +65,7 @@ func (this *SysUserRepository) QueryUserPage(pageReq common.PageRequest, user *m
 
 	var status field.Expr
 	var deptID field.Expr
+	var deptIDs field.Expr
 	var phonenumber field.Expr
 	var userName field.Expr
 	var timeField field.Expr
@@ -80,6 +81,9 @@ func (this *SysUserRepository) QueryUserPage(pageReq common.PageRequest, user *m
 		}
 		if user.DeptID != 0 {
 			deptID = this.db.Gen.SysUser.DeptID.Eq(user.DeptID)
+		}
+		if len(user.DeptIDs) > 0 {
+			deptID = this.db.Gen.SysUser.DeptID.In(user.DeptIDs...)
 		}
 		if user.BeginTime != "" && user.EndTime != "" {
 			// 解析日期字符串
@@ -97,7 +101,7 @@ func (this *SysUserRepository) QueryUserPage(pageReq common.PageRequest, user *m
 	}
 
 	structEntity, total, err := this.db.Gen.SysUser.WithContext(context.Background()).
-		Where(deptID, status, phonenumber, userName, timeField, this.db.Gen.SysUser.DelFlag.Eq("0")).
+		Where(deptID, status, phonenumber, userName, timeField, deptIDs, this.db.Gen.SysUser.DelFlag.Eq("0")).
 		Order(this.db.Gen.SysUser.UserID).FindByPage((pageReq.PageNum-1)*pageReq.PageSize, pageReq.PageSize)
 	if err != nil {
 		return nil, 0, err

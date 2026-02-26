@@ -51,6 +51,7 @@ type SysUserRequest struct {
 	UserName    string `json:"userName"`
 	BeginTime   string `json:"beginTime"`
 	EndTime     string `json:"endTime"`
+	DeptIDs     []int64
 }
 
 type ChangeUserStatusRequest struct {
