@@ -23,18 +23,25 @@ type AuthHandler struct {
 }
 
 // NewAuthHandler 创建认证处理器实例
+//
 // 参数:
-//   - service: 认证服务接口
-//   - logger: 日志记录器
-// 返回值: 认证处理器
+//
+//	service: 认证服务接口
+//	logger: 日志记录器
+//
+// 返回值:
+//
+//	认证处理器
 func NewAuthHandler(service input.AuthService, logger *zap.Logger) *AuthHandler {
 	return &AuthHandler{service: service, logger: logger}
 }
 
 // Login 处理用户登录请求
 // 接收登录表单数据，调用认证服务进行登录验证
+//
 // 参数:
-//   - ctx: Iris上下文对象
+//
+//	ctx: Iris上下文对象
 func (h *AuthHandler) Login(ctx iris.Context) {
 	l := &model.LoginRequest{}
 	// Attempt to read and bind the JSON request body to the 'user' variable
@@ -55,8 +62,10 @@ func (h *AuthHandler) Login(ctx iris.Context) {
 
 // Logout 处理用户登出请求
 // 清除用户的会话信息，实现安全退出
+//
 // 参数:
-//   - ctx: Iris上下文对象
+//
+//	ctx: Iris上下文对象
 func (h *AuthHandler) Logout(ctx iris.Context) {
 	token := ctx.Values().Get(common.TOKEN)
 	if token != nil {
@@ -81,8 +90,10 @@ func (h *AuthHandler) Logout(ctx iris.Context) {
 
 // GetInfo 处理获取用户信息请求
 // 返回当前登录用户的详细信息、权限和角色
+//
 // 参数:
-//   - ctx: Iris上下文对象
+//
+//	ctx: Iris上下文对象
 func (h *AuthHandler) GetInfo(ctx iris.Context) {
 	user := ctx.Values().Get(common.LOGINUSER)
 	// 类型断言

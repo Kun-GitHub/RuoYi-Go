@@ -18,7 +18,7 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-// RedisClient Redis客户端封装
+// RedisClient 是Redis客户端的封装结构体
 // 提供线程安全的Redis操作接口
 type RedisClient struct {
 	client *redis.Client
@@ -27,15 +27,17 @@ type RedisClient struct {
 }
 
 // NewRedisClient 创建Redis客户端实例
-// 根据配置信息初始化Redis连接
-// 参数:
-//   - cfg: 应用配置
-//   - logger: 日志记录器
+// 根据配置信息初始化Redis连接并进行连通性测试
 //
-// 返
+// 参数:
+//
+//	cfg: 应用配置，包含Redis连接信息
+//	logger: 日志记录器
+//
 // 返回值:
-//   - *RedisClient: Redis客户端实例
-//   - error: 错误信息
+//
+//	*RedisClient: Redis客户端实例
+//	error: 连接错误信息
 func NewRedisClient(cfg config.AppConfig, logger *zap.Logger) (*RedisClient, error) {
 	client := redis.NewClient(&redis.Options{
 		Addr:     fmt.Sprintf("%s:%d", cfg.Redis.Host, cfg.Redis.Port),
@@ -55,14 +57,15 @@ func NewRedisClient(cfg config.AppConfig, logger *zap.Logger) (*RedisClient, err
 
 // Get 获取指定键的值
 // Redis GET命令的封装，当键不存在时返回redis.Nil错误
-// 参数:
-- key: 键名
 //
-/
-//   - key: 键名
+// 参数:
+//
+//	key: 要获取的键名
+//
 // 返回值:
-//   - string: 键对应的值
-//   - error: 错误信息
+//
+//	string: 键对应的值
+//	error: 错误信息（键不存在时返回redis.Nil）
 func (rs *RedisClient) Get(key string) (string, error) {
 	rs.mu.Lock()
 	defer rs.mu.Unlock()
@@ -72,14 +75,16 @@ func (rs *RedisClient) Get(key string) (string, error) {
 
 // Set 设置键值对
 // Redis SET命令的封装，支持设置过期时间
+//
 // 参数:
-   - value: 值
-
-//   - key: 键名
-//   - value: 值
-//   - expiration: 过期时间
+//
+//	key: 键名
+//	value: 要存储的值
+//	expiration: 过期时间
+//
 // 返回值:
-//   - error: 错误信息
+//
+//	error: 操作错误信息
 func (rs *RedisClient) Set(key string, value interface{}, expiration time.Duration) error {
 	rs.mu.Lock()
 	defer rs.mu.Unlock()
@@ -88,36 +93,33 @@ func (rs *RedisClient) Set(key string, value interface{}, expiration time.Durati
 }
 
 // SetNotTime 设置键值对（1小时过期）
-
-// 参数:
-//   - key: 键名
-//   -
 // Redis SET命令的封装，默认设置1小时过期时间
+//
 // 参数:
-//   - key: 键名
-//   - value: 值
+//
+//	key: 键名
+//	value: 要存储的值
+//
 // 返回值:
-//   - error: 错误信息
+//
+//	error: 操作错误信息
 func (rs *RedisClient) SetNotTime(key string, value interface{}) error {
 	rs.mu.Lock()
 	defer rs.mu.Unlock()
 
-time.Hour*1).Err()
-}
-
-// Del 删除指定键
-// Redis DEL命令的封装
-// 参数:
-//   - key: 键名
 	return rs.client.Set(context.Background(), key, value, time.Hour*1).Err()
 }
 
 // Del 删除指定键
 // Redis DEL命令的封装
+//
 // 参数:
-//   - key: 键名
+//
+//	key: 要删除的键名
+//
 // 返回值:
-//   - error: 错误信息
+//
+//	error: 操作错误信息
 func (rs *RedisClient) Del(key string) error {
 	rs.mu.Lock()
 	defer rs.mu.Unlock()
@@ -127,13 +129,12 @@ func (rs *RedisClient) Del(key string) error {
 
 // CloseRedis 关闭Redis连接
 // 释放Redis客户端资源
+//
 // 返回值:
-//   - error: 错误信息
+//
+//	error: 关闭连接时的错误信息
 func (rs *RedisClient) CloseRedis() error {
 	rs.mu.Lock()
-s KEYS命令的封装
-// 参数:
-//
 	defer rs.mu.Unlock()
 
 	if rs.client != nil {
@@ -145,11 +146,15 @@ s KEYS命令的封装
 
 // Keys 根据模式匹配获取键列表
 // Redis KEYS命令的封装
+//
 // 参数:
-//   - pattern: 匹配模式
+//
+//	pattern: 匹配模式
+//
 // 返回值:
-//   - []string: 匹配的键列表
-//   - error: 错误信息
+//
+//	[]string: 匹配的键列表
+//	error: 操作错误信息
 func (rs *RedisClient) Keys(pattern string) ([]string, error) {
 	rs.mu.Lock()
 	defer rs.mu.Unlock()

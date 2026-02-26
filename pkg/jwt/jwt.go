@@ -1,12 +1,6 @@
-// Copyright (c) [2024] K. All rights reserved.
-// Use of this source code is governed by a MIT license that can be found in the LICENSE file. or see：https://github.com/Kun-GitHub/RuoYi-Go/blob/main/LICENSE
-// Author: K. See：https://github.com/Kun-GitHub/RuoYi-Go or https://gitee.com/gitee_kun/RuoYi-Go
-// Email: hot_kun@hotmail.com or 867917691@qq.com
-
-package ryjwt
-
-// JWT工具包
+// Package ryjwt JWT工具包
 // 提供JWT令牌的生成和验证功能
+package ryjwt
 
 import (
 	"fmt"
@@ -19,13 +13,17 @@ const key = "j17GjwcQfeFVDxlSx7RW"
 
 // Sign 生成JWT令牌
 // 根据指定的键值对生成带有过期时间的JWT令牌
+//
 // 参数:
-//   - k: 键名
-//   - v: 键值
-//   - exp: 过期时间（小时），默认72小时
+//
+//	k: 键名
+//	v: 键值
+//	exp: 过期时间（小时），默认72小时
+//
 // 返回值:
-//   - string: 生成的JWT令牌
-//   - error: 错误信息
+//
+//	string: 生成的JWT令牌
+//	error: 错误信息
 func Sign(k, v string, exp int64) (string, error) {
 	if exp == 0 {
 		exp = 72
@@ -50,12 +48,16 @@ func Sign(k, v string, exp int64) (string, error) {
 
 // Valid 验证JWT令牌
 // 验证JWT令牌的有效性并提取指定键的值
+//
 // 参数:
-//   - k: 要提取的键名
-//   - tokenStr: JWT令牌字符串
+//
+//	k: 要提取的键名
+//	tokenStr: JWT令牌字符串
+//
 // 返回值:
-//   - string: 提取的键值
-//   - error: 错误信息（令牌无效或过期）
+//
+//	string: 提取的键值
+//	error: 错误信息（令牌无效或过期）
 func Valid(k, tokenStr string) (string, error) {
 	// 定义签名密钥，需要与生成Token时使用的密钥一致
 	signingKey := []byte(key)

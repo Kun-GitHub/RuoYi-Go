@@ -34,33 +34,36 @@ type AuthService struct {
 }
 
 // NewAuthService 创建认证服务实例
-// 参数:
-//   - service: 用户服务接口
-//   - roleService: 角色服务接口
-//   - deptService: 部门服务接口
-//   - configService: 配置服务接口
-//   - loginService: 登录信息服务接口
-//   - menuService: 菜单服务接口
-//   - redis: Redis客户端
-//   - logger: 日志记录器
 //
-// 返回值: 认证服
-// 返回值: 认证服务接口
+// 参数:
+//
+//	service: 用户服务接口
+//	roleService: 角色服务接口
+//	deptService: 部门服务接口
+//	configService: 配置服务接口
+//	loginService: 登录信息服务接口
+//	menuService: 菜单服务接口
+//	redis: Redis客户端
+//	logger: 日志记录器
+//
+// 返回值:
+//
+//	认证服务接口
 func NewAuthService(service input.SysUserService, roleService input.SysRoleService, deptService input.SysDeptService, configService input.SysConfigService, loginService input.SysLogininforService, menuService input.SysMenuService, redis *cache.RedisClient, logger *zap.Logger) input.AuthService {
 	return &AuthService{service: service, roleService: roleService, deptService: deptService, configService: configService, loginService: loginService, menuService: menuService, redis: redis, logger: logger}
 }
 
 // Login 用户登录认证
 // 处理用户登录请求，包括验证码校验、用户信息验证、密码比对、JWT令牌生成等流程
+//
 // 参数:
-请求参数，包含用户名、密码、验证码等信息
+//
+//	l: 登录请求参数，包含用户名、密码、验证码等信息
 //
 // 返回值:
-
-//   - l: 登录请求参数，包含用户名、密码、验证码等信息
-// 返回值:
-//   - *model.LoginSuccess: 登录成功响应信息
-//   - error: 错误信息
+//
+//	*model.LoginSuccess: 登录成功响应信息
+//	error: 错误信息
 func (this *AuthService) Login(l *model.LoginRequest) (*model.LoginSuccess, error) {
 	// 查询验证码是否开启
 	captchaEnabled := "true"
@@ -162,14 +165,16 @@ func (this *AuthService) Login(l *model.LoginRequest) (*model.LoginSuccess, erro
 	}
 }
 
- 参数:
-//   - to
 // Logout 用户登出
 // 清除用户的Redis会话信息，实现安全退出
+//
 // 参数:
-//   - token: 用户认证令牌
+//
+//	token: 用户认证令牌
+//
 // 返回值:
-//   - error: 错误信息
+//
+//	error: 错误信息
 func (this *AuthService) Logout(token string) error {
 	if err := this.redis.Del(token); err != nil {
 		this.logger.Debug("redis del error", zap.Error(err))
@@ -178,11 +183,12 @@ func (this *AuthService) Logout(token string) error {
 	return nil
 }
 
-
 // GetInfo 获取用户详细信息
 // 根据登录用户信息获取完整的用户资料，包括角色、权限、部门等信息
 // 参数:
 //   - loginUser: 已登录的用户基本信息
+//
+// 返
 // 返回值:
 //   - *model.UserInfoStruct: 完整的用户信息
 //   - []string: 用户权限列表
