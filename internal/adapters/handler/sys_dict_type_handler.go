@@ -80,6 +80,51 @@ func (h *SysDictTypeHandler) DictTypePage(ctx iris.Context) {
 	ctx.JSON(data)
 }
 
+// GenerateCaptchaImage
+func (h *SysDictTypeHandler) DictTypeList(ctx iris.Context) {
+
+	// 使用 Query() 方法获取所有的查询参数
+	allParams := ctx.Request().URL.Query()
+	// 从 url.Values 结构体中获取参数
+	beginTimeList, _ := allParams["params[beginTime]"]
+	endTimeList, _ := allParams["params[endTime]"]
+	// 假设我们只关心第一个值，我们可以这样获取：
+	beginTime := ""
+	if len(beginTimeList) > 0 {
+		beginTime = beginTimeList[0]
+	}
+	endTime := ""
+	if len(endTimeList) > 0 {
+		endTime = endTimeList[0]
+	}
+
+	status := ctx.URLParam("status")
+	dictName := ctx.URLParam("dictName")
+	dictType := ctx.URLParam("dictType")
+	u := &model.SysDictTypeRequest{
+		Status:    status,
+		DictName:  dictName,
+		DictType:  dictType,
+		BeginTime: beginTime,
+		EndTime:   endTime,
+	}
+
+	datas, err := h.service.QueryDictTypeList(u)
+	if err != nil {
+		//h.logger.Debug("login failed", zap.Error(err))
+		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "QueryDictTypePage, error：%s", err.Error()))
+		return
+	}
+
+	data := &common.Response{
+		Data:    datas,
+		Message: "操作成功",
+		Code:    iris.StatusOK,
+	}
+
+	ctx.JSON(data)
+}
+
 func (this *SysDictTypeHandler) DictTypeInfo(ctx iris.Context) {
 	dictIdStr := ctx.Params().GetString("dictId")
 	if dictIdStr == "" {

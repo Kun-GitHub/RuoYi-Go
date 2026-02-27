@@ -110,6 +110,14 @@ func (this *SysDeptHandler) AddDeptInfo(ctx iris.Context) {
 	post.UpdateTime = time.Now()
 	post.UpdateBy = loginUser.UserName
 
+	p, err := this.service.QueryDeptById(post.ParentID)
+	if err != nil {
+		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "QueryDeptByID, error：%s", err.Error()))
+		return
+	}
+
+	post.Ancestors = p.Ancestors + "," + strconv.FormatInt(post.ParentID, 10)
+
 	info, err := this.service.AddDept(post)
 	if err != nil {
 		//this.logger.Debug("login failed", zap.Error(err))
