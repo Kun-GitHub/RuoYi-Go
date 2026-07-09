@@ -25,6 +25,13 @@ type LoginRequest struct {
 	Uuid     string `json:"uuid"`
 }
 
+type RegisterRequest struct {
+	Username string `json:"username" validate:"required"`
+	Password string `json:"password" validate:"required"`
+	Code     string `json:"code"`
+	Uuid     string `json:"uuid"`
+}
+
 type GetInfoSuccess struct {
 	Code        int             `json:"code"`
 	Message     string          `json:"msg"`

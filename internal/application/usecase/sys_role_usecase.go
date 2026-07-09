@@ -195,6 +195,18 @@ func (this *SysRoleService) QueryUnallocatedList(roleId int64, userName, phonenu
 	return data, total, nil
 }
 
+func (this *SysRoleService) UpdateDataScope(role *model.SysRole) (int64, error) {
+	result, err := this.repo.UpdateDataScope(role)
+	if err != nil {
+		this.logger.Error("UpdateDataScope", zap.Error(err))
+		return 0, err
+	}
+	if result > 0 {
+		this.cache.Del(fmt.Sprintf("RoleID:%d", role.RoleID))
+	}
+	return result, nil
+}
+
 func (this *SysRoleService) SelectRoleAll() ([]*model.SysRole, error) {
 	data, err := this.repo.SelectRoleAll()
 	if err != nil {

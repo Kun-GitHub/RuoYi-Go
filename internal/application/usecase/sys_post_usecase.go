@@ -149,3 +149,12 @@ func (this *SysPostService) CheckPostCodeUnique(id int64, code string) (int64, e
 	}
 	return result, nil
 }
+
+func (this *SysPostService) SelectPostAll() ([]*model.SysPost, error) {
+	data, err := this.repo.SelectPostAll()
+	if err != nil {
+		this.logger.Error("SelectPostAll", zap.Error(err))
+		return nil, err
+	}
+	return data, nil
+}

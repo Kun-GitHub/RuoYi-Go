@@ -33,6 +33,7 @@ type SysRole struct {
 	Remark            string    `gorm:"column:remark;comment:备注" json:"remark"`
 	Admin             bool      `gorm:"-" json:"admin"` // 备注
 	MenuIds           []int64   `gorm:"-" json:"menuIds"`
+	DeptIds           []int64   `gorm:"-" json:"deptIds"`
 }
 
 type SysRoleRequest struct {

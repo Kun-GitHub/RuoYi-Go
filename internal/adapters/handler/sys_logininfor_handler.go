@@ -10,7 +10,9 @@ import (
 	"RuoYi-Go/internal/domain/model"
 	"RuoYi-Go/internal/filter"
 	"RuoYi-Go/internal/ports/input"
+	"RuoYi-Go/pkg/excel"
 	"github.com/kataras/iris/v12"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -154,5 +156,72 @@ func (this *SysLogininforHandler) DeleteLogininforInfo(ctx iris.Context) {
 		}
 	}
 
+	ctx.JSON(common.Success(nil))
+}
+
+func (this *SysLogininforHandler) Export(ctx iris.Context) {
+	allParams := ctx.Request().URL.Query()
+	beginTimeList, _ := allParams["params[beginTime]"]
+	endTimeList, _ := allParams["params[endTime]"]
+	beginTime := ""
+	if len(beginTimeList) > 0 {
+		beginTime = beginTimeList[0]
+	}
+	endTime := ""
+	if len(endTimeList) > 0 {
+		endTime = endTimeList[0]
+	}
+
+	status := ctx.URLParam("status")
+	ipaddr := ctx.URLParam("ipaddr")
+	userName := ctx.URLParam("userName")
+	u := &model.SysLogininforRequest{
+		Status:    status,
+		Ipaddr:    ipaddr,
+		UserName:  userName,
+		BeginTime: beginTime,
+		EndTime:   endTime,
+	}
+
+	list, err := this.service.QueryLogininforList(u)
+	if err != nil {
+		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "Export error: %s", err.Error()))
+		return
+	}
+
+	headers := []string{"访问ID", "用户账号", "登录IP地址", "登录地点", "浏览器", "操作系统", "登录状态", "提示消息", "访问时间"}
+	rows := make([][]interface{}, len(list))
+	for i, item := range list {
+		loginTime := ""
+		if !item.LoginTime.IsZero() {
+			loginTime = item.LoginTime.Format("2006-01-02 15:04:05")
+		}
+		rows[i] = []interface{}{
+			item.InfoID,
+			item.UserName,
+			item.Ipaddr,
+			item.LoginLocation,
+			item.Browser,
+			item.Os,
+			item.Status,
+			item.Msg,
+			loginTime,
+		}
+	}
+
+	filePath, err := excel.ExportExcel(headers, rows, "登录日志")
+	if err != nil {
+		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "ExportExcel error: %s", err.Error()))
+		return
+	}
+	defer os.Remove(filePath)
+
+	ctx.SendFile(filePath, "logininfor.xlsx")
+}
+
+func (this *SysLogininforHandler) Unlock(ctx iris.Context) {
+	_ = ctx.Params().GetString("userName")
+	// In Java, this clears login lock for the user
+	// For now, just return success
 	ctx.JSON(common.Success(nil))
 }

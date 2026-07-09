@@ -10,7 +10,9 @@ import (
 	"RuoYi-Go/internal/domain/model"
 	"RuoYi-Go/internal/filter"
 	"RuoYi-Go/internal/ports/input"
+	"RuoYi-Go/pkg/excel"
 	"github.com/kataras/iris/v12"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -195,4 +197,56 @@ func (this *SysPostHandler) DeletePostInfo(ctx iris.Context) {
 	}
 
 	ctx.JSON(common.Success(nil))
+}
+
+func (this *SysPostHandler) Export(ctx iris.Context) {
+	status := ctx.URLParam("status")
+	postCode := ctx.URLParam("postCode")
+	postName := ctx.URLParam("postName")
+	u := &model.SysPostRequest{
+		Status:   status,
+		PostCode: postCode,
+		PostName: postName,
+	}
+
+	list, err := this.service.QueryPostList(u)
+	if err != nil {
+		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "Export error: %s", err.Error()))
+		return
+	}
+
+	headers := []string{"岗位ID", "岗位编码", "岗位名称", "显示顺序", "状态", "创建时间"}
+	rows := make([][]interface{}, len(list))
+	for i, item := range list {
+		createTime := ""
+		if !item.CreateTime.IsZero() {
+			createTime = item.CreateTime.Format("2006-01-02 15:04:05")
+		}
+		rows[i] = []interface{}{
+			item.PostID,
+			item.PostCode,
+			item.PostName,
+			item.PostSort,
+			item.Status,
+			createTime,
+		}
+	}
+
+	filePath, err := excel.ExportExcel(headers, rows, "岗位数据")
+	if err != nil {
+		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "ExportExcel error: %s", err.Error()))
+		return
+	}
+	defer os.Remove(filePath)
+
+	ctx.SendFile(filePath, "post.xlsx")
+}
+
+func (this *SysPostHandler) OptionSelect(ctx iris.Context) {
+	data, err := this.service.SelectPostAll()
+	if err != nil {
+		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "OptionSelect error: %s", err.Error()))
+		return
+	}
+	ctx.JSON(common.Success(data))
 }

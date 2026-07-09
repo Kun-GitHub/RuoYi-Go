@@ -125,3 +125,12 @@ func (this *SysPostRepository) CheckPostCodeUnique(id int64, code string) (int64
 		Where(this.db.Gen.SysPost.PostCode.Eq(code), this.db.Gen.SysPost.PostID.Neq(id)).Count()
 	return r, err
 }
+
+func (this *SysPostRepository) SelectPostAll() ([]*model.SysPost, error) {
+	posts := make([]*model.SysPost, 0)
+	err := this.db.Gen.SysPost.WithContext(context.Background()).Scan(&posts)
+	if err != nil {
+		return nil, err
+	}
+	return posts, nil
+}

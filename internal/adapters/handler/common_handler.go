@@ -54,3 +54,40 @@ func (h *CommonHandler) GetResource(ctx iris.Context) {
 	// Serve the file
 	ctx.SendFile(filePath, "")
 }
+
+func (h *CommonHandler) Download(ctx iris.Context) {
+	fileName := ctx.URLParam("fileName")
+	_ = ctx.URLParam("delete")
+	// Service method to handle download
+	filePath, err := h.service.Download(fileName)
+	if err != nil {
+		ctx.StatusCode(http.StatusNotFound)
+		return
+	}
+	ctx.SendFile(filePath, fileName)
+}
+
+func (h *CommonHandler) UploadFiles(ctx iris.Context) {
+	// Multiple file upload
+	err := ctx.Request().ParseMultipartForm(32 << 20)
+	if err != nil {
+		ctx.JSON(common.ErrorFormat(iris.StatusBadRequest, "Upload failed: %s", err.Error()))
+		return
+	}
+
+	files := ctx.Request().MultipartForm.File["files"]
+	var results []map[string]interface{}
+	for _, header := range files {
+		url, fileName, err := h.service.UploadFile(header)
+		if err != nil {
+			continue
+		}
+		results = append(results, map[string]interface{}{
+			"url":              url,
+			"fileName":         fileName,
+			"newFileName":      fileName,
+			"originalFilename": header.Filename,
+		})
+	}
+	ctx.JSON(common.Success(results))
+}

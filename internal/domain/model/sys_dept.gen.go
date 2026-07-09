@@ -32,10 +32,11 @@ type SysDept struct {
 	UpdateBy   string    `gorm:"column:update_by;comment:更新者" json:"updateBy"`             // 更新者
 	UpdateTime time.Time `gorm:"column:update_time;comment:更新时间" json:"updateTime"`        // 更新时间
 
-	ID         int64      `gorm:"-" json:"id"`         // 部门id
-	Label      string     `gorm:"-" json:"label"`      // 部门名称
-	ParentName string     `gorm:"-" json:"parentName"` // 部门名称
-	Children   []*SysDept `gorm:"-" json:"children"`   // 更新时间
+	ID               int64      `gorm:"-" json:"id"`         // 部门id
+	Label            string     `gorm:"-" json:"label"`      // 部门名称
+	ParentName       string     `gorm:"-" json:"parentName"` // 部门名称
+	Children         []*SysDept `gorm:"-" json:"children"`   // 更新时间
+	DataScopeDeptIds []int64    `gorm:"-" json:"-"`          // 数据权限过滤部门ID
 }
 
 // TableName SysDept's table name

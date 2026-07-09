@@ -10,7 +10,9 @@ import (
 	"RuoYi-Go/internal/domain/model"
 	"RuoYi-Go/internal/filter"
 	"RuoYi-Go/internal/ports/input"
+	"RuoYi-Go/pkg/excel"
 	"github.com/kataras/iris/v12"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -216,5 +218,68 @@ func (this *SysConfigHandler) DeleteConfigInfo(ctx iris.Context) {
 		}
 	}
 
+	ctx.JSON(common.Success(nil))
+}
+
+func (this *SysConfigHandler) Export(ctx iris.Context) {
+	allParams := ctx.Request().URL.Query()
+	beginTimeList, _ := allParams["params[beginTime]"]
+	endTimeList, _ := allParams["params[endTime]"]
+	beginTime := ""
+	if len(beginTimeList) > 0 {
+		beginTime = beginTimeList[0]
+	}
+	endTime := ""
+	if len(endTimeList) > 0 {
+		endTime = endTimeList[0]
+	}
+
+	configType := ctx.URLParam("configType")
+	configName := ctx.URLParam("configName")
+	configKey := ctx.URLParam("configKey")
+	u := &model.SysConfigRequest{
+		ConfigType: configType,
+		ConfigName: configName,
+		ConfigKey:  configKey,
+		BeginTime:  beginTime,
+		EndTime:    endTime,
+	}
+
+	list, err := this.service.QueryConfigList(u)
+	if err != nil {
+		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "Export error: %s", err.Error()))
+		return
+	}
+
+	headers := []string{"参数ID", "参数名称", "参数键名", "参数键值", "系统内置", "状态", "备注", "创建时间"}
+	rows := make([][]interface{}, len(list))
+	for i, item := range list {
+		createTime := ""
+		if !item.CreateTime.IsZero() {
+			createTime = item.CreateTime.Format("2006-01-02 15:04:05")
+		}
+		rows[i] = []interface{}{
+			item.ConfigID,
+			item.ConfigName,
+			item.ConfigKey,
+			item.ConfigValue,
+			item.ConfigType,
+			item.ConfigType,
+			item.Remark,
+			createTime,
+		}
+	}
+
+	filePath, err := excel.ExportExcel(headers, rows, "参数数据")
+	if err != nil {
+		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "ExportExcel error: %s", err.Error()))
+		return
+	}
+	defer os.Remove(filePath)
+
+	ctx.SendFile(filePath, "config.xlsx")
+}
+
+func (this *SysConfigHandler) RefreshCache(ctx iris.Context) {
 	ctx.JSON(common.Success(nil))
 }

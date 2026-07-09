@@ -120,3 +120,16 @@ func (h *AuthHandler) GetInfo(ctx iris.Context) {
 	// 使用 ctx.JSON 自动将user序列化为JSON并写入响应体
 	ctx.JSON(infoSuccess)
 }
+
+func (h *AuthHandler) Register(ctx iris.Context) {
+	l := &model.RegisterRequest{}
+	if err := filter.ValidateRequest(ctx, l); err != nil {
+		return
+	}
+	err := h.service.Register(l)
+	if err != nil {
+		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "Register failed: %s", err.Error()))
+		return
+	}
+	ctx.JSON(common.Success(nil))
+}

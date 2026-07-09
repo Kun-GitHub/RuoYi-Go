@@ -23,6 +23,7 @@ type SysRoleService interface {
 	QueryAllocatedList(roleId int64, userName, phonenumber string, pageReq common.PageRequest) ([]*model.SysUser, int64, error)
 	QueryUnallocatedList(roleId int64, userName, phonenumber string, pageReq common.PageRequest) ([]*model.SysUser, int64, error)
 	SelectRoleAll() ([]*model.SysRole, error)
+	UpdateDataScope(role *model.SysRole) (int64, error)
 	InsertAuthUsers(roleId int64, userIdsStr string) error
 	DeleteAuthUser(userRole *model.SysUserRole) error
 	DeleteAuthUsers(roleId int64, userIdsStr string) error

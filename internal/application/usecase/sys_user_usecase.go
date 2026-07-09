@@ -14,6 +14,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"go.uber.org/zap"
+	"golang.org/x/crypto/bcrypt"
 )
 
 // SysUserService 用户服务实现类
@@ -359,6 +360,140 @@ func (this *SysUserService) CheckUserNameUnique(id int64, name string) (int64, e
 	if err != nil {
 		this.logger.Error("CheckUserNameUnique", zap.Error(err))
 		return -1, err
+	}
+	return result, nil
+}
+
+// RegisterUser 注册新用户
+// 创建新用户记录，并将用户信息缓存
+// 参数:
+//   - post: 用户信息
+//
+// 返回值:
+//   - *model.SysUser: 创建的用户信息
+//   - error: 错误信息
+func (this *SysUserService) RegisterUser(post *model.SysUser) (*model.SysUser, error) {
+	data, err := this.repo.RegisterUser(post)
+	if err != nil {
+		this.logger.Error("RegisterUser", zap.Error(err))
+		return nil, err
+	}
+	if data != nil && data.UserID != 0 {
+		userBytes, err := json.Marshal(data)
+		if err == nil {
+			this.cache.Set([]byte(fmt.Sprintf("UserID:%d", data.UserID)), userBytes, common.EXPIRESECONDS)
+		}
+	}
+	return data, nil
+}
+
+// CheckPhoneUnique 检查手机号唯一性
+// 验证指定手机号是否已被其他用户使用
+// 参数:
+//   - id: 排除的用户ID
+//   - phonenumber: 待检查的手机号
+//
+// 返回值:
+//   - int64: 重复数量（0表示唯一，>0表示重复）
+//   - error: 错误信息
+func (this *SysUserService) CheckPhoneUnique(id int64, phonenumber string) (int64, error) {
+	result, err := this.repo.CheckPhoneUnique(id, phonenumber)
+	if err != nil {
+		this.logger.Error("CheckPhoneUnique", zap.Error(err))
+		return -1, err
+	}
+	return result, nil
+}
+
+// CheckEmailUnique 检查邮箱唯一性
+// 验证指定邮箱是否已被其他用户使用
+// 参数:
+//   - id: 排除的用户ID
+//   - email: 待检查的邮箱
+//
+// 返回值:
+//   - int64: 重复数量（0表示唯一，>0表示重复）
+//   - error: 错误信息
+func (this *SysUserService) CheckEmailUnique(id int64, email string) (int64, error) {
+	result, err := this.repo.CheckEmailUnique(id, email)
+	if err != nil {
+		this.logger.Error("CheckEmailUnique", zap.Error(err))
+		return -1, err
+	}
+	return result, nil
+}
+
+// UpdateProfile 更新用户个人信息
+// 更新用户的基本信息字段，并清除缓存
+// 参数:
+//   - user: 用户信息
+//
+// 返回值:
+//   - int64: 影响的行数
+//   - error: 错误信息
+func (this *SysUserService) UpdateProfile(user *model.SysUser) (int64, error) {
+	result, err := this.repo.UpdateProfile(user)
+	if err != nil {
+		this.logger.Error("UpdateProfile", zap.Error(err))
+		return 0, err
+	}
+	if result > 0 {
+		this.cache.Del(fmt.Sprintf("UserID:%d", user.UserID))
+	}
+	return result, nil
+}
+
+// UpdatePwd 修改用户密码
+// 验证旧密码正确性，使用bcrypt加密新密码后更新
+// 参数:
+//   - userID: 用户ID
+//   - oldPassword: 旧密码
+//   - newPassword: 新密码
+//
+// 返回值:
+//   - int64: 影响的行数
+//   - error: 错误信息
+func (this *SysUserService) UpdatePwd(userID int64, oldPassword string, newPassword string) (int64, error) {
+	user, err := this.repo.QueryUserByUserId(userID)
+	if err != nil {
+		this.logger.Error("UpdatePwd QueryUser", zap.Error(err))
+		return 0, err
+	}
+	if err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(oldPassword)); err != nil {
+		return 0, fmt.Errorf("旧密码错误")
+	}
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(newPassword), bcrypt.DefaultCost)
+	if err != nil {
+		return 0, err
+	}
+	result, err := this.repo.UpdatePwd(userID, string(hashedPassword))
+	if err != nil {
+		this.logger.Error("UpdatePwd", zap.Error(err))
+		return 0, err
+	}
+	if result > 0 {
+		this.cache.Del(fmt.Sprintf("UserID:%d", userID))
+	}
+	return result, nil
+}
+
+// UpdateAvatar 更新用户头像
+// 更新用户头像地址，并清除缓存
+// 参数:
+//   - userID: 用户ID
+//   - avatar: 头像地址
+//
+// 返回值:
+//   - int64: 影响的行数
+//   - error: 错误信息
+func (this *SysUserService) UpdateAvatar(userID int64, avatar string) (int64, error) {
+	result, err := this.repo.UpdateAvatar(userID, avatar)
+	if err != nil {
+		this.logger.Error("UpdateAvatar", zap.Error(err))
+		return 0, err
+	}
+	if result > 0 {
+		this.cache.Del(fmt.Sprintf("UserID:%d", userID))
 	}
 	return result, nil
 }

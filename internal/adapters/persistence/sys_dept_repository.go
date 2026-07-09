@@ -28,6 +28,7 @@ func (this *SysDeptRepository) QueryDeptList(dept *model.SysDept) ([]*model.SysD
 
 	var status field.Expr
 	var deptName field.Expr
+	var dataScope field.Expr
 	if dept != nil {
 		if dept.Status != "" {
 			status = this.db.Gen.SysDept.Status.Eq(dept.Status)
@@ -36,10 +37,14 @@ func (this *SysDeptRepository) QueryDeptList(dept *model.SysDept) ([]*model.SysD
 		if dept.DeptName != "" {
 			deptName = this.db.Gen.SysDept.DeptName.Like("%" + dept.DeptName + "%")
 		}
+
+		if len(dept.DataScopeDeptIds) > 0 {
+			dataScope = this.db.Gen.SysDept.DeptID.In(dept.DataScopeDeptIds...)
+		}
 	}
 
 	structEntity, err := this.db.Gen.SysDept.WithContext(context.Background()).
-		Where(deptName, status, this.db.Gen.SysDept.DelFlag.Eq("0")).Find()
+		Where(deptName, status, dataScope, this.db.Gen.SysDept.DelFlag.Eq("0")).Find()
 	if err != nil {
 		return nil, err
 	}

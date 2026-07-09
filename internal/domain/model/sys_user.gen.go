@@ -52,6 +52,7 @@ type SysUserRequest struct {
 	BeginTime   string `json:"beginTime"`
 	EndTime     string `json:"endTime"`
 	DeptIDs     []int64
+	UserId      int64 `json:"-"` // 数据权限-仅本人时使用
 }
 
 type ChangeUserStatusRequest struct {

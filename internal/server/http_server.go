@@ -29,7 +29,9 @@ func ResolveServerMiddleware(db *dao.DatabaseStruct, redis *cache.RedisClient, l
 	sysUserService := usecase.NewSysUserService(sysUserRepo, cache, logger)
 	sysMenuRepo := persistence.NewSysMenuRepository(db)
 	sysMenuService := usecase.NewSysMenuService(sysMenuRepo, cache, logger)
-	return filter.NewServerMiddleware(db, redis, logger, appConfig, sysUserService, sysMenuService)
+	operLogRepo := persistence.NewSysOperLogRepository(db)
+	operLogService := usecase.NewSysOperLogService(operLogRepo, cache, logger)
+	return filter.NewServerMiddleware(db, redis, logger, appConfig, sysUserService, sysMenuService, operLogService)
 }
 
 func ResolveCaptchaHandler(db *dao.DatabaseStruct, redis *cache.RedisClient, logger *zap.Logger) *handler.CaptchaHandler {
@@ -91,7 +93,8 @@ func ResolvePageSysUserHandler(db *dao.DatabaseStruct, logger *zap.Logger, cache
 
 	sysUserPostRepo := persistence.NewSysUserPostRepository(db)
 	sysUserUserPostService := usecase.NewSysUserPostService(sysUserPostRepo, cache, logger)
-	return handler.NewSysUserHandler(sysUserService, sysDeptService, sysRoleService, sysPostService, sysUserUserRoleService, sysUserUserPostService)
+	txManager := usecase.NewTransactionManager(db)
+	return handler.NewSysUserHandler(sysUserService, sysDeptService, sysRoleService, sysPostService, sysUserUserRoleService, sysUserUserPostService, txManager)
 }
 
 func ResolveSysDictDataHandler(db *dao.DatabaseStruct, logger *zap.Logger, cache *cache.FreeCacheClient) *handler.SysDictDataHandler {
@@ -103,7 +106,11 @@ func ResolveSysDictDataHandler(db *dao.DatabaseStruct, logger *zap.Logger, cache
 func ResolveSysDeptHandler(db *dao.DatabaseStruct, logger *zap.Logger, cache *cache.FreeCacheClient) *handler.SysDeptHandler {
 	sysDeptRepo := persistence.NewSysDeptRepository(db)
 	sysDeptService := usecase.NewSysDeptService(sysDeptRepo, cache, logger)
-	return handler.NewSysDeptHandler(sysDeptService)
+
+	sysRoleRepo := persistence.NewSysRoleRepository(db)
+	sysRoleService := usecase.NewSysRoleService(sysRoleRepo, cache, logger)
+
+	return handler.NewSysDeptHandler(sysDeptService, sysRoleService)
 }
 
 func ResolveSysRoleHandler(db *dao.DatabaseStruct, logger *zap.Logger, cache *cache.FreeCacheClient) *handler.SysRoleHandler {
@@ -149,7 +156,7 @@ func ResolveSysLogininforHandler(db *dao.DatabaseStruct, logger *zap.Logger, cac
 }
 
 func ResolveMonitorHandler(db *dao.DatabaseStruct, redis *cache.RedisClient, logger *zap.Logger, cache *cache.FreeCacheClient) *handler.MonitorHandler {
-	return handler.NewMonitorHandler(logger)
+	return handler.NewMonitorHandler(logger, redis)
 }
 
 func ResolveSysJobHandler(db *dao.DatabaseStruct, logger *zap.Logger, cache *cache.FreeCacheClient, task *task.TaskManager) *handler.SysJobHandler {
@@ -162,6 +169,12 @@ func ResolveSysOperLogHandler(db *dao.DatabaseStruct, logger *zap.Logger, cache 
 	repo := persistence.NewSysOperLogRepository(db)
 	service := usecase.NewSysOperLogService(repo, cache, logger)
 	return handler.NewSysOperLogHandler(service)
+}
+
+func ResolveOperationLogMiddleware(db *dao.DatabaseStruct, logger *zap.Logger, cache *cache.FreeCacheClient) *filter.OperationLog {
+	repo := persistence.NewSysOperLogRepository(db)
+	service := usecase.NewSysOperLogService(repo, cache, logger)
+	return filter.NewOperationLog(service)
 }
 
 func ResolveSysJobLogHandler(db *dao.DatabaseStruct, logger *zap.Logger, cache *cache.FreeCacheClient) *handler.SysJobLogHandler {

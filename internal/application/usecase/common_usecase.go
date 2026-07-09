@@ -73,6 +73,14 @@ func (s *CommonService) UploadFile(file *multipart.FileHeader) (string, string, 
 	return url, newFileName, nil
 }
 
+func (s *CommonService) Download(fileName string) (string, error) {
+	basePath := s.config.RuoYi.Profile
+	if basePath == "" {
+		basePath = "./upload"
+	}
+	return filepath.Join(basePath, fileName), nil
+}
+
 func (s *CommonService) GetResource(resource string) (string, error) {
 	// Resource usually starts with /profile
 	// Map /profile to local path

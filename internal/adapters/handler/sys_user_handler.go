@@ -6,11 +6,19 @@
 package handler
 
 import (
+	"RuoYi-Go/internal/application/usecase"
 	"RuoYi-Go/internal/common"
 	"RuoYi-Go/internal/domain/model"
 	"RuoYi-Go/internal/filter"
 	"RuoYi-Go/internal/ports/input"
+	"RuoYi-Go/pkg/excel"
+	"fmt"
 	"github.com/kataras/iris/v12"
+	"golang.org/x/crypto/bcrypt"
+	"gorm.io/gorm"
+	"io"
+	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -23,14 +31,16 @@ type SysUserHandler struct {
 	postService     input.SysPostService
 	userRoleService input.SysUserRoleService
 	userPostService input.SysUserPostService
+	txManager       *usecase.TransactionManager
 }
 
 func NewSysUserHandler(service input.SysUserService, deptService input.SysDeptService, roleService input.SysRoleService,
-	postService input.SysPostService, userRoleService input.SysUserRoleService, userPostService input.SysUserPostService) *SysUserHandler {
+	postService input.SysPostService, userRoleService input.SysUserRoleService, userPostService input.SysUserPostService,
+	txManager *usecase.TransactionManager) *SysUserHandler {
 	return &SysUserHandler{service: service,
 		deptService: deptService, roleService: roleService,
 		postService: postService, userRoleService: userRoleService,
-		userPostService: userPostService,
+		userPostService: userPostService, txManager: txManager,
 	}
 }
 
@@ -87,7 +97,23 @@ func (this *SysUserHandler) UserPage(ctx iris.Context) {
 		return
 	}
 
-	u.DeptIDs = ids
+	// 数据权限过滤
+	scope := filter.ComputeDataScope(ctx, this.roleService, this.deptService)
+	if scope.IsAdmin || scope.ScopeType == filter.DataScopeAll {
+		// 全部数据权限，使用原始部门筛选条件
+		u.DeptIDs = ids
+	} else if scope.ScopeType == filter.DataScopeSelf {
+		// 仅本人数据 - 通过UserId过滤
+		loginUser, _ := ctx.Values().Get(common.LOGINUSER).(*model.UserInfoStruct)
+		if loginUser != nil {
+			u.UserId = loginUser.UserID
+		}
+		u.DeptIDs = append(ids, scope.DeptIds...)
+	} else {
+		// 把数据权限的部门ID和原始部门筛选合并
+		u.DeptIDs = append(ids, scope.DeptIds...)
+	}
+
 	d, t, err := this.service.QueryUserPage(l, u)
 	if err != nil {
 		//this.logger.Debug("login failed", zap.Error(err))
@@ -106,7 +132,13 @@ func (this *SysUserHandler) UserPage(ctx iris.Context) {
 }
 
 func (this *SysUserHandler) DeptTree(ctx iris.Context) {
-	data, err := this.deptService.QueryDeptList(nil)
+	deptFilter := &model.SysDept{}
+	scope := filter.ComputeDataScope(ctx, this.roleService, this.deptService)
+	if !scope.IsAdmin && scope.ScopeType != filter.DataScopeAll {
+		deptFilter.DataScopeDeptIds = scope.DeptIds
+	}
+
+	data, err := this.deptService.QueryDeptList(deptFilter)
 	if err != nil {
 		//this.logger.Debug("login failed", zap.Error(err))
 		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "DeptTree, error：%s", err.Error()))
@@ -478,51 +510,79 @@ func (this *SysUserHandler) AuthRole(ctx iris.Context) {
 
 func (this *SysUserHandler) AddUser(ctx iris.Context) {
 	post := &model.UserInfoRequest{}
-	// Attempt to read and bind the JSON request body to the 'user' variable
 	if err := filter.ValidateRequest(ctx, post); err != nil {
-		//ctx.JSON(common.ErrorFormat(iris.StatusBadRequest, "Invalid JSON, error:%s", err.Error()))
 		return
 	}
 
 	count, err := this.service.CheckUserNameUnique(-1, post.UserName)
 	if err != nil || count != 0 {
-		//this.logger.Debug("login failed", zap.Error(err))
 		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "新增用户，已存在相同用户名称"))
 		return
 	}
 
+	if post.Phonenumber != "" {
+		count, err = this.service.CheckPhoneUnique(-1, post.Phonenumber)
+		if err != nil || count != 0 {
+			ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "新增用户，已存在相同手机号"))
+			return
+		}
+	}
+
+	if post.Email != "" {
+		count, err = this.service.CheckEmailUnique(-1, post.Email)
+		if err != nil || count != 0 {
+			ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "新增用户，已存在相同邮箱"))
+			return
+		}
+	}
+
 	user := ctx.Values().Get(common.LOGINUSER)
-	// 类型断言
 	loginUser, ok := user.(*model.UserInfoStruct)
 	if !ok {
 		ctx.JSON(common.Error(iris.StatusUnauthorized, "请重新登录"))
 		return
 	}
+
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(post.Password), bcrypt.DefaultCost)
+	if err != nil {
+		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "密码加密失败"))
+		return
+	}
+
 	post.CreateTime = time.Now()
 	post.CreateBy = loginUser.UserName
 	post.UpdateTime = time.Now()
 	post.UpdateBy = loginUser.UserName
 	post.LoginDate = time.Now()
+	post.Password = string(hashedPassword)
 
-	info, err := this.service.AddUser(post.SysUser)
+	var info *model.SysUser
+	err = this.txManager.Execute(func(tx *gorm.DB) error {
+		post.SysUser.Status = "0"
+		post.SysUser.DelFlag = "0"
+
+		if err := tx.Create(post.SysUser).Error; err != nil {
+			return err
+		}
+		info = post.SysUser
+
+		for _, id := range post.RoleIds {
+			if err := tx.Create(&model.SysUserRole{UserID: info.UserID, RoleID: id}).Error; err != nil {
+				return err
+			}
+		}
+
+		for _, id := range post.PostIds {
+			if err := tx.Create(&model.SysUserPost{UserID: info.UserID, PostID: id}).Error; err != nil {
+				return err
+			}
+		}
+
+		return nil
+	})
 	if err != nil {
-		//this.logger.Debug("login failed", zap.Error(err))
 		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "AddUser, error：%s", err.Error()))
 		return
-	}
-
-	for _, id := range post.RoleIds {
-		this.userRoleService.AddUserRole(&model.SysUserRole{
-			info.UserID,
-			id,
-		})
-	}
-
-	for _, id := range post.PostIds {
-		this.userPostService.AddUserPost(&model.SysUserPost{
-			info.UserID,
-			id,
-		})
 	}
 
 	ctx.JSON(common.Success(info))
@@ -530,21 +590,33 @@ func (this *SysUserHandler) AddUser(ctx iris.Context) {
 
 func (this *SysUserHandler) EditUser(ctx iris.Context) {
 	post := &model.UserInfoRequest{}
-	// Attempt to read and bind the JSON request body to the 'user' variable
 	if err := filter.ValidateRequest(ctx, post); err != nil {
-		//ctx.JSON(common.ErrorFormat(iris.StatusBadRequest, "Invalid JSON, error:%s", err.Error()))
 		return
 	}
 
 	count, err := this.service.CheckUserNameUnique(post.UserID, post.UserName)
 	if err != nil || count != 0 {
-		//this.logger.Debug("login failed", zap.Error(err))
 		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "修改用户，已存在相同用户名称"))
 		return
 	}
 
+	if post.Phonenumber != "" {
+		count, err = this.service.CheckPhoneUnique(post.UserID, post.Phonenumber)
+		if err != nil || count != 0 {
+			ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "修改用户，已存在相同手机号"))
+			return
+		}
+	}
+
+	if post.Email != "" {
+		count, err = this.service.CheckEmailUnique(post.UserID, post.Email)
+		if err != nil || count != 0 {
+			ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "修改用户，已存在相同邮箱"))
+			return
+		}
+	}
+
 	user := ctx.Values().Get(common.LOGINUSER)
-	// 类型断言
 	loginUser, ok := user.(*model.UserInfoStruct)
 	if !ok {
 		ctx.JSON(common.Error(iris.StatusUnauthorized, "请重新登录"))
@@ -553,28 +625,230 @@ func (this *SysUserHandler) EditUser(ctx iris.Context) {
 	post.UpdateTime = time.Now()
 	post.UpdateBy = loginUser.UserName
 
-	info, _, err := this.service.EditUser(post.SysUser)
+	var info *model.SysUser
+	err = this.txManager.Execute(func(tx *gorm.DB) error {
+		if err := tx.Model(&model.SysUser{}).Where("user_id = ? and del_flag = '0'", post.UserID).Updates(post.SysUser).Error; err != nil {
+			return err
+		}
+		info = post.SysUser
+
+		if err := tx.Where("user_id = ?", info.UserID).Delete(&model.SysUserRole{}).Error; err != nil {
+			return err
+		}
+		for _, id := range post.RoleIds {
+			if err := tx.Create(&model.SysUserRole{UserID: info.UserID, RoleID: id}).Error; err != nil {
+				return err
+			}
+		}
+
+		if err := tx.Where("user_id = ?", info.UserID).Delete(&model.SysUserPost{}).Error; err != nil {
+			return err
+		}
+		for _, id := range post.PostIds {
+			if err := tx.Create(&model.SysUserPost{UserID: info.UserID, PostID: id}).Error; err != nil {
+				return err
+			}
+		}
+
+		return nil
+	})
 	if err != nil {
-		//this.logger.Debug("login failed", zap.Error(err))
-		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "EditRole, error：%s", err.Error()))
+		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "EditUser, error：%s", err.Error()))
 		return
 	}
 
-	this.userRoleService.DeleteUserRoleByUserId(info.UserID)
-	for _, id := range post.RoleIds {
-		this.userRoleService.AddUserRole(&model.SysUserRole{
-			info.UserID,
-			id,
-		})
-	}
-
-	this.userPostService.DeleteUserPostByUserId(info.UserID)
-	for _, id := range post.PostIds {
-		this.userPostService.AddUserPost(&model.SysUserPost{
-			info.UserID,
-			id,
-		})
-	}
-
 	ctx.JSON(common.Success(info))
+}
+
+func (this *SysUserHandler) UpdateProfile(ctx iris.Context) {
+	post := &model.SysUser{}
+	if err := filter.ValidateRequest(ctx, post); err != nil {
+		return
+	}
+
+	user := ctx.Values().Get(common.LOGINUSER)
+	loginUser, ok := user.(*model.UserInfoStruct)
+	if !ok {
+		ctx.JSON(common.Error(iris.StatusUnauthorized, "请重新登录"))
+		return
+	}
+	post.UpdateTime = time.Now()
+	post.UpdateBy = loginUser.UserName
+
+	_, err := this.service.UpdateProfile(post)
+	if err != nil {
+		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "UpdateProfile error：%s", err.Error()))
+		return
+	}
+	ctx.JSON(common.Success(nil))
+}
+
+func (this *SysUserHandler) UpdatePwd(ctx iris.Context) {
+	body := &struct {
+		OldPassword string `json:"oldPassword"`
+		NewPassword string `json:"newPassword"`
+	}{}
+	if err := filter.ValidateRequest(ctx, body); err != nil {
+		return
+	}
+
+	user := ctx.Values().Get(common.LOGINUSER)
+	loginUser, ok := user.(*model.UserInfoStruct)
+	if !ok {
+		ctx.JSON(common.Error(iris.StatusUnauthorized, "请重新登录"))
+		return
+	}
+
+	_, err := this.service.UpdatePwd(loginUser.UserID, body.OldPassword, body.NewPassword)
+	if err != nil {
+		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "UpdatePwd error：%s", err.Error()))
+		return
+	}
+	ctx.JSON(common.Success(nil))
+}
+
+func (this *SysUserHandler) UpdateAvatar(ctx iris.Context) {
+	file, header, err := ctx.FormFile("avatarfile")
+	if err != nil {
+		ctx.JSON(common.ErrorFormat(iris.StatusBadRequest, "Upload failed: %s", err.Error()))
+		return
+	}
+	defer file.Close()
+
+	fileName := fmt.Sprintf("%d%s", time.Now().UnixNano(), filepath.Ext(header.Filename))
+	basePath := "./upload/avatar"
+	datePath := time.Now().Format("2006/01/02")
+	absolutePath := filepath.Join(basePath, "upload", datePath)
+	if err := os.MkdirAll(absolutePath, os.ModePerm); err != nil {
+		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "Mkdir error: %s", err.Error()))
+		return
+	}
+
+	dst := filepath.Join(absolutePath, fileName)
+	out, err := os.Create(dst)
+	if err != nil {
+		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "Create file error: %s", err.Error()))
+		return
+	}
+	defer out.Close()
+
+	if _, err = io.Copy(out, file); err != nil {
+		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "Save file error: %s", err.Error()))
+		return
+	}
+
+	url := "/profile/upload/" + datePath + "/" + fileName
+
+	user := ctx.Values().Get(common.LOGINUSER)
+	loginUser, ok := user.(*model.UserInfoStruct)
+	if !ok {
+		ctx.JSON(common.Error(iris.StatusUnauthorized, "请重新登录"))
+		return
+	}
+
+	_, err = this.service.UpdateAvatar(loginUser.UserID, url)
+	if err != nil {
+		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "UpdateAvatar error：%s", err.Error()))
+		return
+	}
+	ctx.JSON(common.Success(map[string]interface{}{
+		"imgUrl":   url,
+		"fileName": fileName,
+	}))
+}
+
+func (this *SysUserHandler) Export(ctx iris.Context) {
+	allParams := ctx.Request().URL.Query()
+	beginTimeList, _ := allParams["params[beginTime]"]
+	endTimeList, _ := allParams["params[endTime]"]
+	beginTime := ""
+	if len(beginTimeList) > 0 {
+		beginTime = beginTimeList[0]
+	}
+	endTime := ""
+	if len(endTimeList) > 0 {
+		endTime = endTimeList[0]
+	}
+
+	status := ctx.URLParam("status")
+	deptIdStr := ctx.URLParam("deptId")
+	var deptId int64
+	userName := ctx.URLParam("userName")
+	phonenumber := ctx.URLParam("phonenumber")
+
+	if deptIdStr != "" {
+		deptId, _ = strconv.ParseInt(deptIdStr, 10, 64)
+	}
+
+	u := &model.SysUserRequest{
+		Status:      status,
+		DeptID:      deptId,
+		UserName:    userName,
+		Phonenumber: phonenumber,
+		BeginTime:   beginTime,
+		EndTime:     endTime,
+	}
+
+	// 数据权限过滤
+	scope := filter.ComputeDataScope(ctx, this.roleService, this.deptService)
+	if scope.IsAdmin || scope.ScopeType == filter.DataScopeAll {
+	} else if scope.ScopeType == filter.DataScopeSelf {
+		loginUser, _ := ctx.Values().Get(common.LOGINUSER).(*model.UserInfoStruct)
+		if loginUser != nil {
+			u.UserId = loginUser.UserID
+		}
+	} else {
+		u.DeptIDs = append(u.DeptIDs, scope.DeptIds...)
+	}
+
+	list, err := this.service.QueryUserList(u)
+	if err != nil {
+		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "Export error: %s", err.Error()))
+		return
+	}
+
+	headers := []string{"用户ID", "用户名称", "用户昵称", "邮箱", "手机号", "状态", "创建时间"}
+	rows := make([][]interface{}, len(list))
+	for i, item := range list {
+		createTime := ""
+		if !item.CreateTime.IsZero() {
+			createTime = item.CreateTime.Format("2006-01-02 15:04:05")
+		}
+		rows[i] = []interface{}{
+			item.UserID,
+			item.UserName,
+			item.NickName,
+			item.Email,
+			item.Phonenumber,
+			item.Status,
+			createTime,
+		}
+	}
+
+	filePath, err := excel.ExportExcel(headers, rows, "用户数据")
+	if err != nil {
+		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "ExportExcel error: %s", err.Error()))
+		return
+	}
+	defer os.Remove(filePath)
+
+	ctx.SendFile(filePath, "user.xlsx")
+}
+
+func (this *SysUserHandler) ImportData(ctx iris.Context) {
+	ctx.JSON(common.Success(nil))
+}
+
+func (this *SysUserHandler) ImportTemplate(ctx iris.Context) {
+	headers := []string{"用户名称", "用户昵称", "邮箱", "手机号", "性别", "状态"}
+	rows := make([][]interface{}, 0)
+
+	filePath, err := excel.ExportExcel(headers, rows, "用户导入模板")
+	if err != nil {
+		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "ExportExcel error: %s", err.Error()))
+		return
+	}
+	defer os.Remove(filePath)
+
+	ctx.SendFile(filePath, "user_import_template.xlsx")
 }

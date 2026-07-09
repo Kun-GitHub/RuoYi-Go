@@ -20,4 +20,5 @@ type SysPostRepository interface {
 	DeletePostById(id int64) (int64, error)
 	CheckPostNameUnique(id int64, name string) (int64, error)
 	CheckPostCodeUnique(id int64, code string) (int64, error)
+	SelectPostAll() ([]*model.SysPost, error)
 }

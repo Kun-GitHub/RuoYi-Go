@@ -110,6 +110,7 @@ func (this *SysUserRepository) QueryUserPage(pageReq common.PageRequest, user *m
 	var phonenumber field.Expr
 	var userName field.Expr
 	var timeField field.Expr
+	var userIdField field.Expr
 	if user != nil {
 		if user.Status != "" {
 			status = this.db.Gen.SysUser.Status.Eq(user.Status)
@@ -125,6 +126,9 @@ func (this *SysUserRepository) QueryUserPage(pageReq common.PageRequest, user *m
 		}
 		if len(user.DeptIDs) > 0 {
 			deptID = this.db.Gen.SysUser.DeptID.In(user.DeptIDs...)
+		}
+		if user.UserId != 0 {
+			userIdField = this.db.Gen.SysUser.UserID.Eq(user.UserId)
 		}
 		if user.BeginTime != "" && user.EndTime != "" {
 			// 解析日期字符串
@@ -142,7 +146,7 @@ func (this *SysUserRepository) QueryUserPage(pageReq common.PageRequest, user *m
 	}
 
 	structEntity, total, err := this.db.Gen.SysUser.WithContext(context.Background()).
-		Where(deptID, status, phonenumber, userName, timeField, deptIDs, this.db.Gen.SysUser.DelFlag.Eq("0")).
+		Where(deptID, status, phonenumber, userName, timeField, deptIDs, userIdField, this.db.Gen.SysUser.DelFlag.Eq("0")).
 		Order(this.db.Gen.SysUser.UserID).FindByPage((pageReq.PageNum-1)*pageReq.PageSize, pageReq.PageSize)
 	if err != nil {
 		return nil, 0, err
@@ -163,9 +167,11 @@ func (this *SysUserRepository) QueryUserList(user *model.SysUserRequest) ([]*mod
 
 	var status field.Expr
 	var deptID field.Expr
+	var deptIDs field.Expr
 	var phonenumber field.Expr
 	var userName field.Expr
 	var timeField field.Expr
+	var userIdField field.Expr
 	if user != nil {
 		if user.Status != "" {
 			status = this.db.Gen.SysUser.Status.Eq(user.Status)
@@ -178,6 +184,12 @@ func (this *SysUserRepository) QueryUserList(user *model.SysUserRequest) ([]*mod
 		}
 		if user.DeptID != 0 {
 			deptID = this.db.Gen.SysUser.DeptID.Eq(user.DeptID)
+		}
+		if len(user.DeptIDs) > 0 {
+			deptIDs = this.db.Gen.SysUser.DeptID.In(user.DeptIDs...)
+		}
+		if user.UserId != 0 {
+			userIdField = this.db.Gen.SysUser.UserID.Eq(user.UserId)
 		}
 		if user.BeginTime != "" && user.EndTime != "" {
 			// 解析日期字符串
@@ -195,7 +207,7 @@ func (this *SysUserRepository) QueryUserList(user *model.SysUserRequest) ([]*mod
 	}
 
 	structEntity, err := this.db.Gen.SysUser.WithContext(context.Background()).
-		Where(deptID, status, phonenumber, userName, timeField, this.db.Gen.SysUser.DelFlag.Eq("0")).
+		Where(deptID, status, phonenumber, userName, timeField, deptIDs, userIdField, this.db.Gen.SysUser.DelFlag.Eq("0")).
 		Order(this.db.Gen.SysUser.UserID).Find()
 
 	if err != nil {
@@ -306,6 +318,113 @@ func (this *SysUserRepository) CheckUserNameUnique(id int64, name string) (int64
 	r, err := this.db.Gen.SysUser.WithContext(context.Background()).
 		Where(this.db.Gen.SysUser.UserName.Eq(name), this.db.Gen.SysUser.UserID.Neq(id), this.db.Gen.SysUser.DelFlag.Eq("0")).Count()
 	return r, err
+}
+
+// RegisterUser 注册新用户
+// 创建新的用户记录，设置默认状态和删除标记
+// 参数:
+//   - post: 用户信息
+//
+// 返回值:
+//   - *model.SysUser: 创建的用户信息
+//   - error: 错误信息
+func (this *SysUserRepository) RegisterUser(post *model.SysUser) (*model.SysUser, error) {
+	post.Status = "0"
+	post.DelFlag = "0"
+
+	err := this.db.Gen.SysUser.WithContext(context.Background()).
+		Save(post)
+	return post, err
+}
+
+// CheckPhoneUnique 检查手机号唯一性
+// 验证指定手机号是否已被其他未删除用户使用
+// 参数:
+//   - id: 排除的用户ID
+//   - phonenumber: 待检查的手机号
+//
+// 返回值:
+//   - int64: 重复数量
+//   - error: 错误信息
+func (this *SysUserRepository) CheckPhoneUnique(id int64, phonenumber string) (int64, error) {
+	r, err := this.db.Gen.SysUser.WithContext(context.Background()).
+		Where(this.db.Gen.SysUser.Phonenumber.Eq(phonenumber), this.db.Gen.SysUser.UserID.Neq(id), this.db.Gen.SysUser.DelFlag.Eq("0")).Count()
+	return r, err
+}
+
+// CheckEmailUnique 检查邮箱唯一性
+// 验证指定邮箱是否已被其他未删除用户使用
+// 参数:
+//   - id: 排除的用户ID
+//   - email: 待检查的邮箱
+//
+// 返回值:
+//   - int64: 重复数量
+//   - error: 错误信息
+func (this *SysUserRepository) CheckEmailUnique(id int64, email string) (int64, error) {
+	r, err := this.db.Gen.SysUser.WithContext(context.Background()).
+		Where(this.db.Gen.SysUser.Email.Eq(email), this.db.Gen.SysUser.UserID.Neq(id), this.db.Gen.SysUser.DelFlag.Eq("0")).Count()
+	return r, err
+}
+
+// UpdateProfile 更新用户个人信息
+// 更新用户的基本信息字段（昵称、邮箱、手机号、性别、备注）
+// 参数:
+//   - user: 用户信息
+//
+// 返回值:
+//   - int64: 影响的行数
+//   - error: 错误信息
+func (this *SysUserRepository) UpdateProfile(user *model.SysUser) (int64, error) {
+	r, err := this.db.Gen.SysUser.WithContext(context.Background()).
+		Where(this.db.Gen.SysUser.UserID.Eq(user.UserID), this.db.Gen.SysUser.DelFlag.Eq("0")).
+		UpdateSimple(
+			this.db.Gen.SysUser.NickName.Value(user.NickName),
+			this.db.Gen.SysUser.Email.Value(user.Email),
+			this.db.Gen.SysUser.Phonenumber.Value(user.Phonenumber),
+			this.db.Gen.SysUser.Sex.Value(user.Sex),
+			this.db.Gen.SysUser.Remark.Value(user.Remark),
+			this.db.Gen.SysUser.UpdateTime.Value(time.Now()),
+		)
+	return r.RowsAffected, err
+}
+
+// UpdatePwd 更新用户密码
+// 更新指定用户的密码
+// 参数:
+//   - userID: 用户ID
+//   - password: 新密码（已加密）
+//
+// 返回值:
+//   - int64: 影响的行数
+//   - error: 错误信息
+func (this *SysUserRepository) UpdatePwd(userID int64, password string) (int64, error) {
+	r, err := this.db.Gen.SysUser.WithContext(context.Background()).
+		Where(this.db.Gen.SysUser.UserID.Eq(userID)).
+		UpdateSimple(
+			this.db.Gen.SysUser.Password.Value(password),
+			this.db.Gen.SysUser.UpdateTime.Value(time.Now()),
+		)
+	return r.RowsAffected, err
+}
+
+// UpdateAvatar 更新用户头像
+// 更新指定用户的头像地址
+// 参数:
+//   - userID: 用户ID
+//   - avatar: 头像地址
+//
+// 返回值:
+//   - int64: 影响的行数
+//   - error: 错误信息
+func (this *SysUserRepository) UpdateAvatar(userID int64, avatar string) (int64, error) {
+	r, err := this.db.Gen.SysUser.WithContext(context.Background()).
+		Where(this.db.Gen.SysUser.UserID.Eq(userID)).
+		UpdateSimple(
+			this.db.Gen.SysUser.Avatar.Value(avatar),
+			this.db.Gen.SysUser.UpdateTime.Value(time.Now()),
+		)
+	return r.RowsAffected, err
 }
 
 // UserLogin 记录用户登录

@@ -17,11 +17,12 @@ import (
 )
 
 type SysDeptHandler struct {
-	service input.SysDeptService
+	service     input.SysDeptService
+	roleService input.SysRoleService
 }
 
-func NewSysDeptHandler(service input.SysDeptService) *SysDeptHandler {
-	return &SysDeptHandler{service: service}
+func NewSysDeptHandler(service input.SysDeptService, roleService input.SysRoleService) *SysDeptHandler {
+	return &SysDeptHandler{service: service, roleService: roleService}
 }
 
 // GenerateCaptchaImage
@@ -32,6 +33,12 @@ func (h *SysDeptHandler) DeptList(ctx iris.Context) {
 	sysDept := &model.SysDept{
 		DeptName: deptName,
 		Status:   status,
+	}
+
+	// 数据权限过滤
+	scope := filter.GetDataScopeDeptIds(ctx, h.roleService, h.service)
+	if scope != nil {
+		sysDept.DataScopeDeptIds = scope
 	}
 
 	s, err := h.service.QueryDeptList(sysDept)

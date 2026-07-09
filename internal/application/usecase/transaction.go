@@ -3,16 +3,21 @@
 // Author: K. See：https://github.com/Kun-GitHub/RuoYi-Go or https://gitee.com/gitee_kun/RuoYi-Go
 // Email: hot_kun@hotmail.com or 867917691@qq.com
 
-package input
+package usecase
 
 import (
-	"RuoYi-Go/internal/domain/model"
+	"RuoYi-Go/internal/adapters/dao"
+	"gorm.io/gorm"
 )
 
-// AuthService 输入端口接口
-type AuthService interface {
-	Login(l *model.LoginRequest) (*model.LoginSuccess, error)
-	Logout(token string) error
-	GetInfo(loginUser *model.UserInfoStruct) (*model.UserInfoStruct, []string, []string, error)
-	Register(l *model.RegisterRequest) error
+type TransactionManager struct {
+	db *dao.DatabaseStruct
+}
+
+func NewTransactionManager(db *dao.DatabaseStruct) *TransactionManager {
+	return &TransactionManager{db: db}
+}
+
+func (tm *TransactionManager) Execute(txFunc func(tx *gorm.DB) error) error {
+	return tm.db.Transactional(txFunc)
 }

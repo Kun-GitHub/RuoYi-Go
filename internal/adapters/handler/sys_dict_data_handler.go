@@ -10,6 +10,8 @@ import (
 	"RuoYi-Go/internal/domain/model"
 	"RuoYi-Go/internal/filter"
 	"RuoYi-Go/internal/ports/input"
+	"RuoYi-Go/pkg/excel"
+	"os"
 	"strconv"
 	"time"
 
@@ -123,6 +125,45 @@ func (h *SysDictDataHandler) Edit(ctx iris.Context) {
 		return
 	}
 	ctx.JSON(common.Success(nil))
+}
+
+func (h *SysDictDataHandler) Export(ctx iris.Context) {
+	dictLabel := ctx.URLParam("dictLabel")
+	dictType := ctx.URLParam("dictType")
+	status := ctx.URLParam("status")
+
+	list, _, err := h.service.List(1, 999999, dictLabel, dictType, status)
+	if err != nil {
+		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "Export error: %s", err.Error()))
+		return
+	}
+
+	headers := []string{"字典编码", "字典排序", "字典标签", "字典键值", "字典类型", "状态", "创建时间"}
+	rows := make([][]interface{}, len(list))
+	for i, item := range list {
+		createTime := ""
+		if !item.CreateTime.IsZero() {
+			createTime = item.CreateTime.Format("2006-01-02 15:04:05")
+		}
+		rows[i] = []interface{}{
+			item.DictCode,
+			item.DictSort,
+			item.DictLabel,
+			item.DictValue,
+			item.DictType,
+			item.Status,
+			createTime,
+		}
+	}
+
+	filePath, err := excel.ExportExcel(headers, rows, "字典数据")
+	if err != nil {
+		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "ExportExcel error: %s", err.Error()))
+		return
+	}
+	defer os.Remove(filePath)
+
+	ctx.SendFile(filePath, "dictData.xlsx")
 }
 
 func (h *SysDictDataHandler) Delete(ctx iris.Context) {

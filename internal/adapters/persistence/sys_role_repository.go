@@ -37,6 +37,17 @@ func (this *SysRoleRepository) QueryRolesByUserId(userId int64) ([]*model.SysRol
 	if err != nil {
 		return nil, err
 	}
+	for i, role := range roles {
+		if role.DataScope == "2" {
+			var deptIds []int64
+			roleDepts, _ := this.db.Gen.SysRoleDept.WithContext(context.Background()).
+				Where(this.db.Gen.SysRoleDept.RoleID.Eq(role.RoleID)).Find()
+			for _, rd := range roleDepts {
+				deptIds = append(deptIds, rd.DeptID)
+			}
+			roles[i].DeptIds = deptIds
+		}
+	}
 	return roles, nil
 }
 
@@ -260,6 +271,34 @@ func (this *SysRoleRepository) QueryUnallocatedList(roleId int64, userName, phon
 	}
 
 	return users, count, nil
+}
+
+func (this *SysRoleRepository) UpdateDataScope(role *model.SysRole) (int64, error) {
+	r, err := this.db.Gen.SysRole.WithContext(context.Background()).
+		Where(this.db.Gen.SysRole.RoleID.Eq(role.RoleID), this.db.Gen.SysRole.DelFlag.Eq("0")).
+		UpdateSimple(
+			this.db.Gen.SysRole.DataScope.Value(role.DataScope),
+			this.db.Gen.SysRole.DeptCheckStrictly.Value(role.DeptCheckStrictly),
+			this.db.Gen.SysRole.UpdateTime.Value(time.Now()),
+		)
+	if err != nil {
+		return 0, err
+	}
+
+	if role.DataScope == "2" && len(role.DeptIds) > 0 {
+		this.db.Gen.SysRoleDept.WithContext(context.Background()).
+			Where(this.db.Gen.SysRoleDept.RoleID.Eq(role.RoleID)).Delete()
+		roleDepts := make([]*model.SysRoleDept, 0)
+		for _, deptId := range role.DeptIds {
+			roleDepts = append(roleDepts, &model.SysRoleDept{
+				RoleID: role.RoleID,
+				DeptID: deptId,
+			})
+		}
+		this.db.Gen.SysRoleDept.WithContext(context.Background()).Create(roleDepts...)
+	}
+
+	return r.RowsAffected, err
 }
 
 func (this *SysRoleRepository) InsertAuthUsers(roleId int64, userIds []int64) error {

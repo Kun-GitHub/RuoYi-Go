@@ -24,4 +24,10 @@ type SysUserService interface {
 	EditUser(post *model.SysUser) (*model.SysUser, int64, error)
 	CheckUserNameUnique(id int64, typeStr string) (int64, error)
 	UserLogin(user *model.SysUser) (int64, error)
+	RegisterUser(post *model.SysUser) (*model.SysUser, error)
+	CheckPhoneUnique(id int64, phonenumber string) (int64, error)
+	CheckEmailUnique(id int64, email string) (int64, error)
+	UpdateProfile(user *model.SysUser) (int64, error)
+	UpdatePwd(userID int64, oldPassword string, newPassword string) (int64, error)
+	UpdateAvatar(userID int64, avatar string) (int64, error)
 }

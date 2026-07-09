@@ -183,6 +183,60 @@ func (this *AuthService) Logout(token string) error {
 	return nil
 }
 
+// Register 用户注册
+// 处理用户注册请求，包括验证码校验、用户名唯一性检查、密码加密等流程
+//
+// 参数:
+//
+//	l: 注册请求参数，包含用户名、密码、验证码等信息
+//
+// 返回值:
+//
+//	error: 错误信息
+func (this *AuthService) Register(l *model.RegisterRequest) error {
+	captchaEnabled := "true"
+	config, err := this.configService.QueryConfigByKey("sys.account.captchaEnabled")
+	if err == nil {
+		captchaEnabled = config.ConfigValue
+	}
+	if captchaEnabled == "true" {
+		v, err := this.redis.Get(fmt.Sprintf("%s:%v", common.CAPTCHA, l.Uuid))
+		if err != nil || v == "" {
+			return fmt.Errorf("验证码错误或已失效")
+		}
+		this.redis.Del(fmt.Sprintf("%s:%v", common.CAPTCHA, l.Uuid))
+		if !strings.EqualFold(v, l.Code) {
+			return fmt.Errorf("验证码错误或已失效")
+		}
+	}
+
+	count, err := this.service.CheckUserNameUnique(0, l.Username)
+	if err != nil {
+		return err
+	}
+	if count > 0 {
+		return fmt.Errorf("用户名已存在")
+	}
+
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(l.Password), bcrypt.DefaultCost)
+	if err != nil {
+		return err
+	}
+
+	sysUser := &model.SysUser{
+		UserName: l.Username,
+		Password: string(hashedPassword),
+		NickName: l.Username,
+	}
+
+	_, err = this.service.RegisterUser(sysUser)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // GetInfo 获取用户详细信息
 // 根据登录用户信息获取完整的用户资料，包括角色、权限、部门等信息
 // 参数:

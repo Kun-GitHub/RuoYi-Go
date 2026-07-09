@@ -77,6 +77,7 @@ func NewContainer(c config.AppConfig) (*Container, error) {
 
 	authHandler := ryserver.ResolveAuthHandler(db, redis, log, freeCache)
 	app.Post("/login", authHandler.Login)
+	app.Post("/register", authHandler.Register)
 	app.Post("/logout", authHandler.Logout)
 	app.Get("/getInfo", authHandler.GetInfo)
 
@@ -96,6 +97,9 @@ func NewContainer(c config.AppConfig) (*Container, error) {
 	app.Get("/system/user/deptTree", ms.PermissionMiddleware("system:user:list"), pageSysUserHandler.DeptTree)
 	app.Get("/system/user/{userId:uint}", ms.PermissionMiddleware("system:user:query"), pageSysUserHandler.UserInfo)
 	app.Get("/system/user/profile", ms.PermissionMiddleware("system:user:query"), pageSysUserHandler.UserProfile)
+	app.Put("/system/user/profile", ms.PermissionMiddleware("system:user:edit"), pageSysUserHandler.UpdateProfile)
+	app.Put("/system/user/profile/updatePwd", pageSysUserHandler.UpdatePwd)
+	app.Post("/system/user/profile/avatar", pageSysUserHandler.UpdateAvatar)
 	app.Put("/system/user/changeStatus", ms.PermissionMiddleware("system:user:edit"), pageSysUserHandler.ChangeUserStatus)
 	app.Put("/system/user/resetPwd", ms.PermissionMiddleware("system:user:resetPwd"), pageSysUserHandler.ResetUserPwd)
 	app.Delete("/system/user/*userIds", ms.PermissionMiddleware("system:user:remove"), pageSysUserHandler.DeleteUser)
@@ -103,11 +107,15 @@ func NewContainer(c config.AppConfig) (*Container, error) {
 	app.Put("/system/user/authRole", ms.PermissionMiddleware("system:user:edit"), pageSysUserHandler.AuthRole)
 	app.Post("/system/user", ms.PermissionMiddleware("system:user:add"), pageSysUserHandler.AddUser)
 	app.Put("/system/user", ms.PermissionMiddleware("system:user:edit"), pageSysUserHandler.EditUser)
+	app.Post("/system/user/export", ms.PermissionMiddleware("system:user:export"), pageSysUserHandler.Export)
+	app.Post("/system/user/importData", ms.PermissionMiddleware("system:user:import"), pageSysUserHandler.ImportData)
+	app.Post("/system/user/importTemplate", pageSysUserHandler.ImportTemplate)
 
 	sysDictDataHandler := ryserver.ResolveSysDictDataHandler(db, log, freeCache)
 	app.Get("/system/dict/data/type/{dictType:string}", sysDictDataHandler.DictType)
 	app.Get("/system/dict/data/list", ms.PermissionMiddleware("system:dict:list"), sysDictDataHandler.List)
 	app.Get("/system/dict/data/{dictCode:string}", ms.PermissionMiddleware("system:dict:query"), sysDictDataHandler.Get)
+	app.Post("/system/dict/data/export", ms.PermissionMiddleware("system:dict:export"), sysDictDataHandler.Export)
 	app.Post("/system/dict/data", ms.PermissionMiddleware("system:dict:add"), sysDictDataHandler.Add)
 	app.Put("/system/dict/data", ms.PermissionMiddleware("system:dict:edit"), sysDictDataHandler.Edit)
 	app.Delete("/system/dict/data/*dictCodes", ms.PermissionMiddleware("system:dict:remove"), sysDictDataHandler.Delete)
@@ -129,6 +137,8 @@ func NewContainer(c config.AppConfig) (*Container, error) {
 	app.Put("/system/role/changeStatus", ms.PermissionMiddleware("system:role:edit"), sysRoleHandler.ChangeRoleStatus)
 	app.Get("/system/role/deptTree/{roleId:uint}", ms.PermissionMiddleware("system:role:query"), sysRoleHandler.DeptTree)
 	app.Get("/system/role/optionselect", ms.PermissionMiddleware("system:role:query"), sysRoleHandler.OptionSelect)
+	app.Put("/system/role/dataScope", ms.PermissionMiddleware("system:role:edit"), sysRoleHandler.DataScope)
+	app.Post("/system/role/export", ms.PermissionMiddleware("system:role:export"), sysRoleHandler.Export)
 	app.Get("/system/role/authUser/allocatedList", ms.PermissionMiddleware("system:role:list"), sysRoleHandler.AllocatedList)
 	app.Get("/system/role/authUser/unallocatedList", ms.PermissionMiddleware("system:role:list"), sysRoleHandler.UnallocatedList)
 	app.Put("/system/role/authUser/cancel", ms.PermissionMiddleware("system:role:edit"), sysRoleHandler.CancelAuthUser)
@@ -138,6 +148,8 @@ func NewContainer(c config.AppConfig) (*Container, error) {
 	sysPostHandler := ryserver.ResolveSysPostHandler(db, log, freeCache)
 	app.Get("/system/post/list", ms.PermissionMiddleware("system:post:list"), sysPostHandler.PostPage)
 	app.Get("/system/post/{postId:uint}", ms.PermissionMiddleware("system:post:query"), sysPostHandler.PostInfo)
+	app.Get("/system/post/optionselect", sysPostHandler.OptionSelect)
+	app.Post("/system/post/export", ms.PermissionMiddleware("system:post:export"), sysPostHandler.Export)
 	app.Post("/system/post", ms.PermissionMiddleware("system:post:add"), sysPostHandler.AddPostInfo)
 	app.Put("/system/post", ms.PermissionMiddleware("system:post:edit"), sysPostHandler.EditPostInfo)
 	app.Delete("/system/post/*postIds", ms.PermissionMiddleware("system:post:remove"), sysPostHandler.DeletePostInfo)
@@ -146,6 +158,7 @@ func NewContainer(c config.AppConfig) (*Container, error) {
 	app.Get("/system/dict/type/list", ms.PermissionMiddleware("system:dict:type:list"), sysDictTypeHandler.DictTypePage)
 	app.Get("/system/dict/type/optionselect", ms.PermissionMiddleware("system:dict:type:list"), sysDictTypeHandler.DictTypeList)
 	app.Get("/system/dict/type/{dictId:uint}", ms.PermissionMiddleware("system:dict:type:query"), sysDictTypeHandler.DictTypeInfo)
+	app.Post("/system/dict/type/export", ms.PermissionMiddleware("system:dict:type:export"), sysDictTypeHandler.Export)
 	app.Post("/system/dict/type", ms.PermissionMiddleware("system:dict:type:add"), sysDictTypeHandler.AddDictTypeInfo)
 	app.Put("/system/dict/type", ms.PermissionMiddleware("system:dict:type:edit"), sysDictTypeHandler.EditDictTypeInfo)
 	app.Delete("/system/dict/type/refreshCache", ms.PermissionMiddleware("system:dict:type:remove"), sysDictTypeHandler.RefreshCache)
@@ -158,6 +171,8 @@ func NewContainer(c config.AppConfig) (*Container, error) {
 	app.Put("/system/config", ms.PermissionMiddleware("system:config:edit"), sysConfigHandler.EditConfigInfo)
 	app.Delete("/system/config/*configIds", ms.PermissionMiddleware("system:config:remove"), sysConfigHandler.DeleteConfigInfo)
 	app.Get("/system/config/configKey/{configKey:string}", sysConfigHandler.ConfigInfoByKey)
+	app.Post("/system/config/export", ms.PermissionMiddleware("system:config:export"), sysConfigHandler.Export)
+	app.Delete("/system/config/refreshCache", ms.PermissionMiddleware("system:config:remove"), sysConfigHandler.RefreshCache)
 
 	sysNoticeHandler := ryserver.ResolveSysNoticeHandler(db, log, freeCache)
 	app.Get("/system/notice/list", ms.PermissionMiddleware("system:notice:list"), sysNoticeHandler.NoticePage)
@@ -169,6 +184,8 @@ func NewContainer(c config.AppConfig) (*Container, error) {
 	sysLogininforHandler := ryserver.ResolveSysLogininforHandler(db, log, freeCache)
 	app.Get("/monitor/logininfor/list", ms.PermissionMiddleware("monitor:logininfor:list"), sysLogininforHandler.LogininforPage)
 	app.Get("/monitor/logininfor/{infoId:uint}", ms.PermissionMiddleware("monitor:logininfor:query"), sysLogininforHandler.LogininforInfo)
+	app.Get("/monitor/logininfor/unlock/{userName:string}", ms.PermissionMiddleware("monitor:logininfor:unlock"), sysLogininforHandler.Unlock)
+	app.Post("/monitor/logininfor/export", ms.PermissionMiddleware("monitor:logininfor:export"), sysLogininforHandler.Export)
 	app.Post("/monitor/logininfor", ms.PermissionMiddleware("monitor:logininfor:add"), sysLogininforHandler.AddLogininforInfo)
 	app.Delete("/monitor/logininfor/*infoIds", ms.PermissionMiddleware("monitor:logininfor:remove"), sysLogininforHandler.DeleteLogininforInfo)
 
@@ -176,6 +193,11 @@ func NewContainer(c config.AppConfig) (*Container, error) {
 	app.Get("/monitor/server", ms.PermissionMiddleware("monitor:server:list"), monitorHandler.Server)
 	app.Get("/monitor/cache", ms.PermissionMiddleware("monitor:cache:list"), monitorHandler.Cache)
 	app.Get("/monitor/cache/getNames", ms.PermissionMiddleware("monitor:cache:list"), monitorHandler.CacheNames)
+	app.Get("/monitor/cache/getKeys/{cacheName:string}", ms.PermissionMiddleware("monitor:cache:list"), monitorHandler.GetKeys)
+	app.Get("/monitor/cache/getValue/{cacheName:string}/{cacheKey:string}", ms.PermissionMiddleware("monitor:cache:list"), monitorHandler.GetValue)
+	app.Delete("/monitor/cache/clearCacheName/{cacheName:string}", ms.PermissionMiddleware("monitor:cache:list"), monitorHandler.ClearCacheName)
+	app.Delete("/monitor/cache/clearCacheKey/{cacheKey:string}", ms.PermissionMiddleware("monitor:cache:list"), monitorHandler.ClearCacheKey)
+	app.Delete("/monitor/cache/clearCacheAll", ms.PermissionMiddleware("monitor:cache:list"), monitorHandler.ClearCacheAll)
 
 	task := task.NewTaskManager(log)
 	task.RegisterTask("ryTask.ryNoParams", jobs.NewTaskDemo(log))
@@ -191,6 +213,8 @@ func NewContainer(c config.AppConfig) (*Container, error) {
 
 	sysOperLogHandler := ryserver.ResolveSysOperLogHandler(db, log, freeCache)
 	app.Get("/monitor/operlog/list", ms.PermissionMiddleware("monitor:operlog:list"), sysOperLogHandler.List)
+	app.Get("/monitor/operlog/{operId:uint}", ms.PermissionMiddleware("monitor:operlog:query"), sysOperLogHandler.GetInfo)
+	app.Post("/monitor/operlog/export", sysOperLogHandler.Export)
 	app.Delete("/monitor/operlog/clean", ms.PermissionMiddleware("monitor:operlog:remove"), sysOperLogHandler.Clean)
 	app.Delete("/monitor/operlog/*operIds", ms.PermissionMiddleware("monitor:operlog:remove"), sysOperLogHandler.Delete)
 
@@ -204,8 +228,10 @@ func NewContainer(c config.AppConfig) (*Container, error) {
 	app.Delete("/monitor/online/{tokenId:string}", ms.PermissionMiddleware("monitor:online:forceLogout"), sysUserOnlineHandler.ForceLogout)
 
 	commonHandler := ryserver.ResolveCommonHandler(log, c)
-	app.Post("/common/upload", ms.PermissionMiddleware("common"), commonHandler.UploadFile) // Permission? Usually any logged in user can upload.
-	app.Get("/common/download/resource", commonHandler.GetResource)                         // Public or authenticated?
+	app.Post("/common/upload", ms.PermissionMiddleware("common"), commonHandler.UploadFile)
+	app.Post("/common/uploads", ms.PermissionMiddleware("common"), commonHandler.UploadFiles)
+	app.Get("/common/download", commonHandler.Download)
+	app.Get("/common/download/resource", commonHandler.GetResource)
 	// RuoYi-Vue resource download usually requires token if it's protected, but here we made it public or check in Middleware?
 	// The resource path logic checks if it's in /profile which is safe.
 

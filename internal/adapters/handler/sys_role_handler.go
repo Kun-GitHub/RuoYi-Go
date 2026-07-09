@@ -10,6 +10,8 @@ import (
 	"RuoYi-Go/internal/domain/model"
 	"RuoYi-Go/internal/filter"
 	"RuoYi-Go/internal/ports/input"
+	"RuoYi-Go/pkg/excel"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -250,7 +252,14 @@ func (this *SysRoleHandler) DeleteRoleInfo(ctx iris.Context) {
 }
 
 func (this *SysRoleHandler) DeptTree(ctx iris.Context) {
-	data, err := this.deptService.QueryDeptList(nil)
+	deptFilter := &model.SysDept{}
+	// 数据权限过滤
+	scope := filter.GetDataScopeDeptIds(ctx, this.service, this.deptService)
+	if scope != nil {
+		deptFilter.DataScopeDeptIds = scope
+	}
+
+	data, err := this.deptService.QueryDeptList(deptFilter)
 	if err != nil {
 		//this.logger.Debug("login failed", zap.Error(err))
 		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "DeptTree, error：%s", err.Error()))
@@ -352,6 +361,76 @@ func (this *SysRoleHandler) CancelAuthUserAll(ctx iris.Context) {
 		return
 	}
 	ctx.JSON(common.Success(nil))
+}
+
+func (this *SysRoleHandler) DataScope(ctx iris.Context) {
+	post := &model.SysRole{}
+	if err := filter.ValidateRequest(ctx, post); err != nil {
+		return
+	}
+	_, err := this.service.UpdateDataScope(post)
+	if err != nil {
+		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "DataScope error: %s", err.Error()))
+		return
+	}
+	ctx.JSON(common.Success(nil))
+}
+
+func (this *SysRoleHandler) Export(ctx iris.Context) {
+	allParams := ctx.Request().URL.Query()
+	beginTimeList, _ := allParams["params[beginTime]"]
+	endTimeList, _ := allParams["params[endTime]"]
+	beginTime := ""
+	if len(beginTimeList) > 0 {
+		beginTime = beginTimeList[0]
+	}
+	endTime := ""
+	if len(endTimeList) > 0 {
+		endTime = endTimeList[0]
+	}
+
+	status := ctx.URLParam("status")
+	roleName := ctx.URLParam("roleName")
+	roleKey := ctx.URLParam("roleKey")
+	u := &model.SysRoleRequest{
+		Status:    status,
+		RoleName:  roleName,
+		RoleKey:   roleKey,
+		BeginTime: beginTime,
+		EndTime:   endTime,
+	}
+
+	list, err := this.service.QueryRoleList(u)
+	if err != nil {
+		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "Export error: %s", err.Error()))
+		return
+	}
+
+	headers := []string{"角色ID", "角色名称", "角色权限", "显示顺序", "状态", "创建时间"}
+	rows := make([][]interface{}, len(list))
+	for i, item := range list {
+		createTime := ""
+		if !item.CreateTime.IsZero() {
+			createTime = item.CreateTime.Format("2006-01-02 15:04:05")
+		}
+		rows[i] = []interface{}{
+			item.RoleID,
+			item.RoleName,
+			item.RoleKey,
+			item.RoleSort,
+			item.Status,
+			createTime,
+		}
+	}
+
+	filePath, err := excel.ExportExcel(headers, rows, "角色数据")
+	if err != nil {
+		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "ExportExcel error: %s", err.Error()))
+		return
+	}
+	defer os.Remove(filePath)
+
+	ctx.SendFile(filePath, "role.xlsx")
 }
 
 func (this *SysRoleHandler) SelectAuthUserAll(ctx iris.Context) {

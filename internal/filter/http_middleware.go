@@ -10,6 +10,7 @@ import (
 	"RuoYi-Go/internal/adapters/dao"
 	"RuoYi-Go/internal/common"
 	"RuoYi-Go/internal/domain/model"
+	"RuoYi-Go/internal/domain/service"
 	"RuoYi-Go/internal/ports/input"
 	"RuoYi-Go/pkg/cache"
 	ryjwt "RuoYi-Go/pkg/jwt"
@@ -19,22 +20,38 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/kataras/iris/v12"
 	"go.uber.org/zap"
 )
 
-var loginUser = &model.UserInfoStruct{}
+var operationLogResolver = service.NewOperationLogResolver()
+
+// BusinessType constants matching RuoYi Java
+const (
+	BusinessTypeOther   = 0
+	BusinessTypeInsert  = 1
+	BusinessTypeUpdate  = 2
+	BusinessTypeDelete  = 3
+	BusinessTypeGrant   = 4
+	BusinessTypeExport  = 5
+	BusinessTypeImport  = 6
+	BusinessTypeForce   = 7
+	BusinessTypeClean   = 8
+	BusinessTypeGenCode = 9
+)
 
 // ServerMiddleware 服务器中间件
-// 负责HTTP请求的认证拦截、权限验证等前置处理
+// 负责HTTP请求的认证拦截、权限验证、操作日志记录等前置后置处理
 type ServerMiddleware struct {
-	redis       *cache.RedisClient
-	logger      *zap.Logger
-	cfg         config.AppConfig
-	service     input.SysUserService
-	menuService input.SysMenuService
-	db          *dao.DatabaseStruct
+	redis          *cache.RedisClient
+	logger         *zap.Logger
+	cfg            config.AppConfig
+	service        input.SysUserService
+	menuService    input.SysMenuService
+	operLogService input.SysOperLogService
+	db             *dao.DatabaseStruct
 }
 
 // NewServerMiddleware 创建服务器中间件实例
@@ -51,14 +68,15 @@ type ServerMiddleware struct {
 // 返回值:
 //
 //	服务器中间件
-func NewServerMiddleware(db *dao.DatabaseStruct, r *cache.RedisClient, l *zap.Logger, c config.AppConfig, s input.SysUserService, menuService input.SysMenuService) *ServerMiddleware {
+func NewServerMiddleware(db *dao.DatabaseStruct, r *cache.RedisClient, l *zap.Logger, c config.AppConfig, s input.SysUserService, menuService input.SysMenuService, operLogService input.SysOperLogService) *ServerMiddleware {
 	return &ServerMiddleware{
-		db:          db,
-		redis:       r,
-		logger:      l,
-		cfg:         c,
-		service:     s,
-		menuService: menuService,
+		db:             db,
+		redis:          r,
+		logger:         l,
+		cfg:            c,
+		service:        s,
+		menuService:    menuService,
+		operLogService: operLogService,
 	}
 }
 
@@ -127,22 +145,138 @@ func (this *ServerMiddleware) MiddlewareHandler(ctx iris.Context) {
 	ctx.Values().Set(common.USER_ID, jwt_id)
 	ctx.Values().Set(common.TOKEN, token)
 
-	if loginUser == nil {
-		loginUser = &model.UserInfoStruct{}
+	loginUser := &model.UserInfoStruct{
+		SysUser: sysUser,
+		Admin:   sysUser.UserID == common.ADMINID,
 	}
-	loginUser.SysUser = sysUser
 	this.db.LoginUser(sysUser)
-	if sysUser.UserID == common.ADMINID {
-		loginUser.Admin = true
-	}
 	loginUser.Password = ""
 	ctx.Values().Set(common.LOGINUSER, loginUser)
+
+	startTime := time.Now()
 
 	// 继续执行下一个中间件或处理函数
 	ctx.Next()
 
+	// 自动记录操作日志（仅写操作）
+	this.autoLogOperation(ctx, startTime)
+
 	ctx.Values().Reset()
 	this.db.ClearUser()
+}
+
+// autoLogOperation 自动记录操作日志
+// 根据请求方法和URL路径自动确定操作标题和业务类型
+func (this *ServerMiddleware) autoLogOperation(ctx iris.Context, startTime time.Time) {
+	method := ctx.Method()
+	path := ctx.RequestPath(false)
+
+	// 只记录 POST/PUT/DELETE 写操作，忽略 GET 和静态资源
+	if method == "GET" {
+		return
+	}
+
+	// 忽略登录、注册、验证码等非业务路径
+	if strings.HasPrefix(path, "/captchaImage") || path == "/login" || path == "/register" {
+		return
+	}
+
+	loginUser, _ := ctx.Values().Get(common.LOGINUSER).(*model.UserInfoStruct)
+	if loginUser == nil {
+		return
+	}
+
+	info := operationLogResolver.Resolve(path, method)
+	title := info.Title
+	businessType := info.BusinessType
+
+	costTime := time.Since(startTime).Milliseconds()
+	status := int32(0)
+	if ctx.GetStatusCode() >= 400 {
+		status = 1
+	}
+
+	operLog := &model.SysOperLog{
+		Title:         title,
+		BusinessType:  int32(businessType),
+		Method:        ctx.HandlerName(),
+		RequestMethod: method,
+		OperatorType:  1,
+		OperName:      loginUser.UserName,
+		OperURL:       path,
+		OperIP:        ctx.RemoteAddr(),
+		Status:        status,
+		OperTime:      startTime,
+		CostTime:      costTime,
+	}
+
+	if err := this.operLogService.Create(operLog); err != nil {
+		this.logger.Error("failed to record operation log", zap.Error(err))
+	}
+}
+
+// resolveOperationInfo 根据URL路径和HTTP方法确定操作标题和业务类型
+func resolveOperationInfo(path, method string) (string, int) {
+	title := "其他"
+	bizType := BusinessTypeOther
+
+	switch {
+	case strings.HasPrefix(path, "/system/user"):
+		title = "用户管理"
+	case strings.HasPrefix(path, "/system/role"):
+		title = "角色管理"
+	case strings.HasPrefix(path, "/system/menu"):
+		title = "菜单管理"
+	case strings.HasPrefix(path, "/system/dept"):
+		title = "部门管理"
+	case strings.HasPrefix(path, "/system/post"):
+		title = "岗位管理"
+	case strings.HasPrefix(path, "/system/dict/type"):
+		title = "字典类型"
+	case strings.HasPrefix(path, "/system/dict/data"):
+		title = "字典数据"
+	case strings.HasPrefix(path, "/system/config"):
+		title = "参数管理"
+	case strings.HasPrefix(path, "/system/notice"):
+		title = "通知公告"
+	case strings.HasPrefix(path, "/system/user/profile"):
+		title = "个人信息"
+	case strings.HasPrefix(path, "/monitor/online"):
+		title = "在线用户"
+	case strings.HasPrefix(path, "/monitor/operlog"):
+		title = "操作日志"
+	case strings.HasPrefix(path, "/monitor/logininfor"):
+		title = "登录日志"
+	case strings.HasPrefix(path, "/monitor/job"):
+		title = "定时任务"
+	case strings.HasPrefix(path, "/monitor/cache"):
+		title = "缓存监控"
+	case strings.HasPrefix(path, "/monitor/server"):
+		title = "服务器监控"
+	case strings.HasPrefix(path, "/common/upload"):
+		title = "文件管理"
+	}
+
+	switch method {
+	case "POST":
+		if strings.HasSuffix(path, "/export") {
+			bizType = BusinessTypeExport
+		} else if strings.Contains(path, "/import") {
+			bizType = BusinessTypeImport
+		} else {
+			bizType = BusinessTypeInsert
+		}
+	case "PUT":
+		bizType = BusinessTypeUpdate
+	case "DELETE":
+		if strings.HasSuffix(path, "/clean") {
+			bizType = BusinessTypeClean
+		} else {
+			bizType = BusinessTypeDelete
+		}
+	}
+
+	return title, bizType
 }
 
 // skipInterceptor 检查路径是否需要跳过拦截
@@ -178,9 +312,11 @@ func skipInterceptor(path string, notInterceptList []string) bool {
 //
 //	bool 是否具有权限
 func (this *ServerMiddleware) hasPermission(ctx iris.Context, permission string) bool {
+	loginUser, _ := ctx.Values().Get(common.LOGINUSER).(*model.UserInfoStruct)
 	if loginUser == nil {
 		return false
-	} else if loginUser.Admin {
+	}
+	if loginUser.Admin {
 		return true
 	}
 
