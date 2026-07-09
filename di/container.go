@@ -22,6 +22,7 @@ import (
 	"github.com/kataras/iris/v12"
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 	"go.uber.org/zap"
+	
 )
 
 type Container struct {
@@ -247,6 +248,12 @@ func NewContainer(c config.AppConfig) (*Container, error) {
 		ws:        ws,
 	}, nil
 }
+
+func (c *Container) GetApp() *iris.Application { return c.app }
+
+func (c *Container) GetConfig() config.AppConfig { return c.appConfig }
+
+func (c *Container) GetGormDB() *gorm.DB { return c.gormDB.RawDB() }
 
 func (c *Container) InitJob() {
 	sysJobHandler := ryserver.ResolveSysJobHandler(c.gormDB, c.logger, c.freeCache, c.jobs)

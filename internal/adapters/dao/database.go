@@ -148,3 +148,7 @@ func (ds *DatabaseStruct) User() *model.SysUser {
 func (ds *DatabaseStruct) ClearUser() {
 	ds.user = nil
 }
+
+func (ds *DatabaseStruct) RawDB() *gorm.DB {
+	return ds.db
+}
