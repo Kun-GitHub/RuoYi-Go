@@ -144,6 +144,20 @@ func (rs *RedisClient) CloseRedis() error {
 	return nil
 }
 
+// Do 执行Redis命令
+func (rs *RedisClient) Do(args ...interface{}) (interface{}, error) {
+	rs.mu.Lock()
+	defer rs.mu.Unlock()
+	return rs.client.Do(context.Background(), args...).Result()
+}
+
+// DbSize 获取当前数据库键数量
+func (rs *RedisClient) DbSize() (int64, error) {
+	rs.mu.Lock()
+	defer rs.mu.Unlock()
+	return rs.client.DBSize(context.Background()).Result()
+}
+
 // Keys 根据模式匹配获取键列表
 // Redis KEYS命令的封装
 //

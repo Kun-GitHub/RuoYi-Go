@@ -28,24 +28,16 @@ func NewMonitorHandler(logger *zap.Logger, redis *cache.RedisClient) *MonitorHan
 	return &MonitorHandler{logger: logger, redis: redis}
 }
 
+// ===================== Server Monitor =====================
+
 func (h *MonitorHandler) Server(ctx iris.Context) {
-	var result model.MonitorServer
-
-	// CPU
-	result.Cpu = collectCpuInfo()
-
-	// Memory
-	result.Mem = collectMemInfo()
-
-	// JVM (Go runtime equivalent)
-	result.Jvm = collectJvmInfo()
-
-	// System / OS
-	result.Sys = collectSysInfo()
-
-	// Disk
-	result.SysFiles = collectSysFiles()
-
+	result := model.MonitorServer{
+		Cpu:      collectCpuInfo(),
+		Mem:      collectMemInfo(),
+		Jvm:      collectJvmInfo(),
+		Sys:      collectSysInfo(),
+		SysFiles: collectSysFiles(),
+	}
 	ctx.JSON(common.Success(result))
 }
 
@@ -55,7 +47,6 @@ func collectCpuInfo() *model.CpuInfo {
 	cpuCount, _ := cpu.Counts(true)
 	info.CpuNum = cpuCount
 
-	// CPU time stats (total ticks across all CPUs)
 	times, err := cpu.Times(false)
 	if err != nil || len(times) == 0 {
 		return info
@@ -79,7 +70,7 @@ func collectMemInfo() *model.MemInfo {
 		return info
 	}
 
-	info.Total = float64(vm.Total) / 1024 / 1024 / 1024 // GB
+	info.Total = float64(vm.Total) / 1024 / 1024 / 1024
 	info.Used = float64(vm.Used) / 1024 / 1024 / 1024
 	info.Free = float64(vm.Available) / 1024 / 1024 / 1024
 	info.Usage = vm.UsedPercent
@@ -90,7 +81,6 @@ func collectMemInfo() *model.MemInfo {
 func collectJvmInfo() *model.JvmInfo {
 	info := &model.JvmInfo{}
 
-	// Go runtime stats
 	var m runtime.MemStats
 	runtime.ReadMemStats(&m)
 
@@ -100,32 +90,23 @@ func collectJvmInfo() *model.JvmInfo {
 	if freeMB < 0 {
 		freeMB = 0
 	}
-	maxMB := totalMB
 	usagePct := 0.0
 	if totalMB > 0 {
 		usagePct = usedMB / totalMB * 100
 	}
 
 	info.Total = totalMB
-	info.Max = maxMB
+	info.Max = totalMB
 	info.Free = freeMB
 	info.Used = usedMB
 	info.Usage = usagePct
-
-	// Runtime name
 	info.Name = "Go Runtime"
-
-	// Go version
 	info.Version = strings.TrimPrefix(runtime.Version(), "go")
-
-	// GOROOT
 	info.Home = runtime.GOROOT()
-
-	// Process start time
-	info.StartTime = "N/A"
-	info.RunTime = fmt.Sprintf("%d hours", int(time.Since(processStartTime).Hours()))
-
-	// Args
+	info.StartTime = processStartTime.Format("2006-01-02 15:04:05")
+	info.RunTime = fmt.Sprintf("%d hours %d minutes",
+		int(time.Since(processStartTime).Hours()),
+		int(time.Since(processStartTime).Minutes())%60)
 	info.InputArgs = strings.Join(os.Args[1:], " ")
 
 	return info
@@ -143,10 +124,8 @@ func collectSysInfo() *model.SysInfo {
 	}
 
 	info.ComputerIp = getLocalIp()
-
 	dir, _ := os.Getwd()
 	info.UserDir = dir
-
 	info.OsArch = runtime.GOARCH
 
 	return info
@@ -186,10 +165,7 @@ func collectSysFiles() []*model.SysFile {
 }
 
 func formatBytes(b uint64) string {
-	const unit = 1024
-	const unitName = "GB"
-	value := float64(b) / unit / unit / unit
-	return fmt.Sprintf("%.1f %s", value, unitName)
+	return fmt.Sprintf("%.1f GB", float64(b)/1024/1024/1024)
 }
 
 func getLocalIp() string {
@@ -207,12 +183,79 @@ func getLocalIp() string {
 	return "127.0.0.1"
 }
 
+// ===================== Cache Monitor =====================
+
+var cacheNames = []model.SysCache{
+	{CacheName: "login_tokens:", Remark: "用户信息"},
+	{CacheName: "sys_config:", Remark: "配置信息"},
+	{CacheName: "sys_dict:", Remark: "数据字典"},
+	{CacheName: "captcha_codes:", Remark: "验证码"},
+	{CacheName: "repeat_submit:", Remark: "防重提交"},
+	{CacheName: "rate_limit:", Remark: "限流处理"},
+	{CacheName: "pwd_err_cnt:", Remark: "密码错误次数"},
+}
+
 func (h *MonitorHandler) Cache(ctx iris.Context) {
-	ctx.JSON(common.Success(nil))
+	infoRaw, err := h.redis.Do("INFO")
+	if err != nil {
+		ctx.JSON(common.ErrorFormat(iris.StatusInternalServerError, "Redis INFO failed: %s", err.Error()))
+		return
+	}
+
+	cmdRaw, _ := h.redis.Do("INFO", "commandstats")
+	dbSize, _ := h.redis.DbSize()
+
+	infoMap := parseRedisInfo(fmt.Sprintf("%v", infoRaw))
+	cmdStats := parseCommandStats(fmt.Sprintf("%v", cmdRaw))
+
+	result := model.CacheInfoResult{
+		Info:         infoMap,
+		DbSize:       dbSize,
+		CommandStats: cmdStats,
+	}
+
+	ctx.JSON(common.Success(result))
+}
+
+func parseRedisInfo(raw string) map[string]string {
+	result := make(map[string]string)
+	for _, line := range strings.Split(raw, "\n") {
+		line = strings.TrimSpace(line)
+		if line == "" || strings.HasPrefix(line, "#") {
+			continue
+		}
+		parts := strings.SplitN(line, ":", 2)
+		if len(parts) == 2 {
+			result[parts[0]] = parts[1]
+		}
+	}
+	return result
+}
+
+func parseCommandStats(raw string) []model.CommandStat {
+	var stats []model.CommandStat
+	for _, line := range strings.Split(raw, "\n") {
+		line = strings.TrimSpace(line)
+		if line == "" || !strings.HasPrefix(line, "cmdstat_") {
+			continue
+		}
+		name := strings.TrimPrefix(line[:strings.Index(line, ":")], "cmdstat_")
+		value := line[strings.Index(line, ":")+1:]
+		calls := ""
+		if s := strings.TrimPrefix(value, "calls="); s != "" {
+			if idx := strings.Index(s, ","); idx > 0 {
+				calls = s[:idx]
+			} else {
+				calls = s
+			}
+		}
+		stats = append(stats, model.CommandStat{Name: name, Value: calls})
+	}
+	return stats
 }
 
 func (h *MonitorHandler) CacheNames(ctx iris.Context) {
-	ctx.JSON(common.Success(nil))
+	ctx.JSON(common.Success(cacheNames))
 }
 
 func (h *MonitorHandler) GetKeys(ctx iris.Context) {
@@ -225,7 +268,12 @@ func (h *MonitorHandler) GetValue(ctx iris.Context) {
 	cacheName := ctx.Params().GetString("cacheName")
 	cacheKey := ctx.Params().GetString("cacheKey")
 	val, _ := h.redis.Get(fmt.Sprintf("%s%s", cacheName, cacheKey))
-	ctx.JSON(common.Success(map[string]string{"value": val}))
+	result := model.SysCache{
+		CacheName:  cacheName,
+		CacheKey:   cacheKey,
+		CacheValue: val,
+	}
+	ctx.JSON(common.Success(result))
 }
 
 func (h *MonitorHandler) ClearCacheName(ctx iris.Context) {
@@ -238,9 +286,8 @@ func (h *MonitorHandler) ClearCacheName(ctx iris.Context) {
 }
 
 func (h *MonitorHandler) ClearCacheKey(ctx iris.Context) {
-	cacheName := ctx.Params().GetString("cacheName")
 	cacheKey := ctx.Params().GetString("cacheKey")
-	h.redis.Del(fmt.Sprintf("%s%s", cacheName, cacheKey))
+	h.redis.Del(cacheKey)
 	ctx.JSON(common.Success(nil))
 }
 
