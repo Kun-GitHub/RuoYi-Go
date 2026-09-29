@@ -1,8 +1,26 @@
 # RuoYi-Go(DDD)
 
-最近好忙，这个开源项目搁置了，非常不好意思，可以看新起的Go微服务版管理平台：https://github.com/saas-zero/saas-zero  
-最近好忙，这个开源项目搁置了，非常不好意思，可以看新起的Go微服务版管理平台：https://github.com/saas-zero/saas-zero   
-最近好忙，这个开源项目搁置了，非常不好意思，可以看新起的Go微服务版管理平台：https://github.com/saas-zero/saas-zero  
+最近好忙，这个开源项目搁置了，非常不好意思  
+最近好忙，这个开源项目搁置了，非常不好意思   
+最近好忙，这个开源项目搁置了，非常不好意思  
+
+### 0. 三个版本怎么选（先看这里）
+
+同一套 RBAC 权限模型，数据模型一致，按机器规格和团队规模分了三版：
+
+|  | 基础版 | 微服务版 | 低配版                                                    |
+| --- | --- | --- |--------------------------------------------------------|
+| 项目 | **RuoYi-Go**（本仓库） | [SaaS-Zero](https://github.com/saas-zero/saas-zero) | [mini-ruoyi](https://github.com/Kun-GitHub/mini-ruoyi) |
+| 架构 | 单体 + DDD（六边形） | go-zero 微服务 + gRPC | 单体（Gin）                                                |
+| 进程数 | 1 | 4+（gateway / auth / basedata rpc+api / job） | 1                                                      |
+| 存储 | MySQL（默认）/ PostgreSQL | PostgreSQL + etcd + Redis | SQLite 单文件（纯 Go，零 CGO）                                 |
+| 前端 | [RuoYi-Vue3](https://github.com/Kun-GitHub/RuoYi-Vue3) | [saas-zero-web](https://github.com/Kun-GitHub/saas-zero-web) | Svelte 5（后端托管静态文件，在同仓库）                                |
+| 多租户 | 无 | 有（Casbin Domain RBAC） | 无                                                      |
+| 状态 | **已暂停，由 SaaS-Zero 接棒** | 活跃 | 活跃                                                     |
+
+一句话：**学 DDD 分层看 RuoYi-Go，做多租户大项目看 SaaS-Zero，只有 1 核 1G 小机器就看 mini-ruoyi。**
+
+<br>
 
 ### 1. 关于我(在找远程工作，给机会的老板可以联系)
 【个人介绍】在大学期间，我连续三年获得学院奖学金和国家励志奖学金。大二时，我创办了学校的Android俱乐部，并担任第一任社团主席。在大二暑假，我代表学校前往上海的Google公司进行交流学习，并获得了最佳团队奖。从2013年下半年起，我在大学未毕业时便开始实习，从Android开发到iOS开发，再到Spring Boot、Spring Cloud、Go和Python，我熟练掌握了多门开发语言，最终专注于后端和服务器架构。职业生涯从实习生、开发组长、部门主管，一步步发展到研发总监，这期间不仅是技术的积累，更是对产品、业务和架构的深入理解。除了技术方面的积累，在业务层面也有显著的提升。毕业后，我在中山创办了中山GDG（Google Developer Group）谷歌开发者社区，并连续两年兼任中山火炬职业技术学院的外聘老师。同时，我在GitHub社区也有多个开源项目，积极分享和贡献我的技术成果。
@@ -259,45 +277,46 @@
 ```项目结构
 RuoYi-Go/
 ├── cmd/
-│   └── api/
-│       └── main.go
-├── config/
-│   └── config.yaml
+│   ├── api/               # 服务入口 main.go
+│   └── generate/          # 代码生成器入口
+├── config/                # app_config.go + config.yaml（demo.yaml 为模板）
+├── db/                    # 数据库脚本备份
+├── di/                    # 依赖注入容器 container.go
+├── docs/                  # DDD 等设计文档
 ├── internal/
-│   ├── domain/
-│   │   ├── model/
-│   │   │   └── demo.go
+│   ├── adapters/          # 适配器层（六边形右侧）
+│   │   ├── dao/           # 数据访问
+│   │   ├── handler/       # HTTP 处理器
+│   │   └── persistence/   # 仓储实现
 │   ├── application/
-│   │   └── usecase/
-│   │       └── demo_usecase.go
-│   ├── ports/
-│   │   ├── input/
-│   │   │   └── demo_service.go
-│   │   └── output/
-│   │       └── demo_repository.go
-│   ├── adapters/
-│   │   ├── api/
-│   │   │   └── demo_handler.go
-│   │   ├── persistence/
-│   │   │   └── demo_repository.go
-├── di/
-│   └── container.go
-├── pkg/
-│   │   ├── db/
-│   │   │   └── database.go
-│   │   ├── jwt/
-│   │   │   └── jwt.go
-│   │   ├── logger/
-│   │   │   └── logger.go
-│   │   ├── config/
-│   │   │   └── config.go
+│   │   └── usecase/       # 应用用例
+│   ├── common/
+│   │   └── errors/        # 统一错误
+│   ├── domain/            # 领域层（六边形中心）
+│   │   ├── aggregate/     # 聚合
+│   │   ├── model/         # 实体 / 模型
+│   │   ├── service/       # 领域服务
+│   │   └── transaction/   # 事务抽象
+│   ├── filter/            # 过滤器 / 中间件
+│   ├── jobs/              # 定时任务
+│   ├── ports/             # 端口层（六边形边界）
+│   │   ├── input/         # 入站接口
+│   │   └── output/        # 出站接口
+│   ├── server/            # 服务启动 / 路由装配
+│   ├── shutdown/          # 优雅关闭
+│   └── websocket/         # WebSocket
+├── locales/               # i18n 语言文件
+├── pkg/                   # 可复用基础库
+│   ├── cache/  captcha/  config/  excel/
+│   └── i18n/   jwt/      logger/  task/
+├── tests/
 └── go.mod
 ```
 
 <br>
 
 ### 7. 环境(工具)  
-[Go 1.22.2](https://go.dev/doc/install) 
+[Go 1.25.3](https://go.dev/doc/install) 
 
 [Visual Studio Code](https://code.visualstudio.com/) 神器
 
@@ -328,7 +347,7 @@ PS:发现暂不支持安装插件，不太好用
 
 <br>
 
-### 10. 怎么运行（go版本，1.22.2）
+### 10. 怎么运行（go版本，1.25.3）
 1. 代码运行，拉下代码后，进项目，先执行go mod tidy拉下依赖，成功后运行/cmd/api/main.go
 2. Windows系统部署，代码成功运行后，命令行执行 ./build/build.cmd 即可，会得到一个exe，然后在exe同目录下创建config文件夹，然后把config.yaml文件复制进去(代码是这个文件名，但具体文件我没提交，可以拿demo文件修改)，然后运行exe即可
 3. Linux系统部署(Docker版)，代码成功运行后，用Dockerfile构建镜像，然后运行镜像即可。同样注意config.yaml配置文件，自己改代码或者改配置文件。  
@@ -347,8 +366,6 @@ Docker
 <br>
 
 ### 11. 代码生成
-代码生成这块有新想法，想写另一个项目开源出来：[go_auto_tools](https://github.com/Kun-GitHub/go_auto_tools)     
-代码生成这块有新想法，想写另一个项目开源出来：[go_auto_tools](https://github.com/Kun-GitHub/go_auto_tools)     
 代码生成这块有新想法，想写另一个项目开源出来：[go_auto_tools](https://github.com/Kun-GitHub/go_auto_tools)   
 
 <br>
